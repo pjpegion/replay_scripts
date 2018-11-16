@@ -12,6 +12,7 @@ if [ "$machine" == 'theia' ]; then
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0rp1bs01
    module list
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
@@ -560,10 +561,10 @@ cat > input.nml <<EOF
   h2o_phys      = ${h2o_phys:-T}
   nstf_name     = ${nstf_name}
   nst_anl       = ${nst_anl}
+  iau_filter_increments = T
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
-  iau_filter_increments = .true.
 /
 
 &gfdl_cloud_microphysics_nml
