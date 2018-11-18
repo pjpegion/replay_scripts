@@ -90,13 +90,13 @@ lat[:] = np.degrees(lats_fv3[::-1,0])
 lon[:] = np.degrees(lons_fv3[0,:])
 lev[:] = np.arange(nlevs)+1
 ilev[:] = np.arange(nlevs+1)+1
-u_inc = nc.createVariable('u_inc',np.float32,('lev','lat','lon'))
-v_inc = nc.createVariable('v_inc',np.float32,('lev','lat','lon'))
-tmp_inc = nc.createVariable('T_inc',np.float32,('lev','lat','lon'))
-spfh_inc = nc.createVariable('sphum_inc',np.float32,('lev','lat','lon'))
-delp_inc = nc.createVariable('delp_inc',np.float32,('lev','lat','lon'))
+u_inc = nc.createVariable('u_inc',np.float32,('lev','lat','lon'),zlib=True)
+v_inc = nc.createVariable('v_inc',np.float32,('lev','lat','lon'),zlib=True)
+tmp_inc = nc.createVariable('T_inc',np.float32,('lev','lat','lon'),zlib=True)
+spfh_inc = nc.createVariable('sphum_inc',np.float32,('lev','lat','lon'),zlib=True)
+delp_inc = nc.createVariable('delp_inc',np.float32,('lev','lat','lon'),zlib=True)
 if ozinc:
-    o3mr_inc = nc.createVariable('o3mr_inc',np.float32,('lev','lat','lon'))
+    o3mr_inc = nc.createVariable('o3mr_inc',np.float32,('lev','lat','lon'),zlib=True)
 inc = (taper_vert*(u_ifs-u_fv3))[:,::-1,...]
 print 'u increment min/max',inc.min(), inc.max()
 u_inc[:] = inc

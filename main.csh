@@ -67,14 +67,12 @@ setenv PREINPm1 "${RUN}.t${hrm1}z."
 if ($fg_only == 'false') then
     # convert nemsio file to netcdf
     pushd $datapath2
-    nemsio2nc4.py -n sfg_${analdate}_fhr03_control
-    nemsio2nc4.py -n sfg_${analdate}_fhr06_control
-    nemsio2nc4.py -n sfg_${analdate}_fhr09_control
-    #set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-    #foreach nhr_anal ( $iaufhrs2 )
-    #   set charfhr=`printf %02i $nhr_anal`
-    #   nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
-    #end
+    set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+    foreach nhr_anal ( $iaufhrs2 )
+       set charfhr=`printf %02i $nhr_anal`
+       nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
+    end
+    nemsio2nc4.py -n bfg_${analdate}_fhr06_control
     popd
     # convert ifs grib to netcdf
     #pushd  ${ifsanldir}

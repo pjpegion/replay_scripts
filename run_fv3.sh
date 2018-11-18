@@ -11,8 +11,8 @@ if [ "$machine" == 'theia' ]; then
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0rp1bs01
-   module list
    export WGRIB=`which wgrib`
+   module list
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
@@ -59,7 +59,7 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" != "true" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -172,6 +172,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fhtmp=`expr $fh \- $ANALINC`
       analdate_tmp=`$incdate $analdate $fhtmp`
       export analfile="${ifsanldir}/ifsanl_C384_F384_${analdate_tmp}.nc"
+      #export analfile="${ifsanldir}/fv3anl_C384_${analdate_tmp}.nc"
       echo "create ${increment_file} from ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 and ${analfile}"
       /bin/rm -f ${increment_file}
       export "PGM=${scriptsdir}/calc_increment.py ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 ${analfile} ${increment_file}"
@@ -393,7 +394,7 @@ EOF
 cat model_configure
 
 # setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" != "true" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
    echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
