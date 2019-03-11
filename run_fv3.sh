@@ -520,6 +520,7 @@ cat > input.nml <<EOF
 /
 
 &gfs_physics_nml
+  iccn           = F
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
@@ -556,6 +557,8 @@ cat > input.nml <<EOF
   isot           = 1
   debug          = T
   nstf_name      = 0
+  lgfdlmprad     = T
+  effr_in        = T
   cdmbgwd = ${cdmbgwd}
   psautco = ${psautco}
   prautco = ${prautco}
