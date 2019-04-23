@@ -73,6 +73,9 @@ if ($fg_only == 'false') then
        nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
     end
     nemsio2nc4.py -n bfg_${analdate}_fhr06_control
+    #nemsio2nc4.py -n bfg_${analdate}_fhr03_control
+    #nemsio2nc4.py -n bfg_${analdate}_fhr00_control
+    #nemsio2nc4.py -n bfg_${analdate}_fhr09_control
     popd
     # convert ifs grib to netcdf
     #pushd  ${ifsanldir}
@@ -147,8 +150,14 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    if ($resubmit == "true") then
       echo "resubmit script"
       echo "machine = $machine"
-      cat ${machine}_preamble config.sh >! job.sh
-      if ($machine == 'wcoss') then
+      if ( $?SLURM_JOB_ID ) then
+         cat ${machine}_preamble_slurm config.sh >! job.sh
+      else
+         cat ${machine}_preamble config.sh >! job.sh
+      endif
+      if ( $?SLURM_JOB_ID ) then
+          sbatch --export=ALL job.sh
+      else if ($machine == 'wcoss') then
           bsub < job.sh
       else if ($machine == 'gaea') then
           msub job.sh

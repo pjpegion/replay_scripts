@@ -3,7 +3,7 @@
 
 if ( ! $?charnanal2 ) setenv charnanal2 $charnanal
 
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
      setenv NODEFILE $datapath2/nodefile_observer
@@ -65,7 +65,7 @@ setenv OMP_NUM_THREADS $gsi_control_threads
 setenv OMP_STACKSIZE 2048M
 setenv nprocs `expr $cores \/ $OMP_NUM_THREADS`
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
    setenv KMP_AFFINITY scatter
    if ($OMP_NUM_THREADS > 1) then
       setenv HOSTFILE $datapath2/machinefile_observer

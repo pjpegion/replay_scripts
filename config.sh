@@ -4,16 +4,6 @@ echo "running on $machine using $NODES nodes"
 export exptname=C384_replay_control
 export cores=`expr $NODES \* $corespernode`
 
-# check that value of NODES is consistent with PBS_NP on theia.
-if [ "$machine" == 'theia' ]; then
-   if [ $PBS_NP -ne $cores ]; then
-     echo "NODES = ${NODES} PBS_NP = ${PBS_NP} cores = ${cores}"
-     echo "NODES set incorrectly in preamble"
-     exit 1
-   fi
-fi
-#export KMP_AFFINITY=disabled
-
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export rungfs="run_fv3.sh"
 export rungsi="run_gsi_4densvar.sh"
