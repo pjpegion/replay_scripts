@@ -1,0 +1,46 @@
+#!/bin/sh
+#SBATCH -q debug
+#SBATCH -t 00:30:00
+##SBATCH -t 04:00:00
+#SBATCH -A gsienkf
+#SBATCH -N 20    
+#SBATCH -J gefsrr_replay
+#SBATCH -e gefsrr_replay.err
+#SBATCH -o gefsrr_replay.out
+
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+export machine='theia'
+
+# for control forecast
+if [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  export control_threads=1
+  export control_proc=480
+  export write_groups=8 # write groups for control forecast.
+  export layout="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  #export control_threads=2
+  #export control_proc=480
+  #export write_groups=4 # write groups for control forecast.
+  #export layout="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 2 threads
+  export control_threads=4 
+  export control_proc=888  
+  export write_groups=1
+  export layout="6, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 2 threads
+  export control_threads=8
+  export control_proc=1776 
+  export write_groups=1
+  export layout="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+export gsi_control_threads=3
+export write_tasks=6
