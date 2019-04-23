@@ -65,21 +65,29 @@ setenv PREINP1 "${RUN}.t${hrp1}z."
 setenv PREINPm1 "${RUN}.t${hrm1}z."
 
 if ($fg_only == 'false') then
+   # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
+   # adjust surface pressure accordingly.
+   echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
+   set fh=$FHMIN
+   while ($fh <= $FHMAX)
+     set fhr=`printf %02i $fh`
+     # run concurrently, wait
+     sh ${scriptsdir}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $orogfile $datapath2/sfg_${analdate}_fhr${fhr}_control >&! ${current_logdir}/adjustps_${fhr}.out &
+     @ fh = $fh + $FHOUT
+   end
+   wait
+   if ($status != 0) then
+      echo "adjustps step failed, exiting...."
+      exit 1
+   endif
+   echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
+
     # convert nemsio file to netcdf
-    pushd $datapath2
-    set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-    foreach nhr_anal ( $iaufhrs2 )
-       set charfhr=`printf %02i $nhr_anal`
-       nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
-    end
-    nemsio2nc4.py -n bfg_${analdate}_fhr06_control
-    #nemsio2nc4.py -n bfg_${analdate}_fhr03_control
+    #pushd $datapath2
+    #nemsio2nc4.py -n sfg_${analdate}_fhr00_control
+    #nemsio2nc4.py -n sfg_${analdate}_fhr03_control
     #nemsio2nc4.py -n bfg_${analdate}_fhr00_control
-    #nemsio2nc4.py -n bfg_${analdate}_fhr09_control
-    popd
-    # convert ifs grib to netcdf
-    #pushd  ${ifsanldir}
-    #python ifsregrid2nc.py ${analdate} ${analdate} &
+    #nemsio2nc4.py -n bfg_${analdate}_fhr03_control
     #popd
     if ($replay_run_observer == "true") then
        setenv charnanal 'control'
@@ -98,9 +106,13 @@ if ($fg_only == 'false') then
        endif
     endif
 endif
-wait # wait for ifsregrid2nc to finish
 
 echo "$analdate run high-res control first guess `date`"
+if ($fg_only == "true") then
+  setenv skip_calc_increment 1
+else
+  unsetenv skip_calc_increment
+endif
 csh ${scriptsdir}/run_fg_control.csh  >&! ${current_logdir}/run_fg_control.out  
 set control_done=`cat ${current_logdir}/run_fg_control.log`
 if ($control_done == 'yes') then

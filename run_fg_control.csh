@@ -1,6 +1,29 @@
 # run high-res control first guess.
 # first, clean up old first guesses.
 
+if ($machine == 'theia') then
+   module purge
+   module load intel/15.1.133
+   module load impi/5.1.1.109
+   module load netcdf/4.3.0
+   module load hdf5
+   module load pnetcdf
+   module load wgrib
+   module load nco/4.6.0
+   module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
+   module load esmf/7.1.0rp1bs01
+   module load slurm
+   setenv WGRIB `which wgrib`
+   module list
+else if ($machine == 'wcoss') then
+   module load grib_util/1.0.3
+   module load nco-gnu-sandybridge
+else ($machine == 'gaea') then
+   module load nco/4.6.4
+   module load wgrib
+   setenv WGRIB `which wgrib`
+endif
+
 setenv charnanal "control"
 echo "charnanal = $charnanal"
 setenv DATOUT "${datapath}/${analdatep1}"

@@ -4,10 +4,10 @@
 #PBS -A gsienkf
 ##PBS -A da-cpu
 #PBS -q debug
-#PBS -N C384_replay_control
+#PBS -N gefsrr_replay
 #PBS -S /bin/bash
-#PBS -o C384_replay_control.stdout
-#PBS -e C384_replay_control.stderr
+#PBS -o gefsrr_replay.stdout
+#PBS -e gefsrr_replay.stderr
 export NODES=20
 export corespernode=24
 export machine='theia'

@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=C384_replay_control
+export exptname=gefsrr_replay
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -47,10 +47,13 @@ fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
 
-# directory with bias correction files for GSI
 export biascorrdir=${datadir}/biascor
-# directory with IFS analysis netcdf files
-export ifsanldir=${datadir}/ifsanl
+# directory with gefsrr analysis files
+export analdir=${datadir}/fv3anl
+# directory with bias correction files for GSI
+export biascorrdir=${datadir}/fv3anl
+# file with ens resolution orography
+export orogfile=${analdir}/2016010100/sfg_2016010100_fhr06_ensmean
 
 # forecast resolution 
 export RES=384  
@@ -160,33 +163,32 @@ export RNDA_TSCALE=21600.
 export RNDA_PERTVORTFLUX=T
 
 # resolution dependent model parameters
+export fv_sg_adj=450
 if [ $RES -eq 384 ]; then
    export JCAP=766
    export JCAP=766
-   export LONB=1536
-   export LATB=768
-   export fv_sg_adj=600
+   #export LONB=1536
+   #export LATB=768
+   export LONB=512   
+   export LATB=256  
    export dt_atmos=225
    export cdmbgwd="1.0,1.2"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
    export LONB=800   
    export LATB=400  
-   export fv_sg_adj=900
    export dt_atmos=450
    export cdmbgwd="0.2,2.5"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
    export LONB=512   
    export LATB=256  
-   export fv_sg_adj=1500
    export dt_atmos=720
    export cdmbgwd="0.15,2.75"
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=400   
    export LATB=200  
-   export fv_sg_adj=1800
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
 else
@@ -202,8 +204,7 @@ export FHMIN=3
 export FHMAX=9
 export FHOUT=3
 export FHCYC=0
-#export iaufhrs="3,6,9"
-export iaufhrs="6"
+export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 # other model variables set in ${rungfs}

@@ -1,37 +1,9 @@
 # model was compiled with these 
 echo "starting at `date`"
-if [ "$machine" == 'theia' ]; then
-   module purge
-   module load intel/15.1.133
-   module load impi/5.1.1.109
-   module load netcdf/4.3.0
-   module load hdf5
-   module load pnetcdf
-   module load wgrib
-   module load nco/4.6.0
-   module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/7.1.0rp1bs01
-   export WGRIB=`which wgrib`
-   module list
-elif [ "$machine" == 'wcoss' ]; then
-   module load grib_util/1.0.3
-   module load nco-gnu-sandybridge
-elif [ "$machine" == 'gaea' ]; then
-   source $MODULESHOME/init/sh
-   module load nco/4.6.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
-elif [ "$machine" == 'cori' ]; then
-   source $MODULESHOME/init/sh
-   module load craype-mic-knl
-   module list
-fi
 
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
 if [ "$VERBOSE" == "YES" ]; then
-
  set -x
 fi
 
@@ -59,7 +31,7 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" != "true" ]; then
+if [ "${iau_delthrs}" != "-1" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -128,12 +100,12 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$fg_only" == "true" ]; then
-   for file in ../*nc; do
-       file2=`basename $file`
-       ln -fs $file $file2
-   done
-fi
+#if [ "$fg_only" == "true" ]; then
+#   for file in ../*nc; do
+#       file2=`basename $file`
+#       ln -fs $file $file2
+#   done
+#fi
 
 # Grid and orography data
 n=1
@@ -162,93 +134,72 @@ for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
 done
 
 # create netcdf increment files.
-if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
+if [ -z $skip_calc_increment ]; then
    cd INPUT
-
    iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
       export increment_file="fv3_increment${fh}.nc"
-      fhtmp=`expr $fh \- $ANALINC`
-      analdate_tmp=`$incdate $analdate $fhtmp`
-      export analfile="${ifsanldir}/ifsanl_C384_F384_${analdate_tmp}.nc"
-      #export analfile="${ifsanldir}/fv3anl_C384_${analdate_tmp}.nc"
-      echo "create ${increment_file} from ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 and ${analfile}"
+      export analfile="${analdir}/${analdate}/sanl_${analdate}_fhr0${fh}_ensmean.grib"
+      echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${scriptsdir}/calc_increment.py ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 ${analfile} ${increment_file}"
+      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} T T -1"
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1
       fi
    done # do next forecast
-
    cd ..
 fi
 
 # setup model namelist
-if [ "$fg_only" == "true" ]; then
-   # cold start from chgres'd GFS analyes
+# warm start from restart file with lat/lon increments ingested by the model
+if [ $niter == 1 ] ; then
+  if [ -s stoch_ini ]; then
+    echo "stoch_ini available, setting stochini=T"
+    stochini=T # restart random patterns from existing file
+  else
+    echo "stoch_ini not available, setting stochini=F"
+    stochini=F
+  fi
+elif [ $niter == 2 ]; then
+   echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
    stochini=F
-   warm_start=F
-   make_nh=T
-   externalic=T
-   reslatlondynamics=""
-   mountain=F
-   readincrement=F
-   na_init=1
-   FHCYC=0
-   iaudelthrs=-1
-   iau_inc_files=""
-   NST_SPINUP=1
 else
-   # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   # last try, turn stochastic physics off
+   echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
+   SPPT=0
+   SKEB=0
+   SHUM=0
+   # reduce model time step
+   #dt_atmos=`python -c "print ${dt_atmos}/2"`
+fi
+
+iaudelthrs=${iau_delthrs}
+warm_start=T
+make_nh=F
+externalic=F
+mountain=T
+na_init=0 
+FHCYC=${FHCYC}
+if [ "${iau_delthrs}" != "-1" ]; then
+   if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
+      iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
+   elif [ "$iaufhrs" == "3,6,9" ]; then
+      iau_inc_files="'fv3_increment3.nc','fv3_increment6.nc','fv3_increment9.nc'"
+   elif [ "$iaufhrs" == "6" ]; then
+      iau_inc_files="'fv3_increment6.nc'"
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # reduce model time step
-      #dt_atmos=`python -c "print ${dt_atmos}/2"`
+      echo "illegal value for iaufhrs"
+      exit 1
    fi
-   
-   iaudelthrs=${iau_delthrs}
-   warm_start=T
-   make_nh=F
-   externalic=F
-   mountain=T
-   na_init=0 
-   FHCYC=${FHCYC}
-   if [ "${iau_delthrs}" != "-1" ]; then
-      if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
-         iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
-      elif [ "$iaufhrs" == "3,6,9" ]; then
-         iau_inc_files="'fv3_increment3.nc','fv3_increment6.nc','fv3_increment9.nc'"
-      elif [ "$iaufhrs" == "6" ]; then
-         iau_inc_files="'fv3_increment6.nc'"
-      else
-         echo "illegal value for iaufhrs"
-         exit 1
-      fi
-      reslatlondynamics=""
-      readincrement=F
-   else
-      reslatlondynamics="fv3_increment6.nc"
-      readincrement=T
-      iau_inc_files=""
-   fi
+   reslatlondynamics=""
+   readincrement=F
+else
+   reslatlondynamics="fv3_increment6.nc"
+   readincrement=T
+   iau_inc_files=""
 fi
 
 #fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
@@ -264,11 +215,10 @@ fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.engicegrb
 fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.snogrb
 fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hourprev}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
-export FSNOS=99999 # use model value
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
-   fnsnoa=' ' # no input file
-   export FSNOL=99999 # use model value
+   fnsnoa='        ' # no input file
+   fsnol=99999 # use model value
    echo "no snow depth in snow analysis file, use model"
 else
    # snow depth in file, but is it current?
@@ -277,11 +227,11 @@ else
         `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
-      fnsnoa=' ' # no input file
-      export FSNOL=99999 # use model value
+      fnsnoa='        ' # no input file
+      fsnol=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=0 # use analysis value
+      fsnol=0 # use analysis value
    fi
 fi
 
@@ -292,11 +242,11 @@ if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
    #FHMAX_FCST=`expr $FHMAX + $ANALINC \/ 2`
-   if [ "${fg_only}" == "true" ]; then
-      FHRESTART=`expr $ANALINC \/ 2`
-      FHMAX_FCST=$FHMAX
-      FHOFFSET=0
-   fi
+   #if [ "${fg_only}" == "true" ]; then
+   #   FHRESTART=`expr $ANALINC \/ 2`
+   #   FHMAX_FCST=$FHMAX
+   #   FHOFFSET=0
+   #fi
 else
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
@@ -369,6 +319,7 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
+output_1st_tstep_rst:    .false.
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
@@ -395,7 +346,7 @@ EOF
 cat model_configure
 
 # setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" != "true" ]; then
+if [ "${iau_delthrs}" != "-1" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
    echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
@@ -525,12 +476,12 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = F
+  nst_anl        = ${nst_anl}
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
   imp_physics    = ${imp_physics}
-  pdfcld         = F
+  pdfcld         = ${pdfcld:-"F"}
   fhswr          = 3600.
   fhlwr          = 3600.
   ialb           = 1
@@ -546,10 +497,10 @@ cat > input.nml <<EOF
   shal_cnv       = T
   cal_pre        = ${cal_pre:-"T"}
   redrag         = T
-  dspheat        = F
+  dspheat        = ${dspheat:-"T"}
   hybedmf        = T
   random_clds    = ${random_clds:-"T"}
-  trans_trac     = F
+  trans_trac     = ${trans_trac:-"T"}
   cnvcld         = ${cnvcld:-"T"}
   imfshalcnv     = 2
   imfdeepcnv     = 2
@@ -558,14 +509,14 @@ cat > input.nml <<EOF
   isot           = 1
   debug          = T
   nstf_name      = 0
-  lgfdlmprad     = T
-  effr_in        = T
-  cdmbgwd = ${cdmbgwd}
-  psautco = ${psautco}
-  prautco = ${prautco}
-  h2o_phys      = ${h2o_phys:-T}
-  nstf_name     = ${nstf_name}
-  nst_anl       = ${nst_anl}
+  lgfdlmprad     = ${lgfdlmprad:-"F"}
+  effr_in        = ${effr_in:-"F"}
+  cdmbgwd        = ${cdmbgwd}
+  psautco        = ${psautco}
+  prautco        = ${prautco}
+  h2o_phys       = ${h2o_phys:-"T"}
+  nstf_name      = ${nstf_name}
+  nst_anl        = ${nst_anl}
   iau_filter_increments = T
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
