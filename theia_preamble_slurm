@@ -5,8 +5,8 @@
 #SBATCH -A gsienkf
 #SBATCH -N 20    
 #SBATCH -J gefsrr_replay
-#SBATCH -e gefsrr_replay.err
-#SBATCH -o gefsrr_replay.out
+#SBATCH -e gefsrr_replay.stderr
+#SBATCH -o gefsrr_replay.stdout
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
