@@ -217,8 +217,8 @@ fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hourprev}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
-   fnsnoa='        ' # no input file
-   fsnol=99999 # use model value
+   fnsnoa=' ' # no input file
+   export FSNOL=99999 # use model value
    echo "no snow depth in snow analysis file, use model"
 else
    # snow depth in file, but is it current?
@@ -227,13 +227,14 @@ else
         `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
-      fnsnoa='        ' # no input file
-      fsnol=99999 # use model value
+      fnsnoa=' ' # no input file
+      export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      fsnol=0 # use analysis value
+      export FSNOL=0 # use analysis value
    fi
 fi
+
 
 ls -l 
 
