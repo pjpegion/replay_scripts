@@ -25,6 +25,7 @@ else ($machine == 'gaea') then
 endif
 
 setenv charnanal "control"
+setenv charnanal2 "control2"
 echo "charnanal = $charnanal"
 setenv DATOUT "${datapath}/${analdatep1}"
 echo "DATOUT = $DATOUT"

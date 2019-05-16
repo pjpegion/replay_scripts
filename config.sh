@@ -167,10 +167,10 @@ export fv_sg_adj=450
 if [ $RES -eq 384 ]; then
    export JCAP=766
    export JCAP=766
-   #export LONB=1536
-   #export LATB=768
-   export LONB=512   
-   export LATB=256  
+   export LONB=1536
+   export LATB=768
+   #export LONB=512   
+   #export LATB=256  
    export dt_atmos=225
    export cdmbgwd="1.0,1.2"
 elif [ $RES -eq 192 ]; then
