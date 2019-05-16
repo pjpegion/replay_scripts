@@ -13,7 +13,6 @@ if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnan
 else
    nmem=0
 fi
-charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
@@ -143,7 +142,7 @@ if [ -z $skip_calc_increment ]; then
       export analfile="${analdir}/${analdate}/sanl_${analdate}_fhr0${fh}_ensmean.grib"
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} T T -1"
+      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal2} ${increment_file} T T -1"
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -201,10 +200,6 @@ else
    readincrement=T
    iau_inc_files=""
 fi
-
-#fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
-#fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
-#fnsnoa='        ' # no input file, use model snow
 
 snoid='SNOD'
 
