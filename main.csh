@@ -72,12 +72,14 @@ if ($fg_only == 'false') then
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
      # run concurrently, wait
-     sh ${scriptsdir}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $orogfile $datapath2/sfg_${analdate}_fhr${fhr}_control >&! ${current_logdir}/adjustps_${fhr}.out &
+     #sh ${scriptsdir}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $orogfile $datapath2/sfg_${analdate}_fhr${fhr}_control >&! ${current_logdir}/adjustps_${fhr}.out &
+     sh ${scriptsdir}/chgres_fcst.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $orogfile $datapath2/sfg_${analdate}_fhr${fhr}_control2 >&! ${current_logdir}/chgres_fcst_${fhr}.out &
      @ fh = $fh + $FHOUT
    end
    wait
    if ($status != 0) then
-      echo "adjustps step failed, exiting...."
+      #echo "adjustps step failed, exiting...."
+      echo "chgres_fcst step failed, exiting...."
       exit 1
    endif
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
@@ -131,8 +133,14 @@ endif # do_cleanup = true
 
 cd $homedir
 if ( $save_hpss == "true" ) then
-cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
-if ($machine == 'wcoss') then
+if ( $?SLURM_JOB_ID ) then
+   cat ${machine}_preamble_hpss_slurm hpss.sh >! job_hpss.sh
+else
+   cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
+endif
+if ( $?SLURM_JOB_ID ) then
+   sbatch --export=ALL job_hpss.sh
+else if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
    msub -V job_hpss.sh
