@@ -18,7 +18,7 @@ if ($machine == 'theia') then
 else if ($machine == 'wcoss') then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
-else ($machine == 'gaea') then
+else if ($machine == 'gaea') then
    module load nco/4.6.4
    module load wgrib
    setenv WGRIB `which wgrib`

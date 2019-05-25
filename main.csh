@@ -65,24 +65,20 @@ setenv PREINP1 "${RUN}.t${hrp1}z."
 setenv PREINPm1 "${RUN}.t${hrm1}z."
 
 if ($fg_only == 'false') then
-   # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
-   # adjust surface pressure accordingly.
-   echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
+   echo "$analdate change res of control forecast `date`"
    set fh=$FHMIN
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
      # run concurrently, wait
-     #sh ${scriptsdir}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $orogfile $datapath2/sfg_${analdate}_fhr${fhr}_control >&! ${current_logdir}/adjustps_${fhr}.out &
      sh ${scriptsdir}/chgres_fcst.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $orogfile $datapath2/sfg_${analdate}_fhr${fhr}_control2 >&! ${current_logdir}/chgres_fcst_${fhr}.out &
      @ fh = $fh + $FHOUT
    end
    wait
    if ($status != 0) then
-      #echo "adjustps step failed, exiting...."
       echo "chgres_fcst step failed, exiting...."
       exit 1
    endif
-   echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
+   echo "$analdate change res of control forecast on ens grid completed `date`"
 
     # convert nemsio file to netcdf
     #pushd $datapath2
@@ -139,7 +135,8 @@ else
    cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
 endif
 if ( $?SLURM_JOB_ID ) then
-   sbatch --export=ALL job_hpss.sh
+   #sbatch --export=ALL job_hpss.sh
+   sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
 else if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then

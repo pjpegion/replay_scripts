@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=gefsrr_replay
+export exptname=gefsrr_replay_1999stream
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -30,11 +30,11 @@ elif [ "$machine" == 'theia' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}
-   export datadir=/lustre/f1/${USER}
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
-   export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
+   export basedir=/lustre/f2/dev/${USER}
+   export datadir=/lustre/f2/scratch/${USER}
+   #export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
+   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
    export datadir=$basedir
@@ -47,13 +47,13 @@ fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
 
-export biascorrdir=${datadir}/biascor
 # directory with gefsrr analysis files
-export analdir=${datadir}/fv3anl
+export analdir=${basedir}/gefsrr_anal
 # directory with bias correction files for GSI
-export biascorrdir=${datadir}/fv3anl
+export biascorrdir=${basedir}/gefsrr_anal
 # file with ens resolution orography
-export orogfile=${analdir}/2016010100/sfg_2016010100_fhr06_ensmean
+export orogfile=${analdir}/sfg_2002083006_fhr06_ensmean 
+
 
 # forecast resolution 
 export RES=384  
@@ -231,11 +231,11 @@ if [ "$machine" == 'theia' ]; then
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
-   export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
+   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
 ## export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
 ## export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_v2.2.3

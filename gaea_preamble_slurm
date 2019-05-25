@@ -1,8 +1,9 @@
 #!/bin/sh
 #SBATCH -t 00:30:00
-#SBATCH -q urgent
+#SBATCH -q debug
+#SBATCH --clusters c4
 #SBATCH -A nggps_psd
-#SBATCH -N 20    
+#SBATCH -N 11    
 #SBATCH -J gefsrr_replay
 #SBATCH -e gefsrr_replay.err
 #SBATCH -o gefsrr_replay.out
@@ -12,34 +13,34 @@ export corespernode=$SLURM_CPUS_ON_NODE
 export machine='gaea'
 
 # for control forecast
-if [ $NODES -eq 10 ]; then
+if [ $NODES -eq 11 ]; then
   # 20 nodes, 2 threads
   #export control_threads=2 # control forecast threads
   #export control_proc=444   # total number of processors for control forecast
   export control_threads=1
-  export control_proc=312
-  export write_groups_ctl=4 # write groups for control forecast.
-  export layout_ctl="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export control_proc=396
+  export write_groups=2 # write groups for control forecast.
+  export layout="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   #export control_threads=2 # control forecast threads
   #export control_proc=444   # total number of processors for control forecast
   export control_threads=3
   export control_proc=666
-  export write_groups_ctl=1 # write groups for control forecast.
-  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export write_groups=1 # write groups for control forecast.
+  export layout="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ]; then
   # 40 nodes, 2 threads
   export control_threads=6 
   export control_proc=1332 
-  export write_groups_ctl=1
-  export layout_ctl="6, 6"
+  export write_groups=1
+  export layout="6, 6"
 elif [ $NODES -eq 80 ]; then
   # 80 nodes, 2 threads
   export control_threads=6
   export control_proc=2664 
-  export write_groups_ctl=1
-  export layout_ctl="12, 12" 
+  export write_groups=1
+  export layout="12, 12" 
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
