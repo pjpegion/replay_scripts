@@ -136,7 +136,7 @@ else
 endif
 if ( $?SLURM_JOB_ID ) then
    #sbatch --export=ALL job_hpss.sh
-   sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
+   sbatch --export=machine=${machine},analdate=${analdate},datapath=${datapath},hsidir=${hsidir},save_hpss=${save_hpss} job_hpss.sh
 else if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
