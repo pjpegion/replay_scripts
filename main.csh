@@ -105,6 +105,7 @@ if ($fg_only == 'false') then
        setenv charnanal2 'control'
        setenv lobsdiag_forenkf '.false.'
        setenv skipcat "false"
+       setenv NOSAT "YES"
        echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
        csh ${scriptsdir}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
        # once observer has completed, check log files.
