@@ -20,6 +20,6 @@ if [ $? -eq 0 ]; then
    /bin/rm -f *tile*nc
 fi
 cd ${datapath}/${analdate}
-/bin/rm -f diag*cris* diag*airs* diag*iasi* 
+#/bin/rm -f diag*cris* diag*airs* diag*iasi* 
 /bin/rm -f *fg*fhr00* 
 exit $exitstat

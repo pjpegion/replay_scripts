@@ -8,6 +8,7 @@ echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
 
 setenv OMP_NUM_THREADS $control_threads
+setenv OMP_STACKSIZE 256M
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 setenv nprocs `expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"

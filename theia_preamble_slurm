@@ -1,11 +1,11 @@
 #!/bin/sh
-#SBATCH -q debug
-#SBATCH -t 00:30:00
+##SBATCH -q debug
+#SBATCH -t 01:15:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C384_replay_ifsconv
-#SBATCH -e C384_replay_ifsconv.err
-#SBATCH -o C384_replay_ifsconv.out
+#SBATCH -J C384_ifs_replay
+#SBATCH -e C384_ifs_replay.err
+#SBATCH -o C384_ifs_replay.out
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
 ##PBS -l nodes=20:ppn=24
@@ -14,10 +14,10 @@ export corespernode=$SLURM_CPUS_ON_NODE
 ##PBS -A gsienkf
 ###PBS -A da-cpu
 ##PBS -q debug
-##PBS -N C384_replay_ifsconv
+##PBS -N C384_ifs_replay
 ##PBS -S /bin/bash
-##PBS -o C384_replay_ifsconv.stdout
-##PBS -e C384_replay_ifsconv.stderr
+##PBS -o C384_ifs_replay.stdout
+##PBS -e C384_ifs_replay.stderr
 #export NODES=20
 #export corespernode=24
 export machine='theia'
@@ -27,14 +27,14 @@ if [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   #export control_threads=2 # control forecast threads
   #export control_proc=444   # total number of processors for control forecast
-  export control_threads=1
-  export control_proc=480
-  export write_groups=8 # write groups for control forecast.
-  export layout="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-  #export control_threads=2
+  #export control_threads=1
   #export control_proc=480
-  #export write_groups=4 # write groups for control forecast.
-  #export layout="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  #export write_groups=8 # write groups for control forecast.
+  #export layout="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export control_threads=2
+  export control_proc=480
+  export write_groups=4 # write groups for control forecast.
+  export layout="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ]; then
   # 40 nodes, 2 threads
   export control_threads=4 
@@ -52,5 +52,5 @@ else
   exit 1
 fi
 
-export gsi_control_threads=3
+export gsi_control_threads=6
 export write_tasks=6

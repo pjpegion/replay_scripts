@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=C384_replay_control
+export exptname=C768_ifs_replay
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -10,12 +10,15 @@ export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
 export replay_run_observer='true'
 export cleanup_observer='true' 
+export cleanup_nemsio2nc='true'
 export resubmit='true'
-export save_hpss="true"
+export save_hpss="false"
 export do_cleanup='true'
 
 # override values from above for debugging.
 #export cleanup_observer="false"
+#export cleanup_nemsio2nc="false"
+#export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
  
@@ -28,7 +31,13 @@ elif [ "$machine" == 'theia' ]; then
    export basedir=/scratch3/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
+   export obs_datapath=/scratch4/NCEPDEV/global/noscrub/dump
+elif [ "$machine" == 'hera' ]; then
+   export basedir=/scratch2/BMC/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   #export obs_datapath=/scratch2/NCEPDEV/global/noscrub/dump
+   export obs_datapath=/scratch4/NCEPDEV/global/noscrub/dump
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}
    export datadir=/lustre/f1/${USER}
@@ -50,10 +59,10 @@ export logdir="${datadir}/logs/${exptname}"
 # directory with bias correction files for GSI
 export biascorrdir=${datadir}/biascor
 # directory with IFS analysis netcdf files
-export ifsanldir=${datadir}/ifsanl
+export ifsanldir=/scratch3/NCEPDEV/stmp1/Jeffrey.S.Whitaker/ecanl
 
 # forecast resolution 
-export RES=384  
+export RES=768  
 
 # model physics parameters.
 export psautco="0.0008,0.0005"
@@ -94,6 +103,8 @@ if [ $imp_physics == "11" ]; then
    export do_sat_adj=".true."
    export random_clds=".false."
    export cnvcld=".false."
+   export lgfdlmprad=".true."
+   export effr_in=".true."
 else
    export ncld=1
    export nwat=2
@@ -102,7 +113,8 @@ else
 fi
 export k_split=1
 export n_split=6
-export hydrostatic=F
+export fv_sg_adj=450
+export hydrostatic='F'
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
    export consv_te=0
@@ -160,33 +172,36 @@ export RNDA_TSCALE=21600.
 export RNDA_PERTVORTFLUX=T
 
 # resolution dependent model parameters
-if [ $RES -eq 384 ]; then
-   export JCAP=766
-   export JCAP=766
-   export LONB=1536
-   export LATB=768
-   export fv_sg_adj=600
+if [ $RES -eq 768 ]; then
+   export cdmbgwd="3.5,0.25"
+   export LONB=2560
+   export LATB=1280
+   export k_split=2
+   export n_split=6
+   export dt_atmos=225
+   export JCAP=1278
+elif [ $RES -eq 384 ]; then
+   export JCAP=1278
+   export LONB=2560
+   export LATB=1280
    export dt_atmos=225
    export cdmbgwd="1.0,1.2"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
    export LONB=800   
    export LATB=400  
-   export fv_sg_adj=900
    export dt_atmos=450
    export cdmbgwd="0.2,2.5"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
    export LONB=512   
    export LATB=256  
-   export fv_sg_adj=1500
    export dt_atmos=720
    export cdmbgwd="0.15,2.75"
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=400   
    export LATB=200  
-   export fv_sg_adj=1800
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
 else
@@ -209,7 +224,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export RUN=gdas1 # use gdas obs
+export RUN=gdas # use gdas obs
 
 export nitermax=1
 
@@ -224,6 +239,18 @@ if [ "$machine" == 'theia' ]; then
    export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
+   export execdir=${scriptsdir}/exec_${machine}
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+   export nemsioget=${execdir}/nemsio_get
+elif [ "$machine" == 'hera' ]; then
+   export fv3gfspath=/scratch1/NCEPDEV/global/glopara
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/ProdGSI
+   export fixgsi=${gsipath}/fix
+   #export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
+   export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi

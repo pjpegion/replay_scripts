@@ -1,0 +1,26 @@
+#!/bin/sh
+##SBATCH -q debug
+#SBATCH -t 01:00:00
+#SBATCH -A gsienkf
+#SBATCH -N 30    
+#SBATCH -J C768_ifs_replay
+#SBATCH -e C768_ifs_replay.err
+#SBATCH -o C768_ifs_replay.out
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+export machine='hera'
+
+# for control forecast
+if [ $NODES -eq 30 ]; then
+  # 30 nodes, 4 threads
+  export control_threads=4 
+  export control_proc=1200 
+  export write_groups=2
+  export layout="8, 6"
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+export gsi_control_threads=10
+export write_tasks=6

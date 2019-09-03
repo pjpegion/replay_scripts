@@ -66,21 +66,18 @@ setenv PREINPm1 "${RUN}.t${hrm1}z."
 
 if ($fg_only == 'false') then
     # convert nemsio file to netcdf
-    pushd $datapath2
-    set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-    foreach nhr_anal ( $iaufhrs2 )
-       set charfhr=`printf %02i $nhr_anal`
-       nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
-    end
-    nemsio2nc4.py -n bfg_${analdate}_fhr06_control
-    #nemsio2nc4.py -n bfg_${analdate}_fhr03_control
-    #nemsio2nc4.py -n bfg_${analdate}_fhr00_control
-    #nemsio2nc4.py -n bfg_${analdate}_fhr09_control
-    popd
-    # convert ifs grib to netcdf
-    #pushd  ${ifsanldir}
-    #python ifsregrid2nc.py ${analdate} ${analdate} &
-    #popd
+    if ($cleanup_nemsio2nc == "true") then
+        echo "$analdate converting nemsio sfg file to netcdf `date`"
+        pushd $datapath2
+        set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+        foreach nhr_anal ( $iaufhrs2 )
+           set charfhr=`printf %02i $nhr_anal`
+           nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
+        end
+        nemsio2nc4.py -n bfg_${analdate}_fhr06_control
+        popd
+        echo "$analdate done converting nemsio sfg file to netcdf `date`"
+    endif
     if ($replay_run_observer == "true") then
        setenv charnanal 'control'
        setenv charnanal2 'control'
@@ -98,7 +95,6 @@ if ($fg_only == 'false') then
        endif
     endif
 endif
-wait # wait for ifsregrid2nc to finish
 
 echo "$analdate run high-res control first guess `date`"
 csh ${scriptsdir}/run_fg_control.csh  >&! ${current_logdir}/run_fg_control.out  
@@ -118,14 +114,19 @@ if ($do_cleanup == 'true') then
 endif # do_cleanup = true
 
 cd $homedir
-if ( $save_hpss == "true" ) then
-cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
-if ($machine == 'wcoss') then
+if ( $save_hpss == 'true' ) then
+if ( ! -z $SLURM_JOB_ID ) then
+   cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
+else
+   cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
+endif
+if ( ! -z $SLURM_JOB_ID )  then
+   #sbatch --export=ALL job_hpss.sh
+   sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir} job_hpss.sh
+else if ( $machine == 'wcoss' ) then
    bsub -env "all" < job_hpss.sh
-else if ($machine == 'gaea') then
+else if ( $machine == 'gaea' ) then
    msub -V job_hpss.sh
-else if ($machine == 'cori') then
-   sbatch --export=ALL job_hpss.sh
 else
    qsub -V job_hpss.sh
 endif

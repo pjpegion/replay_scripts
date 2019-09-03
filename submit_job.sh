@@ -1,6 +1,7 @@
 # sh submit_job.sh <machine>
 # if using SLURM, set env var USE_SLURM
 machine=$1
+USE_SLURM=1
 if [ -z $USE_SLURM ]; then
    cat ${machine}_preamble config.sh > job.sh
    if [ $machine == 'wcoss' ]; then

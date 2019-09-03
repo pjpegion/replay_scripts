@@ -67,8 +67,7 @@ fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/lfs1/projects/fim/whitaker/bufr}
-datobs=$obs_datapath/bufr_$adate
-datobsm1=$obs_datapath/bufr_$analdatem1
+datobs=$obs_datapath/${adate}/gdas
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
