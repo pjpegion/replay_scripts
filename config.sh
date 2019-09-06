@@ -12,7 +12,7 @@ export replay_run_observer='true'
 export cleanup_observer='true' 
 export cleanup_nemsio2nc='true'
 export resubmit='true'
-export save_hpss="false"
+export save_hpss="true"
 export do_cleanup='true'
 
 # override values from above for debugging.
@@ -59,7 +59,7 @@ export logdir="${datadir}/logs/${exptname}"
 # directory with bias correction files for GSI
 export biascorrdir=${datadir}/biascor
 # directory with IFS analysis netcdf files
-export ifsanldir=/scratch3/NCEPDEV/stmp1/Jeffrey.S.Whitaker/ecanl
+export ifsanldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/ecanl
 
 # forecast resolution 
 export RES=768  

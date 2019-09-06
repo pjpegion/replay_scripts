@@ -110,8 +110,9 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/rm -f *nemsio* PET*
+/bin/rm -f dyn* phy* *nemsio* PET*
 export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
+export fileformat=${fileformat:-'nemsio'}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $scriptsdir/nems.configure .
 # insert correct starting time and output interval in diag_table template.
@@ -392,7 +393,7 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'nemsio'
+output_file:             ${fileformat} 
 write_nemsioflip:        .true.
 write_fsyncflag:         .true.
 iau_offset:              ${iaudelthrs}
@@ -726,15 +727,28 @@ if [ "$quilting" == ".true." ]; then
    while [ $fh -le $FHMAX ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     /bin/mv -f dyn${charfhr2}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-     if [ $? -ne 0 ]; then
-        echo "nemsio file missing..."
-        exit 1
-     fi
-     /bin/mv -f phy${charfhr2}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-     if [ $? -ne 0 ]; then
-        echo "nemsio file missing..."
-        exit 1
+     if [ $fileformat == 'nemsio' ]; then
+        /bin/mv -f dyn${charfhr2}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+        if [ $? -ne 0 ]; then
+           echo "nemsio file missing..."
+           exit 1
+        fi
+        /bin/mv -f phy${charfhr2}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+        if [ $? -ne 0 ]; then
+           echo "nemsio file missing..."
+           exit 1
+        fi
+     elif [ $fileformat == 'netcdf' ] && [ $fh -eq $ANALINC ]; then # only need 6-h fcst (no observer) 
+        /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}.nc4
+        if [ $? -ne 0 ]; then
+           echo "netcdf file missing..."
+           exit 1
+        fi
+        /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}.nc4
+        if [ $? -ne 0 ]; then
+           echo "netcdf file missing..."
+           exit 1
+        fi
      fi
      fh=$[$fh+$FHOUT]
    done
