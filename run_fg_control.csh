@@ -7,13 +7,6 @@ setenv DATOUT "${datapath}/${analdatep1}"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
 
-# save netcdf unless observer will be run
-if ( $replay_run_observer == "false") then
-   setenv fileformat "netcdf"
-else
-   setenv fileformat "nemsio"
-endif
-
 setenv OMP_NUM_THREADS $control_threads
 setenv OMP_STACKSIZE 256M
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
@@ -47,28 +40,18 @@ echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 if ($cleanup_fg == 'true') then
    echo "deleting existing files..."
-   if ($fileformat == 'netcdf') then
-      /bin/rm -f ${DATOUT}/sfg_${analdatep1}*${charnanal}*nc4
-      /bin/rm -f ${DATOUT}/bfg_${analdatep1}*${charnanal}*nc4
-   else
-      /bin/rm -f ${DATOUT}/sfg_${analdatep1}*${charnanal}
-      /bin/rm -f ${DATOUT}/bfg_${analdatep1}*${charnanal} 
-   endif
+   /bin/rm -f ${DATOUT}/sfg_${analdatep1}*${charnanal}
+   /bin/rm -f ${DATOUT}/bfg_${analdatep1}*${charnanal} 
 endif
 
 setenv niter 1
 set outfiles=""
-if ($fileformat == 'netcdf') then
-   set charhr="fhr`printf %02i $ANALINC`"
-   set outfiles = "${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal}.nc4 ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}.nc4"
-else
-   set fhr=$FHMIN
-   while ($fhr <= $FHMAX)
-      set charhr="fhr`printf %02i $fhr`"
-      set outfiles = "${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
-      @ fhr = $fhr + $FHOUT
-   end
-endif
+set fhr=$FHMIN
+while ($fhr <= $FHMAX)
+   set charhr="fhr`printf %02i $fhr`"
+   set outfiles = "${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+   @ fhr = $fhr + $FHOUT
+end
 set alldone='yes'
 foreach outfile ($outfiles) 
   if ( ! -s $outfile) then

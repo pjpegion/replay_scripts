@@ -16,6 +16,12 @@ if [ "$machine" == 'theia' ]; then
    module list
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'hera' ]; then
+   #module purge
+   #module load intel/18.0.5.274
+   #module load impi/2018.0.4
+   #module load netcdf/4.7.0
+   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   #module load esmf/8.0.0bs50
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
@@ -112,7 +118,6 @@ if [ $? -ne 0 ]; then
 fi
 /bin/rm -f dyn* phy* *nemsio* PET*
 export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
-export fileformat=${fileformat:-'nemsio'}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $scriptsdir/nems.configure .
 # insert correct starting time and output interval in diag_table template.
@@ -174,12 +179,11 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fhtmp=`expr $fh \- $ANALINC`
       analdate_tmp=`$incdate $analdate $fhtmp`
       export analfile="${ifsanldir}/IFSANALreplay_ics_${analdate_tmp}.nc"
-      echo "create ${increment_file} from ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 and ${analfile}"
+      echo "create ${increment_file} from ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} and ${analfile}"
       /bin/rm -f ${increment_file}
       threads_save=$OMP_NUM_THREADS
       export OMP_NUM_THREADS=8
-      #${scriptsdir}/calc_increment.py ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 ${analfile} ${increment_file}
-      export "PGM=${scriptsdir}/calc_increment.py ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.nc4 ${analfile} ${increment_file}"
+      export "PGM=${scriptsdir}/calc_increment.py ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file}"
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -267,10 +271,10 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/${analdate}/gdas/gdas.t${houra}z.rtgssthr.grb
-fnacna=${obs_datapath}/${analdate}/gdas/gdas.t${houra}z.seaice.5min.grb
-fnsnoa=${obs_datapath}/${analdate}/gdas/gdas.t${houra}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/${analdatem1}/gdas/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/gdas.${yearprev}${monthprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -393,7 +397,9 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             ${fileformat} 
+output_file:             netcdf         
+nbits:                   14
+ideflate:                1
 write_nemsioflip:        .true.
 write_fsyncflag:         .true.
 iau_offset:              ${iaudelthrs}
@@ -444,7 +450,7 @@ cat > input.nml <<EOF
 
 &mpp_io_nml
   shuffle=1,
-  deflate_level=5,
+  deflate_level=1,
 /
 
 &fms_nml
@@ -494,7 +500,7 @@ cat > input.nml <<EOF
   d2_bg = 0.0,
   nord = ${nord:-3},
   dddmp = ${dddmp:-0.2},
-  d4_bg = ${d4_bg:-0.15},
+  d4_bg = ${d4_bg:-0.12},
   delt_max = 0.002,
   vtdm4 = ${vtdm4},
   ke_bg = 0.0,
@@ -578,6 +584,11 @@ cat > input.nml <<EOF
   h2o_phys       = ${h2o_phys:-"T"}
   nstf_name      = ${nstf_name}
   nst_anl        = ${nst_anl}
+  ldiag_ugwp   = .false.
+  do_ugwp      = .false.
+  do_skeb      = .false.
+  do_sppt      = .false.
+  do_shum      = .false.
   iau_filter_increments = T
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
@@ -631,6 +642,21 @@ cat > input.nml <<EOF
   fix_negative = .true.
   icloud_f = 1
   mp_time = 150.
+/
+
+&cires_ugwp_nml
+       knob_ugwp_solver  = 2
+       knob_ugwp_source  = 1,1,0,0
+       knob_ugwp_wvspec  = 1,25,25,25
+       knob_ugwp_azdir   = 2,4,4,4
+       knob_ugwp_stoch   = 0,0,0,0
+       knob_ugwp_effac   = 1,1,1,1
+       knob_ugwp_doaxyz  = 1
+       knob_ugwp_doheat  = 1
+       knob_ugwp_dokdis  = 1
+       knob_ugwp_ndx4lh  = 1
+       knob_ugwp_version = 0
+       launch_level      = 54
 /
 
 &interpolator_nml
@@ -719,36 +745,24 @@ else
    echo "done running model.. `date`"
 fi
 
-# rename nemsio files (if quilting = .true.).
+# rename netcdf files (if quilting = .true.).
 export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
-   ls -l *nemsio*
+   ls -l dyn*.nc
+   ls -l phy*.nc
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     if [ $fileformat == 'nemsio' ]; then
-        /bin/mv -f dyn${charfhr2}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-        if [ $? -ne 0 ]; then
-           echo "nemsio file missing..."
-           exit 1
-        fi
-        /bin/mv -f phy${charfhr2}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-        if [ $? -ne 0 ]; then
-           echo "nemsio file missing..."
-           exit 1
-        fi
-     elif [ $fileformat == 'netcdf' ] && [ $fh -eq $ANALINC ]; then # only need 6-h fcst (no observer) 
-        /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}.nc4
-        if [ $? -ne 0 ]; then
-           echo "netcdf file missing..."
-           exit 1
-        fi
-        /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}.nc4
-        if [ $? -ne 0 ]; then
-           echo "netcdf file missing..."
-           exit 1
-        fi
+     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $? -ne 0 ]; then
+        echo "netcdffile missing..."
+        exit 1
+     fi
+     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $? -ne 0 ]; then
+        echo "netcdf file missing..."
+        exit 1
      fi
      fh=$[$fh+$FHOUT]
    done

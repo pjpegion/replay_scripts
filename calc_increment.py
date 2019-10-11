@@ -54,27 +54,29 @@ nc = Dataset(filename_fv3)
 nc.set_auto_mask(False)
 try:
     # netcdf gaussian grid file output from FV3
-    lons_fv3 = np.degrees(nc['grid_xt'][0,:])
-    # lats go S to N, don't flip
+    lons_fv3 = nc['grid_xt'][:]
+    # lats go N to S, flip
     # levels go top to bottom, flip
-    lats_fv3 = np.degrees(nc['grid_yt'][:,0])
+    lats_fv3 = nc['grid_yt'][::-1]
     nlats_fv3 = len(lats_fv3); nlons_fv3 = len(lons_fv3)
-    tmp_fv3 = nc['tmp'][:].squeeze()[::-1]
-    #print(tmp_fv3[0].min(), tmp_fv3[0].max())
+    tmp_fv3 = nc['tmp'][:].squeeze()[::-1,::-1,:]
     nlevs_fv3 = tmp_fv3.shape[0]
-    spfh_fv3 = nc['spfh'][:].squeeze()[::-1]
-    delp_fv3 = nc['dpres'][:].squeeze()[::-1]
-    u_fv3 = nc['ugrd'][:].squeeze()[::-1]
-    v_fv3 = nc['vgrd'][:].squeeze()[::-1]
-    ps_fv3 = nc['pressfc'][:].squeeze()[:]
-    orog_fv3 = nc['hgtsfc'][:].squeeze()[:]
-    o3mr_fv3 = nc['o3mr'][:].squeeze()[::-1]
+    #for k in range(nlevs_fv3):
+    #    print(k,tmp_fv3[k].min(),tmp_fv3[k].max(),tmp_fv3[k].mean())
+    spfh_fv3 = nc['spfh'][:].squeeze()[::-1,::-1,:]
+    delp_fv3 = nc['dpres'][:].squeeze()[::-1,::-1,:]
+    u_fv3 = nc['ugrd'][:].squeeze()[::-1,::-1,:]
+    v_fv3 = nc['vgrd'][:].squeeze()[::-1,::-1,:]
+    ps_fv3 = nc['pressfc'][:].squeeze()[::-1]
+    orog_fv3 = nc['hgtsfc'][:].squeeze()[::-1]
+    o3mr_fv3 = nc['o3mr'][:].squeeze()[::-1,::-1,:]
     ak_fv3 = nc.ak[::-1]; bk_fv3 = nc.bk[::-1]
     #print(ak_fv3)
     #print(bk_fv3)
     nc.close()
+    print('netcdf file output from FV3 write component..')
 except:
-    print('nemsio file converted to netcdf..')
+    print('nemsio file output from FV3 write component converted to netcdf..')
     # nemsio gaussian grid file output by FV3, converted to netcdf
     lons_fv3 = nc['lon'][:]
     lats_fv3 = nc['lat'][::-1]
@@ -240,12 +242,13 @@ lat[:] = lats_fv3[:]
 lon[:] = lons_fv3[:]
 lev[:] = np.arange(nlevs_fv3)+1
 ilev[:] = np.arange(nlevs_fv3+1)+1
-u_inc = nc.createVariable('u_inc',np.float32,('lev','lat','lon'))
-v_inc = nc.createVariable('v_inc',np.float32,('lev','lat','lon'))
-tmp_inc = nc.createVariable('T_inc',np.float32,('lev','lat','lon'))
-spfh_inc = nc.createVariable('sphum_inc',np.float32,('lev','lat','lon'))
-delp_inc = nc.createVariable('delp_inc',np.float32,('lev','lat','lon'))
-o3mr_inc = nc.createVariable('o3mr_inc',np.float32,('lev','lat','lon'))
+zlib = True # compress 3d vars?
+u_inc = nc.createVariable('u_inc',np.float32,('lev','lat','lon'),zlib=zlib)
+v_inc = nc.createVariable('v_inc',np.float32,('lev','lat','lon'),zlib=zlib)
+tmp_inc = nc.createVariable('T_inc',np.float32,('lev','lat','lon'),zlib=zlib)
+spfh_inc = nc.createVariable('sphum_inc',np.float32,('lev','lat','lon'),zlib=zlib)
+delp_inc = nc.createVariable('delp_inc',np.float32,('lev','lat','lon'),zlib=zlib)
+o3mr_inc = nc.createVariable('o3mr_inc',np.float32,('lev','lat','lon'),zlib=zlib)
 inc = (taper_vert*(u_ifs_fv3-u_fv3))[::-1]
 print('u increment min/max',inc.min(), inc.max())
 u_inc[:] = inc

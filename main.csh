@@ -65,20 +65,7 @@ setenv PREINP1 "${RUN}.t${hrp1}z."
 setenv PREINPm1 "${RUN}.t${hrm1}z."
 
 if ($fg_only == 'false') then
-    # convert nemsio file to netcdf
     if ($replay_run_observer == "true") then
-       if ($cleanup_nemsio2nc == "true") then
-           echo "$analdate converting nemsio sfg file to netcdf `date`"
-           pushd $datapath2
-           set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-           foreach nhr_anal ( $iaufhrs2 )
-              set charfhr=`printf %02i $nhr_anal`
-              nemsio2nc4.py -n sfg_${analdate}_fhr${charfhr}_control
-           end
-           nemsio2nc4.py -n bfg_${analdate}_fhr06_control
-           popd
-           echo "$analdate done converting nemsio sfg file to netcdf `date`"
-       endif
        setenv charnanal 'control'
        setenv charnanal2 'control'
        setenv lobsdiag_forenkf '.false.'

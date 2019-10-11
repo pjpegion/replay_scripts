@@ -10,14 +10,12 @@ export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
 export replay_run_observer='true'
 export cleanup_observer='true' 
-export cleanup_nemsio2nc='true'
 export resubmit='true'
 export save_hpss="true"
 export do_cleanup='true'
 
 # override values from above for debugging.
 #export cleanup_observer="false"
-#export cleanup_nemsio2nc="false"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -36,8 +34,7 @@ elif [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath=/scratch2/NCEPDEV/global/noscrub/dump
-   export obs_datapath=/scratch4/NCEPDEV/global/noscrub/dump
+   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}
    export datadir=/lustre/f1/${USER}
@@ -153,12 +150,15 @@ fi
 #fi
 
 # stochastic physics parameters.
+export DO_SPPT=.false.
 export SPPT=0.0
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
+export DO_SHUM=.false.
 export SHUM=0.0
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
+export DO_SKEB=.false.
 export SKEB=0.0
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
@@ -242,19 +242,16 @@ if [ "$machine" == 'theia' ]; then
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/ProdGSI
+   export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/fv3_ncio
    export fixgsi=${gsipath}/fix
-   #export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
-   export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
+   export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
    export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
@@ -268,7 +265,6 @@ elif [ "$machine" == 'gaea' ]; then
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
    export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
@@ -279,7 +275,6 @@ elif [ "$machine" == 'wcoss' ]; then
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
 else
    echo "${machine} unsupported machine"
    exit 1

@@ -387,8 +387,9 @@ cat << EOF > fort.37
 EOF
 
 #$APRUNCY $CYCLEXEC $REDOUT$PGMOUT $REDERR$PGMERR
-export OMP_NUM_THREADS=`expr $corespernode \/ 6`
-nprocs=6 mpitaskspernode=6 OMP_NUM_THREADS=$OMP_NUM_THREADS ${scriptsdir}/runmpi
+export OMP_NUM_THREADS=4
+export OMP_STACKSIZE=256M
+nprocs=6 mpitaskspernode=6 OMP_STACKSIZE=$OMP_STACKSIZE OMP_NUM_THREADS=$OMP_NUM_THREADS ${scriptsdir}/runmpi
 
 export ERR=$?
 export err=$ERR

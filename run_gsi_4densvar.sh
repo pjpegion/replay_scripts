@@ -61,13 +61,14 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-fdatei=`$nemsioget ${datges}/bfg_${adate}_fhr03_${charnanal} idate | tail -1 | cut -f2 -d"="`
-fhr=`$nemsioget ${datges}/bfg_${adate}_fhr03_${charnanal} nfhour | cut -f2 -d"="`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal`
+fdatei=`echo $date_fhour | cut -f1 -d " "`
+fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/lfs1/projects/fim/whitaker/bufr}
-datobs=$obs_datapath/${adate}/gdas
+datobs=$obs_datapath/gdas.${iy}${im}${id}/${ih}
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -337,7 +338,7 @@ cat <<EOF > gsiparm.anl
    tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
-   use_gfs_nemsio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
+   use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
    $SETUP
  /
  &GRIDOPTS
