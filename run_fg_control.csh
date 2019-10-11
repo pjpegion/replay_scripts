@@ -33,6 +33,9 @@ echo "cdmbgwd = $cdmbgwd"
 echo "nprocs = $nprocs"
 
 # turn off stochastic physics
+setenv DO_SKEB .false.
+setenv DO_SPPT .false.
+setenv DO_SHUM .false.
 setenv SKEB 0
 setenv SPPT 0
 setenv SHUM 0
