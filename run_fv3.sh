@@ -430,7 +430,6 @@ else
 fi
 
 # copy template namelist file, replace variables.
-/bin/cp -f ${scriptsdir}/suite_${SUITE}.xml .
 /bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml

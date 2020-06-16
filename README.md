@@ -8,6 +8,9 @@ scripts to replay FV3 model to IFS analyses
   All scripts and executables live in basedir/scripts/exptname (basedir and exptname set in config.sh).
   Data generated from replay cycle lives in basedir/exptname.
 
+* the physics suite is specified via the SUITE env in config.sh. ${SUITE}.nml, ${SUITE}.field_table
+  must exist in this (the scripts) directory.
+
 * main.csh performs the replay cycle.  This includes
   1)  running the GSI observer to compute the fit of the predictor segment to obs
       (requires bufr data and bias correction data directories specified as obs_datapath
@@ -24,5 +27,4 @@ scripts to replay FV3 model to IFS analyses
   3)  clean.csh removes uneeded files, and hpss.sh backs up remaining data to HPSS in 
       directory specified by hsidir.
 
-Notes:  Requires GSI from 'fv3_ncio' ProdGSI branch.  Requires FV3 from 'nc_time_units_fix' branch.
-Also requires global_cycle and nc_diag_cat.x (from GSI).
+Notes:  Requires global_cycle and nc_diag_cat.x (executables in exec_<machine> directory)

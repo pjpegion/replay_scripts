@@ -1,6 +1,6 @@
 echo "running on $machine using $NODES nodes"
 
-export exptname=gfsv16_ifsreplay_ccpp
+export exptname=gfsv16_ifsreplay_test
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -118,6 +118,8 @@ export nitermax=1
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
 export incdate="${scriptsdir}/incdate.sh"
+
+export fv3exec='fv3-nonhydro.exe'
 
 if [ "$machine" == 'theia' ]; then
    export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
