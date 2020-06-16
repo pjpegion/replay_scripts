@@ -77,7 +77,6 @@ export NOCONV="NO"
 export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
 export SUITE="FV3_GFS_v16beta"
-export fv3exec='/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/tests/fv3_nonhydro_32bit_ccpp.exe'
 
 # resolution dependent model parameters
 export LONB=2560
@@ -138,7 +137,7 @@ elif [ "$machine" == 'hera' ]; then
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
    export execdir=${scriptsdir}/exec_${machine}
-   export FCSTEXEC=${fv3exec}
+   export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
