@@ -1,11 +1,11 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 01:00:00
+#SBATCH -t 02:00:00
 #SBATCH -A gsienkf
-#SBATCH -N 30    
-#SBATCH -J C768_ifs_replay
-#SBATCH -e C768_ifs_replay.err
-#SBATCH -o C768_ifs_replay.out
+#SBATCH -N 32    
+#SBATCH -J gfsv16_ifsreplay_ccpp
+#SBATCH -e gfsv16_ifsreplay_ccpp.err
+#SBATCH -o gfsv16_ifsreplay_ccpp.out
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
 export machine='hera'
@@ -15,12 +15,31 @@ if [ $NODES -eq 30 ]; then
   # 30 nodes, 4 threads
   export control_threads=4 
   export control_proc=1200 
-  export write_groups=2
+  export write_groups=4
+  export write_tasks=3
   export layout="8, 6"
+elif [ $NODES -eq 32 ]; then
+  # 30 nodes, 4 threads
+  export control_threads=4 
+  export control_proc=1280 
+  export write_groups=4
+  export write_tasks=8
+  export layout="8, 6"
+elif [ $NODES -eq 40 ]; then 
+  export control_threads=4 
+  export control_proc=1600 
+  export write_groups=4
+  export write_tasks=4
+  export layout="8, 8"
+elif [ $NODES -eq 80 ]; then 
+  export control_threads=4 
+  export control_proc=3200 
+  export write_groups=4
+  export write_tasks=8
+  export layout="8, 16"
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
 fi
 
 export gsi_control_threads=10
-export write_tasks=6

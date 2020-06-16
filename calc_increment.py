@@ -45,63 +45,36 @@ def preduce(ps,tpress,tv,delzs,rlapse=rlapse_stdatm):
 
 ozinc = False # calculate ozone increments
 spfhuminc = True # calculate humidity increments
-taper_strat = False # taper increments to zero at upper levels
-# taper increment to zero between these pressure levels
-ak_bot = 3000 # in Pa
-ak_top = 1000
+taper_strat = True # taper increments to zero at upper levels
 
 nc = Dataset(filename_fv3)
 nc.set_auto_mask(False)
-try:
-    # netcdf gaussian grid file output from FV3
-    lons_fv3 = nc['grid_xt'][:]
-    # lats go N to S, flip
-    # levels go top to bottom, flip
-    lats_fv3 = nc['grid_yt'][::-1]
-    nlats_fv3 = len(lats_fv3); nlons_fv3 = len(lons_fv3)
-    tmp_fv3 = nc['tmp'][:].squeeze()[::-1,::-1,:]
-    nlevs_fv3 = tmp_fv3.shape[0]
-    #for k in range(nlevs_fv3):
-    #    print(k,tmp_fv3[k].min(),tmp_fv3[k].max(),tmp_fv3[k].mean())
-    spfh_fv3 = nc['spfh'][:].squeeze()[::-1,::-1,:]
-    delp_fv3 = nc['dpres'][:].squeeze()[::-1,::-1,:]
-    u_fv3 = nc['ugrd'][:].squeeze()[::-1,::-1,:]
-    v_fv3 = nc['vgrd'][:].squeeze()[::-1,::-1,:]
-    ps_fv3 = nc['pressfc'][:].squeeze()[::-1]
-    orog_fv3 = nc['hgtsfc'][:].squeeze()[::-1]
-    o3mr_fv3 = nc['o3mr'][:].squeeze()[::-1,::-1,:]
-    ak_fv3 = nc.ak[::-1]; bk_fv3 = nc.bk[::-1]
-    #print(ak_fv3)
-    #print(bk_fv3)
-    nc.close()
-    print('netcdf file output from FV3 write component..')
-except:
-    print('nemsio file output from FV3 write component converted to netcdf..')
-    # nemsio gaussian grid file output by FV3, converted to netcdf
-    lons_fv3 = nc['lon'][:]
-    lats_fv3 = nc['lat'][::-1]
-    # lats go N to S, flip
-    # levels go bottom to top, don't flip
-    nlats_fv3 = len(lats_fv3); nlons_fv3 = len(lons_fv3)
-    tmp_fv3 = (nc['tmpmidlayer'][:].squeeze())[:,::-1,:]
-    nlevs_fv3 = tmp_fv3.shape[0]
-    spfh_fv3 = (nc['spfhmidlayer'][:].squeeze())[:,::-1,:]
-    delp_fv3 = (nc['dpresmidlayer'][:].squeeze())[:,::-1,:]
-    ps_fv3 = nc['pressfc'][:].squeeze()[::-1,:]
-    orog_fv3 = nc['hgtsfc'][:].squeeze()[::-1,:]
-    #print ('orog_fv3(1,1) = ',orog_fv3[0,0],orog_fv3[-1,-1])
-    u_fv3 = (nc['ugrdmidlayer'][:].squeeze())[:,::-1,:]
-    v_fv3 = (nc['vgrdmidlayer'][:].squeeze())[:,::-1,:]
-    o3mr_fv3 = (nc['o3mrmidlayer'][:].squeeze())[:,::-1,:]
-    nc.close()
-    # need levels to be bottom to top
-    nchyb = Dataset(os.path.join(os.path.dirname(filename_ifs),'FV3L64_hyblevs.nc'))
-    nc.set_auto_mask(False)
-    ak_fv3 = nchyb.ak
-    bk_fv3 = nchyb.bk
-    if bk_fv3[0] < 1.e-7:
-        ak_fv3 = nchyb.ak[::-1]; bk_fv3 = nchyb.bk[::-1]
-    nchyb.close()
+
+# netcdf gaussian grid file output from FV3
+lons_fv3 = nc['grid_xt'][:]
+# lats go N to S, flip
+# levels go top to bottom, flip
+lats_fv3 = nc['grid_yt'][::-1]
+nlats_fv3 = len(lats_fv3); nlons_fv3 = len(lons_fv3)
+tmp_fv3 = nc['tmp'][:].squeeze()[::-1,::-1,:]
+nlevs_fv3 = tmp_fv3.shape[0]
+#for k in range(nlevs_fv3):
+#    print(k,tmp_fv3[k].min(),tmp_fv3[k].max(),tmp_fv3[k].mean())
+spfh_fv3 = nc['spfh'][:].squeeze()[::-1,::-1,:]
+delp_fv3 = nc['dpres'][:].squeeze()[::-1,::-1,:]
+u_fv3 = nc['ugrd'][:].squeeze()[::-1,::-1,:]
+v_fv3 = nc['vgrd'][:].squeeze()[::-1,::-1,:]
+ps_fv3 = nc['pressfc'][:].squeeze()[::-1]
+orog_fv3 = nc['hgtsfc'][:].squeeze()[::-1]
+o3mr_fv3 = nc['o3mr'][:].squeeze()[::-1,::-1,:]
+ak_fv3 = nc.ak[::-1]; bk_fv3 = nc.bk[::-1]
+nc.close()
+# taper increment to zero between these pressure levels
+ak_bot = 500.
+ak_top = 5.
+#print('ak_fv3',ak_fv3.shape,ak_fv3)
+#print('bk_fv3',bk_fv3.shape,bk_fv3)
+#print('ak_bot,ak_top = ',ak_bot,ak_top)
 
 # taper function for increments.
 taper_vert = np.ones(tmp_fv3.shape, np.float32)
@@ -128,6 +101,8 @@ ak_ifs = nchyb.ak
 bk_ifs = nchyb.bk
 if bk_ifs[0] < 1.e-7:
     ak_ifs = nchyb.ak[::-1]; bk_ifs = nchyb.bk[::-1]
+#print('ak_ifs',ak_ifs.shape,ak_ifs)
+#print('bk_ifs',bk_ifs.shape,bk_ifs)
 nchyb.close()
 nlevs_ifs = len(ak_ifs)-1
 

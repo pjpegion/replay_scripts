@@ -6,9 +6,10 @@ echo "charnanal = $charnanal"
 setenv DATOUT "${datapath}/${analdatep1}"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
+setenv VERBOSE YES
 
 setenv OMP_NUM_THREADS $control_threads
-setenv OMP_STACKSIZE 256M
+setenv OMP_STACKSIZE 2048M   
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 setenv nprocs `expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"
@@ -28,18 +29,7 @@ echo "RES = $RES"
 echo "write_groups = $write_groups"
 echo "layout = $layout"
 echo "dt_atmos = $dt_atmos"
-echo "fv_sg_adj = $fv_sg_adj"
-echo "cdmbgwd = $cdmbgwd"
 echo "nprocs = $nprocs"
-
-# turn off stochastic physics
-setenv DO_SKEB .false.
-setenv DO_SPPT .false.
-setenv DO_SHUM .false.
-setenv SKEB 0
-setenv SPPT 0
-setenv SHUM 0
-echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 if ($cleanup_fg == 'true') then
    echo "deleting existing files..."

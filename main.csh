@@ -72,6 +72,7 @@ if ($fg_only == 'false') then
        setenv skipcat "false"
        echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
        csh ${scriptsdir}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+       #sh ${scriptsdir}/run_hybridanal.sh >&! ${current_logdir}/run_gsi_observer.out 
        # once observer has completed, check log files.
        set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
        if ($hybrid_done == 'yes') then

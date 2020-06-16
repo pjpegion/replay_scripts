@@ -20,7 +20,7 @@ scripts to replay FV3 model to IFS analyses
       relative to YYYYMMDDHH.  These files are written to basedir/exptname/YYYYMMDHHnext, where
       YYYYMMDDHHnext is YYYYMMDDH + 6hours.
       run_fv3.sh runs calc_increment.py, which computes analysis
-      increments to force the model using IFS analysis data in ifsanldir.
+      increments to force the model using IFS analysis data in ifsanaldir.
   3)  clean.csh removes uneeded files, and hpss.sh backs up remaining data to HPSS in 
       directory specified by hsidir.
 

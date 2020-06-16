@@ -61,7 +61,7 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
@@ -272,14 +272,14 @@ fi
 if [[ "$HXONLY" != "YES" ]]; then
    if [[ $beta1_inv > 0.999 ]]; then # 3dvar or hybrid gain
       STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
-      SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+      SETUP="$SETUP,miter=1,niter(1)=1,niter(2)=0"
    else # envar
       STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
       #STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
-      SETUP="$SETUP,miter=2,niter(1)=50,niter(2)=150"
+      SETUP="$SETUP,miter=1,niter(1)=1,niter(2)=0"
    fi
 else
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
@@ -313,7 +313,7 @@ CHEM=""
 #                  if .false., ensemble perturbation wind stored as psi,chi.
 #                   (this is useful for regional application, where there is ambiguity in how to
 #                      define psi,chi from u,v)
-beta1_inv=${beta1_inv:-0.25}
+beta1_inv=${beta1_inv:-1.00}
 s_ens_h=${s_ens_h:-400}
 s_ens_v=${s_ens_v:-0.6}
 if [ "$HXONLY" = "NO" ] && [[ $beta1_inv < 0.999 ]]; then
@@ -337,13 +337,13 @@ cat <<EOF > gsiparm.anl
    factqmin=0.0,factqmax=0.0,deltim=$DELTIM,
    tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
-   use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
+   use_pbl=.false.,use_compress=.true.,nsig_ext=56,gpstop=55.,
    use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
    $SETUP
  /
  &GRIDOPTS
    JCAP_B=$JCAP_B,JCAP=$JCAP_A,NLAT=$NLAT,NLON=$LONA,nsig=$LEVS,
-   regional=.false.,nlayers(63)=3,nlayers(64)=6,
+   regional=.false.,nlayers(63)=1,nlayers(64)=1,
    $GRIDOPTS
  /
  &BKGERR
@@ -559,6 +559,20 @@ bufrtable=$fixgsi/prepobs_prep.bufrtable
 
 # Only need this file for sst retrieval
 bftab_sst=$fixgsi/bufrtab.012
+
+if grep -q "Rcov" $anavinfo ; then
+   if ls ${fixgsi}/Rcov* 1> /dev/null 2>&1; then
+     $nln ${fixgsi}/Rcov* $tmpdir
+     echo "using correlated obs error"
+   else
+     echo "Error: Satellite error covariance files are missing."
+     echo "Check for the required Rcov files in " $anavinfo
+     exit 1
+   fi
+else
+   echo "Error: Satellite error covariance info missing in " $anavinfo
+   exit 1
+fi
 
 # Copy executable and fixed files to $tmpdir
 if [[ "$lread_obs_skip" = ".false." ]]; then

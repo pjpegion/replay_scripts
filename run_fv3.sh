@@ -2,44 +2,56 @@
 # model was compiled with these 
 echo "starting at `date`"
 source $MODULESHOME/init/sh
-if [ "$machine" == 'theia' ]; then
+
+if [ "$machine" == 'hera' ]; then
    module purge
-   module load intel/18.0.1.163
-   module load impi/5.1.2.150
-   module load netcdf/4.3.0
-   module load pnetcdf/1.5.0-impi
-   module load hdf5
+   module load intel/18.0.5.274
+   module load impi/2018.0.4
+   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   module load hdf5_parallel/1.10.6
    module load wgrib
-   module load nco/4.6.0
-   module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/8.0.0bs21-intel18
-   module list
+   module load netcdf_parallel/4.7.4
+   module load esmf/8.0.0_ParallelNetCDF
+   #module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
+   #module load netcdfp/4.7.4
+   #module load esmflocal/8.0.1.08bs
+   export LD_LIBRARY_PATH="/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/FV3/ccpp/lib:${LD_LIBRARY_PATH}"
    export WGRIB=`which wgrib`
-elif [ "$machine" == 'hera' ]; then
-   #module purge
-   #module load intel/18.0.5.274
-   #module load impi/2018.0.4
-   #module load netcdf/4.7.0
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load esmf/8.0.0bs50
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'wcoss' ]; then
-   module load grib_util/1.0.3
-   module load nco-gnu-sandybridge
+elif [ "$machine" == 'orion' ]; then
+   module purge 
+   module load intel/2019.5 
+   module load impi/2019.6 
+   module load mkl/2019.5  
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
+   module load netcdfp/4.7.4
+   module load esmflocal/8.0.0.para
+   module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
+   module purge
+   module load PrgEnv-intel/6.0.3
+   module rm intel
+   module load intel/18.0.3.222
+   #module load cray-netcdf-hdf5parallel/4.6.1.3
+   #module load cray-hdf5-parallel/1.10.2.0
+   module load cray-netcdf
+   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
+   module load esmflocal/8_0_48b
    module load nco/4.6.4
    module load wgrib
    export WGRIB=`which wgrib`
-##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
+   export HDF5_DISABLE_VERSION_CHECK=1
 fi
+module list
 
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
 if [ "$VERBOSE" == "YES" ]; then
-
  set -x
 fi
+
+ulimit -s unlimited
+export OMP_STACKSIZE=2048M
 
 niter=${niter:-1}
 if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
@@ -124,9 +136,9 @@ export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 if [ "$imp_physics" == '99' ]; then
-/bin/cp -f $scriptsdir/field_table .
+   /bin/cp -f $scriptsdir/field_table .
 else
-/bin/cp -f $scriptsdir/field_table_ncld5 field_table
+   /bin/cp -f $scriptsdir/field_table_ncld5.satmedmf field_table
 fi
 /bin/cp -f $scriptsdir/data_table . 
 /bin/rm -rf RESTART
@@ -199,13 +211,8 @@ fi
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
-   warm_start=T
-   make_nh=T
-   externalic=F
    reslatlondynamics=""
-   mountain=T
    readincrement=F
-   na_init=0
    FHCYC=0
    iaudelthrs=-1
    #iau_inc_files="fv3_increment.nc"
@@ -237,11 +244,6 @@ else
    fi
    
    iaudelthrs=${iau_delthrs}
-   warm_start=T
-   make_nh=F
-   externalic=F
-   mountain=T
-   na_init=0 
    FHCYC=${FHCYC}
    if [ "${iau_delthrs}" != "-1" ]; then
       if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
@@ -271,8 +273,12 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
-fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+#fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
+#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.nst_sst.grb
+#fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
+#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ice_fraction.grb
 fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
 fnsnog=${obs_datapath}/gdas.${yearprev}${monthprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
@@ -292,7 +298,7 @@ else
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=0 # use analysis value
+      export FSNOL=-2 # use analysis value
    fi
 fi
 
@@ -312,7 +318,7 @@ else
    FHMAX_FCST=$FHMAX
 fi
 
-if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
+if [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -397,9 +403,14 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             netcdf         
+output_file:             'netcdf_parallel' 'netcdf'
 nbits:                   14
 ideflate:                1
+ichunk2d:                ${LONB}
+jchunk2d:                ${LATB}
+ichunk3d:                0
+jchunk3d:                0
+kchunk3d:                0
 write_nemsioflip:        .true.
 write_fsyncflag:         .true.
 iau_offset:              ${iaudelthrs}
@@ -422,315 +433,16 @@ else
    /bin/rm -f INPUT/coupler.res # assume current time == start time
 fi
 
-cat > input.nml <<EOF
-&amip_interp_nml
-  interp_oi_sst = T,
-  use_ncep_sst = T,
-  use_ncep_ice = F,
-  no_anom_sst = F,
-  data_set = "reynolds_oi",
-  date_out_of_range = "climo",
-/
-
-&atmos_model_nml
-  blocksize = 32,
-  dycore_only = F,
-  fdiag = ${FHOUT}
-/
-
-&diag_manager_nml
-  prepend_date = F,
-/
-
-&fms_io_nml
-  checksum_required = F,
-  max_files_r = 100,
-  max_files_w = 100,
-/
-
-&mpp_io_nml
-  shuffle=1,
-  deflate_level=1,
-/
-
-&fms_nml
-  clock_grain = "ROUTINE",
-  domains_stack_size = 6000000,
-  print_memory_usage = F,
-/
-
-&fv_core_nml
-  external_eta = T, 
-  layout = ${layout},
-  io_layout = 1, 1,
-  npx      = ${npx},
-  npy      = ${npx},
-  npz      = ${LEVS},
-  ntiles = 6,
-  grid_type = -1,
-  make_nh = ${make_nh},
-  fv_debug = F,
-  range_warn = F,
-  reset_eta = F,
-  n_sponge = 10,
-  nudge_qv = T,
-  nudge_dz = F,
-  tau = 10.0,
-  rf_cutoff = 750.0,
-  d2_bg_k1 = 0.15,
-  d2_bg_k2 = 0.02,
-  d2_bg = 0.
-  kord_tm = -9,
-  kord_mt = 9,
-  kord_wz = 9,
-  kord_tr = 9,
-  hydrostatic = ${hydrostatic},
-  phys_hydrostatic = F,
-  use_hydro_pressure = ${hydrostatic},
-  beta = 0,
-  a_imp = 1.0,
-  p_fac = 0.1,
-  k_split  = ${k_split:-2},
-  n_split  = ${n_split:-6},
-  nwat = ${nwat},
-  na_init = ${na_init},
-  d_ext = 0.0,
-  dnats = ${dnats},
-  fv_sg_adj = ${fv_sg_adj:-450},
-  d2_bg = 0.0,
-  nord = ${nord:-3},
-  dddmp = ${dddmp:-0.2},
-  d4_bg = ${d4_bg:-0.12},
-  delt_max = 0.002,
-  vtdm4 = ${vtdm4},
-  ke_bg = 0.0,
-  do_vort_damp = T,
-  external_ic = $externalic,
-  res_latlon_dynamics=$reslatlondynamics,
-  read_increment=$readincrement,
-  gfs_phil = F,
-  agrid_vel_rst = F,
-  nggps_ic = T,
-  mountain = ${mountain},
-  ncep_ic = F,
-  d_con = 1.0,
-  hord_mt = ${hord_mt},
-  hord_vt = ${hord_vt},
-  hord_tm = ${hord_tm},
-  hord_dp = ${hord_dp},
-  hord_tr = 8,
-  adjust_dry_mass = F,
-  do_sat_adj = ${do_sat_adj:-"F"},
-  consv_am = F,
-  fill = T,
-  dwind_2d = F,
-  print_freq = 6,
-  warm_start = ${warm_start},
-  no_dycore = F,
-  z_tracer = T,
-/
-
-&external_ic_nml
-  filtered_terrain = T,
-  levp = $LEVP,
-  gfs_dwinds = T,
-  checker_tr = F,
-  nt_checker = 0,
-/
-
-&gfs_physics_nml
-  iccn           = F
-  fhzero         = ${FHOUT}
-  ldiag3d        = F
-  fhcyc          = ${FHCYC}
-  nst_anl        = ${nst_anl}
-  use_ufo        = T
-  pre_rad        = F
-  ncld           = ${ncld}
-  imp_physics    = ${imp_physics}
-  pdfcld         = ${pdfcld:-"F"}
-  fhswr          = 3600.
-  fhlwr          = 3600.
-  ialb           = 1
-  iems           = 1
-  IAER           = 111
-  ico2           = 2
-  isubc_sw       = 2
-  isubc_lw       = 2
-  isol           = 2
-  lwhtr          = T
-  swhtr          = T
-  cnvgwd         = T
-  shal_cnv       = T
-  cal_pre        = ${cal_pre:-"T"}
-  redrag         = T
-  dspheat        = ${dspheat:-"T"}
-  hybedmf        = T
-  random_clds    = ${random_clds:-"T"}
-  trans_trac     = ${trans_trac:-"T"}
-  cnvcld         = ${cnvcld:-"T"}
-  imfshalcnv     = 2
-  imfdeepcnv     = 2
-  prslrd0        = 0
-  ivegsrc        = 1
-  isot           = 1
-  debug          = T
-  nstf_name      = 0
-  lgfdlmprad     = ${lgfdlmprad:-"F"}
-  effr_in        = ${effr_in:-"F"}
-  cdmbgwd        = ${cdmbgwd}
-  psautco        = ${psautco}
-  prautco        = ${prautco}
-  h2o_phys       = ${h2o_phys:-"T"}
-  nstf_name      = ${nstf_name}
-  nst_anl        = ${nst_anl}
-  ldiag_ugwp   = .false.
-  do_ugwp      = .false.
-  do_skeb      = $DO_SKEB
-  do_sppt      = $DO_SPPT
-  do_shum      = $DO_SHUM
-  iau_filter_increments = T
-  iaufhrs = ${iaufhrs}
-  iau_delthrs = ${iaudelthrs}
-  iau_inc_files = ${iau_inc_files}
-/
-
-&gfdl_cloud_microphysics_nml
-  sedi_transport = .true.
-  do_sedi_heat = .false.
-  rad_snow = .true.
-  rad_graupel = .true.
-  rad_rain = .true.
-  const_vi = .F.
-  const_vs = .F.
-  const_vg = .F.
-  const_vr = .F.
-  vi_max = 1.
-  vs_max = 2.
-  vg_max = 12.
-  vr_max = 12.
-  qi_lim = 1.
-  prog_ccn = .false.
-  do_qa = .true.
-  fast_sat_adj = .true.
-  tau_l2v = 225.
-  tau_v2l = 150.
-  tau_g2v = 900.
-  rthresh = 10.e-6  ! This is a key parameter for cloud water
-  dw_land  = 0.16
-  dw_ocean = 0.10
-  ql_gen = 1.0e-3
-  ql_mlt = 1.0e-3
-  qi0_crt = 8.0E-5
-  qs0_crt = 1.0e-3
-  tau_i2s = 1000.
-  c_psaci = 0.05
-  c_pgacs = 0.01
-  rh_inc = 0.30
-  rh_inr = 0.30
-  rh_ins = 0.30
-  ccn_l = 300.
-  ccn_o = 100.
-  c_paut = 0.5
-  c_cracw = 0.8
-  use_ppm = .false.
-  use_ccn = .true.
-  mono_prof = .true.
-  z_slope_liq  = .true.
-  z_slope_ice  = .true.
-  de_ice = .false.
-  fix_negative = .true.
-  icloud_f = 1
-  mp_time = 150.
-/
-
-&cires_ugwp_nml
-       knob_ugwp_solver  = 2
-       knob_ugwp_source  = 1,1,0,0
-       knob_ugwp_wvspec  = 1,25,25,25
-       knob_ugwp_azdir   = 2,4,4,4
-       knob_ugwp_stoch   = 0,0,0,0
-       knob_ugwp_effac   = 1,1,1,1
-       knob_ugwp_doaxyz  = 1
-       knob_ugwp_doheat  = 1
-       knob_ugwp_dokdis  = 1
-       knob_ugwp_ndx4lh  = 1
-       knob_ugwp_version = 0
-       launch_level      = 54
-/
-
-&interpolator_nml
-  interp_method = "conserve_great_circle",
-/
-
-&namsfc
-  fnglac = "${FIXGLOBAL}/global_glacier.2x2.grb",
-  fnmxic = "${FIXGLOBAL}/global_maxice.2x2.grb",
-  fntsfc = "${FIXGLOBAL}/RTGSST.1982.2012.monthly.clim.grb",
-  fnsnoc = "${FIXGLOBAL}/global_snoclim.1.875.grb",
-  fnzorc = "igbp",
-  fnalbc = "${FIXGLOBAL}/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-  fnalbc2 = "${FIXGLOBAL}/global_albedo4.1x1.grb"
-  fnaisc = "${FIXGLOBAL}/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-  fntg3c = "${FIXGLOBAL}/global_tg3clim.2.6x1.5.grb",
-  fnvegc = "${FIXGLOBAL}/global_vegfrac.0.144.decpercent.grb",
-  fnvetc = "${FIXGLOBAL}/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-  fnsmcc = "${FIXGLOBAL}/global_soilmgldas.t1534.3072.1536.grb",
-  fnsotc = "${FIXGLOBAL}/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-  fnmskh = "${FIXGLOBAL}/seaice_newland.grb",
-  fntsfa = "${fntsfa}",
-  fnacna = "${fnacna}",
-  fnsnoa = "${fnsnoa}",
-  fnvmnc = "${FIXGLOBAL}/global_shdmin.0.144x0.144.grb",
-  fnvmxc = "${FIXGLOBAL}/global_shdmax.0.144x0.144.grb",
-  fnslpc = "${FIXGLOBAL}/global_slope.1x1.grb",
-  fnabsc = "${FIXGLOBAL}/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
-  ldebug = F,
-  fsmcl(2) = 60,
-  fsmcl(3) = 60,
-  fsmcl(4) = 60,
-  FTSFS = 90,
-  FAISL = 99999,
-  FAISS = 99999,
-  FSNOL = 99999,
-  FSNOS = 99999,
-  FSICL = 99999,
-  FSICS = 99999,
-  FTSFL = 99999,
-  FVETL = 99999,
-  FSOTL = 99999,
-  FvmnL = 99999,
-  FvmxL = 99999,
-  FSLPL = 99999,
-  FABSL = 99999,
-/
-
-&fv_grid_nml
-  grid_file = "INPUT/grid_spec.nc",
-/
-
-&nam_stochy
-  lon_s=$LONB, lat_s=$LATB, ntrunc=$JCAP,
-  SHUM=$SHUM, -999., -999., -999, -999,SHUM_TAU=$SHUM_TSCALE, 1.728E5, 6.912E5, 7.776E6, 3.1536E7,SHUM_LSCALE=$SHUM_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  SPPT=$SPPT, -999., -999., -999, -999,SPPT_TAU=$SPPT_TSCALE,2592500,25925000,7776000,31536000,SPPT_LSCALE=$SPPT_LSCALE,1000000,2000000,2000000,2000000,SPPT_LOGIT=.TRUE.,SPPT_SFCLIMIT=.TRUE.,
-  SKEBNORM=$SKEBNORM,
-  SKEB=$SKEB, -999, -999, -999, -999,
-  SKEB_TAU=$SKEB_TSCALE, 1.728E5, 2.592E6, 7.776E6, 3.1536E7,
-  SKEB_LSCALE=$SKEB_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  SKEB_VDOF=$SKEB_VDOF,
-  SKEB_NPASS=$SKEB_NPASS,
-  ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
-  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini
-/
-
-&nam_sfcperts
-/
-EOF
-
-# ftsfs = 99999 means all climo or all model, 0 means all analysis,
-# 90 mean relax to climo
-# with an e-folding time scale of 90 days.
-
+# copy template namelist file, replace variables.
+/bin/cp -f ${scriptsdir}/suite_${SUITE}.xml .
+/bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
+sed -i -e "s/LAYOUT/${layout}/g" input.nml
+sed -i -e "s/NPX/${npx}/g" input.nml
+sed -i -e "s/NPY/${npx}/g" input.nml
+sed -i -e "s/LEVP/${LEVP}/g" input.nml
+sed -i -e "s/LEVS/${LEVS}/g" input.nml
+sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
+sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 cat input.nml
 ls -l INPUT
 
@@ -750,7 +462,8 @@ export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
    ls -l dyn*.nc
    ls -l phy*.nc
-   fh=$FHMIN
+   #fh=$FHMIN
+   fh=0
    while [ $fh -le $FHMAX ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
@@ -779,6 +492,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
+      echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$file2"
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
       if [ $? -ne 0 ]; then
         echo "restart file missing..."
