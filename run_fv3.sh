@@ -135,11 +135,7 @@ export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
-if [ "$imp_physics" == '99' ]; then
-   /bin/cp -f $scriptsdir/field_table .
-else
-   /bin/cp -f $scriptsdir/field_table_ncld5.satmedmf field_table
-fi
+/bin/cp -f $scriptsdir/${SUITE}.field_table field_table
 /bin/cp -f $scriptsdir/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
