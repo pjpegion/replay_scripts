@@ -76,7 +76,7 @@ export NOCONV="NO"
 #                                                        3 = input nst info, and used in CRTM simulation and Tr analysis is on
 export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
-export SUITE="FV3_GFS_v16beta"
+export SUITE="FV3_GFS_v16beta_no_nsst"
 
 # resolution dependent model parameters
 export LONB=2560
