@@ -77,6 +77,8 @@ export NOCONV="NO"
 export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
 export SUITE="FV3_GFS_v16beta_no_nsst"
+export LSOIL=4 
+#export LSOIL=4  # for RUC LSM, doesn't work with global_cycle
 
 # resolution dependent model parameters
 export LONB=2560

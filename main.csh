@@ -130,6 +130,7 @@ setenv analdate `${incdate} $analdate $ANALINC`
 echo "setenv analdate ${analdate}" >! $startupenv
 echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
+echo "setenv cold_start false" >> $datapath/fg_only.csh
 
 cd $homedir
 echo "$analdate all done `date`"
