@@ -1,6 +1,6 @@
 echo "running on $machine using $NODES nodes"
 
-export exptname=gfsv16_ifsreplay_test
+export exptname=gfsv16_ifsreplay_gsdv0
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -76,16 +76,16 @@ export NOCONV="NO"
 #                                                        3 = input nst info, and used in CRTM simulation and Tr analysis is on
 export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
-export SUITE="FV3_GFS_v16beta_no_nsst"
-export LSOIL=4 
-#export LSOIL=4  # for RUC LSM, doesn't work with global_cycle
+export SUITE="FV3_GSD_noah_no_nsst"
+export LSOIL=4
+#export LSOIL=9 #RUC LSM
 
 # resolution dependent model parameters
 export LONB=2560
 export LATB=1280
 export JCAP=1278
 if [ $RES -eq 768 ]; then
-   export dt_atmos=150
+   export dt_atmos=120
 elif [ $RES -eq 384 ]; then
    export dt_atmos=225
 elif [ $RES -eq 192 ]; then

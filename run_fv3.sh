@@ -135,7 +135,7 @@ export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
-/bin/cp -f $scriptsdir/${SUITE}.field_table field_table
+/bin/cp -f $scriptsdir/field_table_${SUITE} field_table
 /bin/cp -f $scriptsdir/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
@@ -143,7 +143,7 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$fg_only" == "true" ]; then
+if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -175,6 +175,9 @@ ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
 for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
+# for Thompson microphysics
+ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
+ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
 
 # create netcdf increment files.
 if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -430,6 +433,19 @@ else
 fi
 
 # copy template namelist file, replace variables.
+if [ "$cold_start" == "true" ]; then
+  warm_start=F
+  externalic=T
+  na_init=0
+  mountain=F
+  make_nh=F
+else
+  warm_start=T
+  externalic=F
+  na_init=0
+  mountain=T
+  make_nh=F
+fi
 /bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
@@ -438,6 +454,11 @@ sed -i -e "s/LEVP/${LEVP}/g" input.nml
 sed -i -e "s/LEVS/${LEVS}/g" input.nml
 sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
 sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
+sed -i -e "s/WARM_START/${warm_start}/g" input.nml
+sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
+sed -i -e "s/NA_INIT/${na_init}/g" input.nml
+sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
+sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 cat input.nml
 ls -l INPUT
 
