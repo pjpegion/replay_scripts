@@ -13,14 +13,12 @@ datapath = sys.argv[3] # path to diag files.
 runid = sys.argv[4] # suffix for diag file
 hem = sys.argv[5] # NH,TR,SH,GL
 outfile = sys.argv[6] # profile stats saved here
-sondesonly = True # use only 120,132,220,221,232 (sondes,pibals,drops)
+sondesonly = False # use only 120,132,220,221,232 (sondes,pibals,drops)
 noair = False
 latbound = 30
 # if sondesonly False, aircraft, pibals and surface data included also
 
 dates = dateutils.daterange(date1,date2,6)
-#dates.remove('2019122618')
-#dates.remove('2019121018')
 deltap = 50.; pbot = 975
 nlevs = 23
 levs = np.zeros(nlevs, np.float)
@@ -53,9 +51,29 @@ rms_wind_meantot = []
 rms_temp_meantot = []
 rms_humid_meantot = []
 
+ncout = Dataset(outfile+'.nc','w')
+plevs = ncout.createDimension('plevs',len(levs))
+times = ncout.createDimension('time',len(dates))
+plevs = ncout.createVariable('plevs',np.float32,'plevs')
+plevs_up = ncout.createVariable('plevs_up',np.float32,'plevs')
+plevs_down = ncout.createVariable('plevs_down',np.float32,'plevs')
+plevs_up[:] = levs2
+plevs_down[:] = levs1
+plevs[:]=levs
+plevs.units = 'hPa'
+times = ncout.createVariable('times',np.float64,'time')
+times.units = 'hours since 01-01-01'
+omf_wnd = ncout.createVariable('omf_rmswind',np.float32, ('time','plevs'))
+omf_temp = ncout.createVariable('omf_rmstemp',np.float32, ('time','plevs'))
+omf_tempb = ncout.createVariable('omf_biastemp',np.float32, ('time','plevs'))
+temp_obcounts = ncout.createVariable('temp_obcounts',np.int32, ('time','plevs'))
+wind_obcounts = ncout.createVariable('wind_obcounts',np.int32, ('time','plevs'))
+
 #datapath2='/scratch3/BMC/gsienkf/whitaker/t1534_t574'
 
+ndate = 0
 for date in dates:
+    times[ndate] = dateutils.datetohrs(date)
     if runid != '': 
         obsfile_uv = os.path.join(datapath,'%s/diag_conv_uv_ges.%s_%s.nc4' % (date,date,runid))
         obsfile_t  = os.path.join(datapath,'%s/diag_conv_t_ges.%s_%s.nc4' % (date,date,runid))
@@ -182,8 +200,11 @@ for date in dates:
     #        print p, levs2[ip], levs1[ip]
     #        raise IndexError('wind p mismatch')
     rms_temp += np.bincount(pindx,minlength=nlevs,weights=omf_t**2)
-    bias_temp += np.bincount(pindx,minlength=nlevs,weights=omf_t)
     counts, bin_edges = np.histogram(press_t,pbins[::-1])
+    omf_tempb[ndate] = np.bincount(pindx,minlength=nlevs,weights=omf_t)/counts[::-1]
+    omf_temp[ndate] = np.bincount(pindx,minlength=nlevs,weights=omf_t**2)/counts[::-1]
+    temp_obcounts[ndate] = counts[::-1]
+    bias_temp += np.bincount(pindx,minlength=nlevs,weights=omf_t)
     count_temp += counts[::-1]
     rms_temp_mean = np.sqrt(np.bincount(pindx,minlength=nlevs,weights=omf_t**2)/counts[::-1])[0:18].mean()
     # compute innovation stats for humidity.
@@ -216,13 +237,17 @@ for date in dates:
     #        raise IndexError('wind p mismatch')
     rms_wind += np.bincount(pindx,minlength=nlevs,weights=np.sqrt(omf_u**2+omf_v**2))
     counts, bin_edges = np.histogram(press_u,pbins[::-1])
+    omf_wnd[ndate] = np.bincount(pindx,minlength=nlevs,weights=np.sqrt(omf_u**2+omf_v**2))/counts[::-1]
+    wind_obcounts[ndate] = counts[::-1]
     count_wind += counts[::-1]
     rms_wind_mean = (np.bincount(pindx,minlength=nlevs,weights=np.sqrt(omf_u**2+omf_v**2))/counts[::-1])[0:18].mean()
     rms_wind_meantot.append(rms_wind_mean)
     rms_temp_meantot.append(rms_temp_mean)
     rms_humid_meantot.append(rms_humid_mean)
     print date, rms_wind_mean, rms_temp_mean, rms_humid_mean
+    ndate += 1
 
+ncout.close()
 rms_wind = rms_wind/count_wind
 rms_temp = np.sqrt(rms_temp/count_temp)
 bias_temp = bias_temp/count_temp
