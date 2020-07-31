@@ -71,8 +71,11 @@ if ($fg_only == 'false') then
        setenv lobsdiag_forenkf '.false.'
        setenv skipcat "false"
        echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-       csh ${scriptsdir}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
-       #sh ${scriptsdir}/run_hybridanal.sh >&! ${current_logdir}/run_gsi_observer.out 
+       if ( ! $?biascorrdir ) then # 3DVar to cycle bias correction files
+          sh ${scriptsdir}/run_3dvaranal.sh >&! ${current_logdir}/run_gsi_observer.out 
+       else
+          csh ${scriptsdir}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+       endif
        # once observer has completed, check log files.
        set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
        if ($hybrid_done == 'yes') then

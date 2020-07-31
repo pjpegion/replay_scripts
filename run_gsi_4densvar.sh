@@ -263,7 +263,7 @@ if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
 else
    use_prepb_satwnd=.true.
 fi
-SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true."
+SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,write_fv3_incr=.false."
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -272,7 +272,7 @@ fi
 if [[ "$HXONLY" != "YES" ]]; then
    if [[ $beta1_inv > 0.999 ]]; then # 3dvar or hybrid gain
       STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
-      SETUP="$SETUP,miter=1,niter(1)=1,niter(2)=0"
+      SETUP="$SETUP,miter=1,niter(1)=100,niter(2)=0,write_fv3_incr=.true."
    else # envar
       STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
@@ -863,26 +863,27 @@ cat fort.2* > $savdir/gsistats.${adate}_${charnanal2}
 
 #ls -l
 if [[ "$HXONLY" = "NO" ]]; then
-   if [ -s ./siganl ] && [ -s ./satbias_out ]; then
-      if [ -s ./siga03 ]; then
-         $nmv siga03          $SIGANL03
-      fi
-      if [ -s ./siga04 ]; then
-         $nmv siga04          $SIGANL04
-      fi
-      if [ -s ./siga05 ]; then
-         $nmv siga05          $SIGANL05
-      fi
-      $nmv siganl             $SIGANL06
-      if [ -s ./siga07 ]; then
-          $nmv siga07         $SIGANL07
-      fi
-      if [ -s ./siga08 ]; then
-         $nmv siga08          $SIGANL08
-      fi
-      if [ -s ./siga09 ]; then
-         $nmv siga09          $SIGANL09
-      fi
+   if [ -s ./satbias_out ]; then
+#  if [ -s ./siganl ] && [ -s ./satbias_out ]; then
+#     if [ -s ./siga03 ]; then
+#        $nmv siga03          $SIGANL03
+#     fi
+#     if [ -s ./siga04 ]; then
+#        $nmv siga04          $SIGANL04
+#     fi
+#     if [ -s ./siga05 ]; then
+#        $nmv siga05          $SIGANL05
+#     fi
+#     $nmv siganl             $SIGANL06
+#     if [ -s ./siga07 ]; then
+#         $nmv siga07         $SIGANL07
+#     fi
+#     if [ -s ./siga08 ]; then
+#        $nmv siga08          $SIGANL08
+#     fi
+#     if [ -s ./siga09 ]; then
+#        $nmv siga09          $SIGANL09
+#     fi
       $nmv satbias_out $BIASO
       $nmv satbias_pc.out $BIASO_PC
       if [ -s aircftbias_out ]; then

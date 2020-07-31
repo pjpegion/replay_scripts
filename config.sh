@@ -1,6 +1,6 @@
 echo "running on $machine using $NODES nodes"
 
-export exptname=gfsv16_ifsreplay_gsdv0
+export exptname=gfsv16_ifsreplay_control
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -61,6 +61,7 @@ export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
 
 # directory with bias correction files for GSI
+# comment this out and 3DVar will be run to generate bias coeffs
 export biascorrdir=${datadir}/biascor
 # directory with IFS analysis netcdf files
 export ifsanldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/ecanl
@@ -76,7 +77,7 @@ export NOCONV="NO"
 #                                                        3 = input nst info, and used in CRTM simulation and Tr analysis is on
 export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
-export SUITE="FV3_GSD_noah_no_nsst"
+export SUITE="FV3_GFS_v16beta_no_nsst"
 export LSOIL=4
 #export LSOIL=9 #RUC LSM
 
