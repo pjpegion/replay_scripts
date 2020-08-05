@@ -99,7 +99,7 @@ export lread_obs_skip=".false."
 export HXONLY 'NO'
 if [ -s $BIASO ]; then
   echo "gsi hybrid already completed"
-  echo "yes" > ${current_logdir}/run_gsi_hybrid.log
+  echo "yes" > ${current_logdir}/run_gsi_observer.log
   exit 0
 fi
 echo "${analdate} compute gsi hybrid analysis increment `date`"
@@ -139,8 +139,8 @@ done
 
 if [ $alldone == 'no' ]; then
     echo "Tried ${nitermax} times and to do gsi hybrid analysis and failed"
-    echo "no" > ${current_logdir}/run_gsi_hybrid.log 2>&1
+    echo "no" > ${current_logdir}/run_gsi_observer.log 2>&1
 else
-    echo "yes" > ${current_logdir}/run_gsi_hybrid.log 2>&1
+    echo "yes" > ${current_logdir}/run_gsi_observer.log 2>&1
     /bin/rm -rf $tmpdir
 fi
