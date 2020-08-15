@@ -97,7 +97,7 @@
   hord_tr = 8,
   adjust_dry_mass = T,
   dry_mass=98320.0,
-  do_sat_adj = .true.,
+  do_sat_adj = .false.,
   consv_am = F,
   fill = T,
   dwind_2d = F,
@@ -123,7 +123,7 @@
   pre_rad        = F
   ncld           = 5
   imp_physics    = 8
-  ltaerosol      = .T.
+  ltaerosol      = .F.
   lradar         = .T.
   ttendlim       = 0.004
   pdfcld         = F
