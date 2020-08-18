@@ -44,7 +44,7 @@
   npz      = LEVS,
   ntiles = 6,
   grid_type = -1,
-  make_nh = T,
+  make_nh = MAKE_NH,
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
@@ -69,9 +69,9 @@
   k_split  = 2,
   n_split  = 6,
   nwat = 6,
-  na_init = 0,
+  na_init = NA_INIT,
   d_ext = 0.0,
-  dnats = 1,
+  dnats = 0,
   fv_sg_adj = 450,
   d2_bg = 0.0,
   nord = 2,
@@ -81,13 +81,13 @@
   vtdm4 = 0.02,
   ke_bg = 0.0,
   do_vort_damp = T,
-  external_ic = F,
+  external_ic = EXTERNAL_IC,
   res_latlon_dynamics=,
   read_increment=F,
   gfs_phil = F,
   agrid_vel_rst = F,
   nggps_ic = T,
-  mountain = T,
+  mountain = MOUNTAIN,
   ncep_ic = F,
   d_con = 1.0,
   hord_mt = 5,
@@ -95,14 +95,14 @@
   hord_tm = 5,
   hord_dp = -5,
   hord_tr = 8,
-  adjust_dry_mass = T,
+  adjust_dry_mass = F,
   dry_mass=98320.0,
   do_sat_adj = .false.,
   consv_am = F,
   fill = T,
   dwind_2d = F,
   print_freq = 6,
-  warm_start = T,
+  warm_start = WARM_START,
   no_dycore = F,
   z_tracer = T,
 /
@@ -123,7 +123,7 @@
   pre_rad        = F
   ncld           = 5
   imp_physics    = 8
-  ltaerosol      = .F.
+  ltaerosol      = .T.
   lradar         = .T.
   ttendlim       = 0.004
   pdfcld         = F
@@ -154,7 +154,7 @@
   lheatstrg      = T
   random_clds    = .false.
   trans_trac     = T
-  cnvcld         = .false.
+  cnvcld         = .true.
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
@@ -179,9 +179,8 @@
   bl_mynn_edmf      = 1
   bl_mynn_edmf_mom  = 1
   debug          = T
-  lgfdlmprad     = .true.
+  lgfdlmprad     = .false.
   effr_in        = .true.
-  cplwav         = .false.
   cdmbgwd        = 4.0,0.15,1.0,1.0
   psautco        = 0.0008,0.0005
   prautco        = 0.00015,0.00015

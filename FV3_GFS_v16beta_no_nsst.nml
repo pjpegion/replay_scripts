@@ -10,7 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = F
-  ccpp_suite = "FV3_GFS_v16beta_no_nsst"
+  ccpp_suite = "FV3_GFS_v16beta"
   fdiag = 3
 /
 
@@ -44,7 +44,7 @@
   npz      = LEVS,
   ntiles = 6,
   grid_type = -1,
-  make_nh = F,
+  make_nh = MAKE_NH,
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
@@ -69,7 +69,7 @@
   k_split  = 2,
   n_split  = 6,
   nwat = 6,
-  na_init = 0,
+  na_init = NA_INIT,
   d_ext = 0.0,
   dnats = 1,
   fv_sg_adj = 450,
@@ -81,13 +81,13 @@
   vtdm4 = 0.02,
   ke_bg = 0.0,
   do_vort_damp = T,
-  external_ic = F,
+  external_ic = EXTERNAL_IC,
   res_latlon_dynamics=,
   read_increment=F,
   gfs_phil = F,
   agrid_vel_rst = F,
   nggps_ic = T,
-  mountain = T,
+  mountain = MOUNTAIN,
   ncep_ic = F,
   d_con = 1.0,
   hord_mt = 5,
@@ -102,7 +102,7 @@
   fill = T,
   dwind_2d = F,
   print_freq = 6,
-  warm_start = T,
+  warm_start = WARM_START,
   no_dycore = F,
   z_tracer = T,
 /
@@ -149,7 +149,7 @@
   lheatstrg      = T
   random_clds    = .false.
   trans_trac     = T
-  cnvcld         = .false.
+  cnvcld         = .true.
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
