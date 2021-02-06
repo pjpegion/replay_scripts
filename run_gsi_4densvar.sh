@@ -643,9 +643,9 @@ fi
 
 if [[ "$NOCONV" = "NO" ]]; then
 $nln $datobs/${prefix_obs}.prepbufr           ./prepbufr
-if [[ -s $datobs/${prefix_obs}.nsstbufr ]]; then
-$nln ${datobs}/${prefix_obs}.nsstbufr ./nsstbufr
-fi
+#if [[ -s $datobs/${prefix_obs}.nsstbufr ]]; then
+#$nln ${datobs}/${prefix_obs}.nsstbufr ./nsstbufr
+#fi
 if [[ -s $datobs/${prefix_obs}.prepbufr.acft_profiles ]]; then
 $nln $datobs/${prefix_obs}.prepbufr.acft_profiles ./prepbufr_profl
 fi
@@ -669,12 +669,6 @@ fi
 if [[ -s $datobs/${prefix_obs}.1bamua.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bamua.${suffix}   ./amsuabufr
 fi
-if [[ -s $datobs/${prefix_obs}.1bmsu.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.1bmsu.${suffix}   ./msubufr
-fi
-if [[ -s $datobs/${prefix_obs}.1bssu.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.1bssu.${suffix}   ./ssubufr
-fi
 if [[ -s $datobs/${prefix_obs}.1bmhs.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bmhs.${suffix}    ./mhsbufr
 fi
@@ -684,75 +678,81 @@ fi
 if [[ -s $datobs/${prefix_obs}.atms.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.atms.${suffix}      ./atmsbufr
 fi
-if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.goesnd.${suffix}   ./gsnd1bufr
-fi
-if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.geoimr.${suffix}   ./gimgrbufr
-fi
 if [[ -s $datobs/${prefix_obs}.1bamub.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bamub.${suffix}   ./amsubbufr
 fi
-if [[ -s $datobs/${prefix_obs}.1bhrs2.${suffix}  ]]; then
-$nln $datobs/${prefix_obs}.1bhrs2.${suffix}   ./hirs2bufr
-fi
-if [[ -s $datobs/${prefix_obs}.1bhrs3.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.1bhrs3.${suffix}   ./hirs3bufr
-fi
-if [[ -s $datobs/${prefix_obs}.1bhrs4.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.1bhrs4.${suffix}   ./hirs4bufr
-fi
-if [[ -s $datobs/${prefix_obs}.airsev.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.airsev.${suffix}   ./airsbufr
-fi
-if [[ -s $datobs/${prefix_obs}.mtiasi.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.mtiasi.${suffix}   ./iasibufr
-fi
-if [[ -s $datobs/${prefix_obs}.ssmit.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.ssmit.${suffix}    ./ssmitbufr
-fi
-if [[ -s  $datobs/${prefix_obs}.amsre.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.amsre.${suffix}    ./amsrebufr
-fi
-if [[ -s $datobs/${prefix_obs}.ssmis.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.ssmis.${suffix}    ./ssmisbufr
-fi
-if [[ -s $datobs/${prefix_obs}.ssmit.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.ssmit.${suffix}    ./ssmitbufr
-fi
-if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
-fi
-if [[ -s $datobs/${prefix_obs}.esamub.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.esamub.${suffix}   ./amsubbufrears
-fi
-if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
-fi
+#if [[ -s $datobs/${prefix_obs}.1bmsu.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.1bmsu.${suffix}   ./msubufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.1bssu.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.1bssu.${suffix}   ./ssubufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.goesnd.${suffix}   ./gsnd1bufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.geoimr.${suffix}   ./gimgrbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.1bhrs2.${suffix}  ]]; then
+#$nln $datobs/${prefix_obs}.1bhrs2.${suffix}   ./hirs2bufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.1bhrs3.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.1bhrs3.${suffix}   ./hirs3bufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.1bhrs4.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.1bhrs4.${suffix}   ./hirs4bufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.airsev.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.airsev.${suffix}   ./airsbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.mtiasi.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.mtiasi.${suffix}   ./iasibufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.ssmit.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.ssmit.${suffix}    ./ssmitbufr
+#fi
+#if [[ -s  $datobs/${prefix_obs}.amsre.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.amsre.${suffix}    ./amsrebufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.ssmis.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.ssmis.${suffix}    ./ssmisbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.ssmit.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.ssmit.${suffix}    ./ssmitbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
+#fi
+#if [[ -s $datobs/${prefix_obs}.esamub.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.esamub.${suffix}   ./amsubbufrears
+#fi
+#if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
+#fi
 if [[ -s $datobs/${prefix_obs}.gome.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.gome.${suffix}     ./gomebufr
 fi
 if [[ -s $datobs/${prefix_obs}.omi.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.omi.${suffix}      ./omibufr
 fi
-if [[ -s $datobs/${prefix_obs}.sevcsr.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.sevcsr.${suffix}      ./seviribufr
-fi
-if [[ -s $datobs/${prefix_obs}.cris.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.cris.${suffix}      ./crisbufr
-fi
-if [[ -s $datobs/${prefix_obs}.spssmi.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.spssmi.${suffix}   ./ssmirrbufr
-fi
-if [[ -s $datobs/${prefix_obs}.sptrmm.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.sptrmm.${suffix}   ./tmirrbufr
-fi
-if [[ -s $datobs/${prefix_obs}.avcsam.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.avcsam.${suffix}          avhambufr
-fi
-if [[ -s $datobs/${prefix_obs}.avcspm.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.avcspm.${suffix}          avhpmbufr
-fi
+#if [[ -s $datobs/${prefix_obs}.sevcsr.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.sevcsr.${suffix}      ./seviribufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.cris.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.cris.${suffix}      ./crisbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.spssmi.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.spssmi.${suffix}   ./ssmirrbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.sptrmm.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.sptrmm.${suffix}   ./tmirrbufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.avcsam.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.avcsam.${suffix}          avhambufr
+#fi
+#if [[ -s $datobs/${prefix_obs}.avcspm.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.avcspm.${suffix}          avhpmbufr
+#fi
 fi # NOSAT
 
 # link bias correction, atmospheric and surface files
