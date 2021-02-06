@@ -1,6 +1,6 @@
 echo "running on $machine using $NODES nodes"
 
-export exptname=gfsv16_ifsreplay_control
+export exptname=gfsv16_ufsreplay_test
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -64,10 +64,11 @@ export logdir="${datadir}/logs/${exptname}"
 # comment this out and 3DVar will be run to generate bias coeffs
 export biascorrdir=${datadir}/biascor
 # directory with IFS analysis netcdf files
-export ifsanldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/ecanl
+export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/gfsv16anal
+export ifsanal="false"  # true if using IFS analysis, false if using UFS analysis
 
 # forecast resolution 
-export RES=768  
+export RES=192  
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
@@ -82,19 +83,21 @@ export LSOIL=4
 #export LSOIL=9 #RUC LSM
 
 # resolution dependent model parameters
-export LONB=2560
-export LATB=1280
-export JCAP=1278
+export LONB=768  
+export LATB=384  
+export JCAP=382   
 if [ $RES -eq 768 ]; then
    export dt_atmos=120
+   export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
 elif [ $RES -eq 384 ]; then
    export dt_atmos=225
+   export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
    export dt_atmos=450
-elif [ $RES -eq 128 ]; then
-   export dt_atmos=720
+   export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
    export dt_atmos=900
+   export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else
    echo "model time step for ensemble resolution C$RES_CTL not set"
    exit 1
@@ -124,23 +127,13 @@ export incdate="${scriptsdir}/incdate.sh"
 
 export fv3exec='fv3-nonhydro.exe'
 
-if [ "$machine" == 'theia' ]; then
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
-   export execdir=${scriptsdir}/exec_${machine}
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
-elif [ "$machine" == 'hera' ]; then
+if [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/ProdGSI
+   export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
+   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
+   export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
@@ -157,26 +150,16 @@ elif [ "$machine" == 'gaea' ]; then
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-elif [ "$machine" == 'wcoss' ]; then
-   export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
-   export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
-   export FIXFV3=${fv3gfspath}/fix_fv3
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
-   export execdir=${scriptsdir}/exec_${machine}
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
 else
    echo "${machine} unsupported machine"
    exit 1
 fi
 
-export ANAVINFO=${fixgsi}/global_anavinfo.l127.txt
-export HYBENSINFO=${fixgsi}/global_hybens_info.l127.txt
-export CONVINFO=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b_retro2d/fix/fix_gsi/gfsv16_historical/global_convinfo.txt.2019021900
-export OZINFO=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b_retro2d/fix/fix_gsi/global_ozinfo.txt
-export SATINFO=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b_retro2d/fix/fix_gsi/global_satinfo.txt
+export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt
+export CONVINFO=$fixgsi/global_convinfo.txt
+export OZINFO=$fixgsi/global_ozinfo.txt
+export SATINFO=$fixgsi/global_satinfo.txt
 
 # parameters for GSI
 export aircraft_bc=.true.

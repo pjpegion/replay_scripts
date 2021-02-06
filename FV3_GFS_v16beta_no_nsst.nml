@@ -10,7 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = F
-  ccpp_suite = "FV3_GFS_v16beta"
+  ccpp_suite = "FV3_GFS_v16beta_no_nsst"
   fdiag = 3
 /
 
@@ -66,7 +66,7 @@
   beta = 0,
   a_imp = 1.0,
   p_fac = 0.1,
-  k_split  = 2,
+  k_split  = 1,
   n_split  = 6,
   nwat = 6,
   na_init = NA_INIT,
@@ -99,6 +99,7 @@
   dry_mass=98320.0,
   do_sat_adj = .true.,
   consv_am = F,
+  consv_te = 1,
   fill = T,
   dwind_2d = F,
   print_freq = 6,
@@ -129,8 +130,7 @@
   ialb           = 1
   iems           = 1
   IAER           = 5111
-  iovr_lw        = 3
-  iovr_sw        = 3
+  iovr           = 3
   icliq_sw       = 2
   ico2           = 2
   isubc_sw       = 2
@@ -149,7 +149,7 @@
   lheatstrg      = T
   random_clds    = .false.
   trans_trac     = T
-  cnvcld         = .true.
+  cnvcld         = .false.
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
@@ -172,7 +172,7 @@
   debug          = T
   lgfdlmprad     = .true.
   effr_in        = .true.
-  cdmbgwd        = 4.0,0.15,1.0,1.0
+  cdmbgwd        = CDMBGWD
   psautco        = 0.0008,0.0005
   prautco        = 0.00015,0.00015
   h2o_phys       = T

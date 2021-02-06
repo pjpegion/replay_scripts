@@ -990,18 +990,6 @@ for loop in $loops; do
             export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
             ls -l pe*${type}_${loop}*nc4
             nodecount=$((nodecount+1))
-            if [ ! -z $SLURM_JOB_ID ] && [ "$machine" == 'theia' ]; then
-               node=`head -$nodecount $NODEFILE | tail -1`
-               export HOSTFILE=hostfile_${nodecount}
-               /bin/rm -f $HOSTFILE
-               n=1
-               while [ $n -le $nprocs ]; do
-                  echo $node >> $HOSTFILE
-                  n=$((n+1))
-               done
-               echo "contents of hostfile_${nodecount}..."
-               cat $HOSTFILE
-            fi
             sh ${scriptsdir}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
             #sh ${scriptsdir}/runmpi 1> nc_diag_cat_${type}_${string}.out &
             if [ $nodecount -eq $totnodes ]; then

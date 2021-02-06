@@ -106,21 +106,8 @@ endif # do_cleanup = true
 
 cd $homedir
 if ( $save_hpss == 'true' ) then
-if ( ! -z $SLURM_JOB_ID ) then
    cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
-else
-   cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
-endif
-if ( ! -z $SLURM_JOB_ID )  then
-   #sbatch --export=ALL job_hpss.sh
    sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir} job_hpss.sh
-else if ( $machine == 'wcoss' ) then
-   bsub -env "all" < job_hpss.sh
-else if ( $machine == 'gaea' ) then
-   msub -V job_hpss.sh
-else
-   qsub -V job_hpss.sh
-endif
 endif
 
 endif # skip to here if fg_only = true
@@ -143,22 +130,8 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    if ($resubmit == "true") then
       echo "resubmit script"
       echo "machine = $machine"
-      if ( $?SLURM_JOB_ID ) then
-         cat ${machine}_preamble_slurm config.sh >! job.sh
-      else
-         cat ${machine}_preamble config.sh >! job.sh
-      endif
-      if ( $?SLURM_JOB_ID ) then
-          sbatch --export=ALL job.sh
-      else if ($machine == 'wcoss') then
-          bsub < job.sh
-      else if ($machine == 'gaea') then
-          msub job.sh
-      else if ($machine == 'cori') then
-          sbatch job.sh
-      else
-          qsub job.sh
-      endif
+      cat ${machine}_preamble_slurm config.sh >! job.sh
+      sbatch --export=ALL job.sh
    endif
 endif
 

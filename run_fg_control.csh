@@ -15,15 +15,6 @@ setenv nprocs `expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
 echo "mpitaskspernode = $mpitaskspernode"
-if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
-   if ($OMP_NUM_THREADS == 1) then
-      setenv HOSTFILE $PBS_NODEFILE
-   else
-      setenv HOSTFILE ${datapath2}/hostfile_control
-      awk "NR%${OMP_NUM_THREADS} == 1" ${PBS_NODEFILE} >&! $HOSTFILE
-   endif
-   echo "HOSTFILE = $HOSTFILE"
-endif
 
 echo "RES = $RES"
 echo "write_groups = $write_groups"

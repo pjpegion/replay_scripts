@@ -189,12 +189,22 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       export increment_file="fv3_increment${fh}.nc"
       fhtmp=`expr $fh \- $ANALINC`
       analdate_tmp=`$incdate $analdate $fhtmp`
-      export analfile="${ifsanldir}/IFSANALreplay_ics_${analdate_tmp}.nc"
-      echo "create ${increment_file} from ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} and ${analfile}"
-      /bin/rm -f ${increment_file}
       threads_save=$OMP_NUM_THREADS
       export OMP_NUM_THREADS=8
-      export "PGM=${scriptsdir}/calc_increment.py ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file}"
+      export fgfile=${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}
+      if [ $ifsanal == "true" ]; then
+         export analfile="${replayanaldir}/IFSANALreplay_ics_${analdate_tmp}.nc"
+         echo "create ${increment_file} from ${fgfile} and ${analfile}"
+         /bin/rm -f ${increment_file}
+         export "PGM=${scriptsdir}/calc_increment.py ${fgfile} ${analfile} ${increment_file}"
+      else
+         echo "create ${increment_file}"
+         /bin/rm -f ${increment_file}
+         # last two args:  no_mpinc no_delzinc
+         export analfile="${replayanaldir}/C${RES}_atmanl_${analdate_tmp}.nc"
+         echo "create ${increment_file} from ${fgfile} and ${analfile}"
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
+      fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -272,11 +282,11 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-#fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
-fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
+fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
 #fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.nst_sst.grb
-#fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
-fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
+fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
 #fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ice_fraction.grb
 fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
 fnsnog=${obs_datapath}/gdas.${yearprev}${monthprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
@@ -455,6 +465,7 @@ sed -i -e "s/LEVS/${LEVS}/g" input.nml
 sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
 sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/WARM_START/${warm_start}/g" input.nml
+sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/NA_INIT/${na_init}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
