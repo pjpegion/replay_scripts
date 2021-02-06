@@ -3,14 +3,6 @@
 
 if ( ! $?charnanal2 ) setenv charnanal2 $charnanal
 
-if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
-   if (! $?hostfilein) then
-     setenv hostfilein $PBS_NODEFILE
-     setenv NODEFILE $datapath2/nodefile_observer
-   endif
-   cat $hostfilein | uniq > $NODEFILE
-endif
-
 setenv CO2DIR $fixgsi
 
 # charanal is an env var set in parent script
@@ -65,19 +57,6 @@ setenv OMP_NUM_THREADS $gsi_control_threads
 setenv OMP_STACKSIZE 2048M
 setenv nprocs `expr $cores \/ $OMP_NUM_THREADS`
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
-if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
-   setenv KMP_AFFINITY scatter
-   if ($OMP_NUM_THREADS > 1) then
-      setenv HOSTFILE $datapath2/machinefile_observer
-      /bin/rm -f $HOSTFILE
-      awk "NR%${gsi_control_threads} == 1" ${hostfilein} >&! $HOSTFILE
-   else
-      setenv HOSTFILE $hostfilein
-   endif
-   cat $HOSTFILE
-   wc -l $HOSTFILE
-   #setenv OMP_NUM_THREADS 1
-endif
 echo "running with $OMP_NUM_THREADS threads ..."
 
 set YYYYMMDD=`echo $analdatem1 | cut -c1-8`
