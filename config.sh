@@ -62,10 +62,13 @@ export logdir="${datadir}/logs/${exptname}"
 
 # directory with bias correction files for GSI
 # comment this out and 3DVar will be run to generate bias coeffs
-export biascorrdir=${datadir}/biascor
-# directory with IFS analysis netcdf files
-export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/gfsv16anal
-export ifsanal="false"  # true if using IFS analysis, false if using UFS analysis
+export biascorrdir=/scratch2/BMC/gsienkf/whitaker/biascor
+# directory with analysis netcdf files
+#export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
+#export analfileprefix="C192_ifsanl"
+export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/gfsv16ifsanal
+export analfileprefix="C192_ufsanl"
+export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
 # forecast resolution 
 export RES=192  

@@ -201,7 +201,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          echo "create ${increment_file}"
          /bin/rm -f ${increment_file}
          # last two args:  no_mpinc no_delzinc
-         export analfile="${replayanaldir}/C${RES}_atmanl_${analdate_tmp}.nc"
+         export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
          export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
       fi
