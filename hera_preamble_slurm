@@ -2,10 +2,10 @@
 #SBATCH -q debug
 #SBATCH -t 00:30:00
 #SBATCH -A gsienkf
-#SBATCH -N 4    
-#SBATCH -J gfsv16_ufsreplay_test
-#SBATCH -e gfsv16_ufsreplay_test.err
-#SBATCH -o gfsv16_ufsreplay_test.out
+#SBATCH -N 8    
+#SBATCH -J ufs_era5_replay_test
+#SBATCH -e ufs_era5_replay_test.err
+#SBATCH -o ufs_era5_replay_test.out
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
 export machine='hera'
@@ -18,6 +18,12 @@ if [ $NODES -eq 4 ]; then
   export write_groups=4 # write groups for control forecast.
   export write_tasks=4
   export layout="6,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 8 ]; then
+  export control_threads=1
+  export control_proc=320
+  export write_groups=4 # write groups for control forecast.
+  export write_tasks=8
+  export layout="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 30 ]; then
   # 30 nodes, 4 threads
   export control_threads=4 
@@ -49,4 +55,4 @@ else
   exit 1
 fi
 
-export gsi_control_threads=2
+export gsi_control_threads=4
