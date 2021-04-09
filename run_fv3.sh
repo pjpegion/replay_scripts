@@ -5,17 +5,14 @@ source $MODULESHOME/init/sh
 
 if [ "$machine" == 'hera' ]; then
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   #module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
-   module load netcdf_parallel/4.7.4
-   module load esmf/8.0.0_ParallelNetCDF
-   #module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-   #module load netcdfp/4.7.4
-   #module load esmflocal/8.0.1.08bs
-   export LD_LIBRARY_PATH="/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/FV3/ccpp/lib:${LD_LIBRARY_PATH}"
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge 
@@ -74,6 +71,7 @@ export yeara=`echo $analdate |cut -c 1-4`
 export mona=`echo $analdate |cut -c 5-6`
 export daya=`echo $analdate |cut -c 7-8`
 export houra=`echo $analdate |cut -c 9-10`
+echo "analdatem1 $analdatem1"
 export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
@@ -282,14 +280,14 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.sstgrb
 #fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
 #fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.nst_sst.grb
-fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.engicegrb
 #fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
 #fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ice_fraction.grb
-fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/gdas.${yearprev}${monthprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb
+fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -532,7 +530,7 @@ fi
 # also move history files if copy_history_files is set.
 if [ ! -z $copy_history_files ]; then
   mkdir -p ${DATOUT}/${charnanal}
-  /bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
+  #/bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
   # copy with compression
   #n=1
   #while [ $n -le 6 ]; do

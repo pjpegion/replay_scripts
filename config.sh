@@ -1,6 +1,6 @@
 echo "running on $machine using $NODES nodes"
 
-export exptname=gfsv16_ufsreplay_test
+export exptname=ufs_replay_era5
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -33,7 +33,7 @@ elif [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    source $MODULESHOME/init/sh
    module purge
    module load intel/18.0.5.274
@@ -66,12 +66,12 @@ export biascorrdir=/scratch2/BMC/gsienkf/whitaker/biascor
 # directory with analysis netcdf files
 #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
 #export analfileprefix="C192_ifsanl"
-export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/gfsv16ifsanal
-export analfileprefix="C192_ufsanl"
+export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C384
+export analfileprefix="C384_era5anl"
 export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
 # forecast resolution 
-export RES=192  
+export RES=384  
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
@@ -86,9 +86,9 @@ export LSOIL=4
 #export LSOIL=9 #RUC LSM
 
 # resolution dependent model parameters
-export LONB=768  
-export LATB=384  
-export JCAP=382   
+export LONB=1536 
+export LATB=768  
+export JCAP=766   
 if [ $RES -eq 768 ]; then
    export dt_atmos=120
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
@@ -170,4 +170,4 @@ export use_prepb_satwnd=.false.
 
 cd $scriptsdir
 echo "run main driver script"
-csh main.csh
+sh main.sh
