@@ -2,12 +2,12 @@
 # single resolution hybrid using jacobian in the EnKF
 
 # allow this script to submit other scripts on WCOSS
-unsetLSB_SUB_RES_REQ 
+unset LSB_SUB_RES_REQ 
 
 source $datapath/fg_only.sh # define fg_only variable (true for cold start).
 echo "nodes = $NODES"
 
-export startupenv="${datapath}/analdate.csh"
+export startupenv="${datapath}/analdate.sh"
 source $startupenv
 
 #------------------------------------------------------------------------
@@ -88,7 +88,7 @@ if [ $fg_only == 'false' ]; then
 fi
 
 echo "$analdate run high-res control first guess `date`"
-csh ${scriptsdir}/run_fg_control.csh  > ${current_logdir}/run_fg_control.out   2>&1
+sh ${scriptsdir}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out   2>&1
 control_done=`cat ${current_logdir}/run_fg_control.log`
 if [ $control_done == 'yes' ]; then
   echo "$analdate high-res control first-guess completed successfully `date`"
