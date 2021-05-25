@@ -66,8 +66,8 @@ export biascorrdir=/scratch2/BMC/gsienkf/whitaker/biascor
 # directory with analysis netcdf files
 #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
 #export analfileprefix="C192_ifsanl"
-export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C384
-export analfileprefix="C384_era5anl"
+export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C96
+export analfileprefix="C96_era5anl"
 export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
 # forecast resolution 
