@@ -71,7 +71,7 @@ export analfileprefix="C384_era5anl"
 export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
 # forecast resolution 
-export RES=384  
+export RES=96   
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
@@ -86,9 +86,12 @@ export LSOIL=4
 #export LSOIL=9 #RUC LSM
 
 # resolution dependent model parameters
-export LONB=1536 
-export LATB=768  
-export JCAP=766   
+#export LONB=1536 
+#export LATB=768  
+#export JCAP=766   
+export JCAP=188 
+export LONB=384   
+export LATB=192  
 if [ $RES -eq 768 ]; then
    export dt_atmos=120
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
@@ -100,6 +103,7 @@ elif [ $RES -eq 192 ]; then
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
    export dt_atmos=900
+   #export dt_atmos=450
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else
    echo "model time step for ensemble resolution C$RES_CTL not set"

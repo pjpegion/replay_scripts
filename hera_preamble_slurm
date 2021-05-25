@@ -3,9 +3,9 @@
 #SBATCH -t 00:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 8    
-#SBATCH -J ufs_era5_replay_test
-#SBATCH -e ufs_era5_replay_test.err
-#SBATCH -o ufs_era5_replay_test.out
+#SBATCH -J ufs_era5_replay
+#SBATCH -e ufs_era5_replay.err
+#SBATCH -o ufs_era5_replay.out
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
 export machine='hera'
