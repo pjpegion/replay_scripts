@@ -1,0 +1,51 @@
+#!/bin/sh
+#SBATCH -q batch
+##SBATCH -q batch
+#SBATCH -t 01:00:00
+#SBATCH -A gsienkf
+#SBATCH -N 12   
+#SBATCH -J ufs_era5_replay
+#SBATCH -e ufs_era5_replay.err
+#SBATCH -o ufs_era5_replay.out
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+export machine='hera'
+
+# for control forecast
+if [ $NODES -eq 2 ]; then
+  # 4 nodes 1thread
+  export control_threads=1
+  export control_proc=80
+  export write_groups=1 # write groups for control forecast.
+  export write_tasks=6
+  export layout="3,2" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export nprocs_cpl=42
+  export nprocs_atm=42
+  export nprocs_ice=8 
+  export nprocs_ocn=30
+elif [ $NODES -eq 4 ]; then
+  export control_threads=1
+  export control_proc=160
+  export write_groups=2 # write groups for control forecast.
+  export write_tasks=6
+  export layout="4,3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export nprocs_cpl=72
+  export nprocs_atm=84
+  export nprocs_ice=16
+  export nprocs_ocn=60
+elif [ $NODES -eq 12 ]; then # 0.25 degree setup
+  export control_threads=1
+  export control_proc=480
+  export write_groups=1 # write groups for control forecast.
+  export write_tasks=24
+  export layout="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export nprocs_cpl=288
+  export nprocs_atm=312
+  export nprocs_ice=48
+  export nprocs_ocn=120
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+export gsi_control_threads=4
