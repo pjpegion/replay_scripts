@@ -1,7 +1,15 @@
 echo "running on $machine using $NODES nodes"
 
+# forecast resolution 
+# 1/4 deg
+export RES=384  
+export OCNRES=mx025
+# 1-deg
+#export RES=96   
+#export OCNRES=mx100
+
 #export skip_calc_increment='true'
-export exptname=coupled_iau_0p25deg
+export exptname=tst_iau
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -65,10 +73,6 @@ export logdir="${datadir}/logs/${exptname}"
 # comment this out and 3DVar will be run to generate bias coeffs
 export biascorrdir=/scratch2/BMC/gsienkf/whitaker/biascor
 
-# forecast resolution 
-export RES=384  
-export OCNRES=mx025
-
 # directory with analysis netcdf files
 #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
 #export analfileprefix="C192_ifsanl"
@@ -119,9 +123,12 @@ fi
 if [ "$OCNRES" == 'mx100' ]; then
    export dt_ocn=3600
    export ORES3='100'
-else
+elif [ "$OCNRES" == 'mx025' ]; then
    export dt_ocn=1800
    export ORES3='025'
+else
+   echo "$OCNRES is not supported, plesae try mx100 or mx025"
+   exit 1
 fi
 
 export LONA=$LONB

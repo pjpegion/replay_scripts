@@ -1,6 +1,7 @@
 #!/bin/sh
+##SBATCH -q debug
+##SBATCH -t 00:30:00
 #SBATCH -q batch
-##SBATCH -q batch
 #SBATCH -t 01:00:00
 #SBATCH -A gsienkf
 #SBATCH -N 12   

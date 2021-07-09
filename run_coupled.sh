@@ -303,17 +303,7 @@ if [ "$OCNRES" == 'mx100' ];then
    ln -sf ${FIXmom}/KH_background_2d.nc .
    ln -sf ${FIXmom}/MOM_channels_SPEAR .
    ln -sf ${FIXmom}/seawifs_1998-2006_smoothed_2X.nc .
-   touch MOM_override
-   if [ $houra -eq 12 ]; then
-      /bin/cp -f ${scriptsdir}/MOM_input_${OCNRES}.iau MOM_input
-   else
-      /bin/cp -f ${scriptsdir}/MOM_input_${OCNRES} MOM_input
-   fi
   
-   #determin x and y block sized
-   DT_OCN_FAST=`expr $dt_ocn \/ 2`  # split N-S in 2 procs
-   sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
-   sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
 elif [ "$OCNRES" == 'mx025' ];then
 # temporarily point to Phil's directory
    ln -sf /scratch2/BMC/gsienkf/Philip.Pegion/UFS-datm/mx100/basedir/INPUT/interpolate_zgrid_ORAS5_75L.nc .
@@ -330,23 +320,23 @@ elif [ "$OCNRES" == 'mx025' ];then
    ln -sf ${FIXmom}/MOM_channels_global_025 .
    ln -sf ${FIXmom}/MOM_layout .
    ln -sf ${FIXmom}/seawifs-clim-1997-2010.1440x1080.v20180328.nc .
-   touch MOM_override
-   /bin/cp -f ${scriptsdir}/MOM_input_${OCNRES} MOM_input
-   if [ $houra -eq 12 ]; then
-      OCN_IAU=True
-   else
-      OCN_IAU=False
-   fi
-  
-   #determin x and y block sized
-   DT_OCN_FAST=`expr $dt_ocn \/ 2`  # split N-S in 2 procs
-   sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
-   sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
-   sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input
 else
    echo "other ocean resolutions not supported yet"
    exit 1
 fi
+
+# if analysis time is 12Z, then replay to ORAS-5
+if [ $houra -eq 12 ]; then
+   OCN_IAU=True
+else
+   OCN_IAU=False
+fi
+/bin/cp -f ${scriptsdir}/MOM_input_${OCNRES} MOM_input
+DT_OCN_FAST=`expr $dt_ocn \/ 2`  # split N-S in 2 procs
+sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
+sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
+sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input
+touch MOM_override
 cd ..
 
 
