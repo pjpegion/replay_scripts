@@ -130,7 +130,11 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == "true" ]; then
       echo "resubmit script"
       echo "machine = $machine"
-      cat ${machine}_preamble_slurm config.sh > job.sh
+      if [ "$coupled"  == 'ATM_OCN_ICE' ];then
+         cat ${machine}_preamble_cpld_slurm config.sh > job.sh
+      else
+         cat ${machine}_preamble_slurm config.sh > job.sh
+      fi
       sbatch --export=ALL job.sh
    fi
 fi
