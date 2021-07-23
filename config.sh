@@ -9,7 +9,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=tst_iau
+export exptname=C384cpld_replay_test
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -17,8 +17,8 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-#export replay_run_observer='false'
-export replay_run_observer='true'
+export replay_run_observer='false'
+#export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
@@ -52,11 +52,41 @@ elif [ "$machine" == 'hera' ]; then
    module load netcdf_parallel/4.7.4
    module load esmf/8.0.0_ParallelNetCDF
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}
-   export datadir=/lustre/f1/${USER}
+   export basedir=/lustre/f2/dev/${USER}
+   export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
-   export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
+   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
+   source /lustre/f2/pdata/esrl/gsd/contrib/lua-5.1.4.9/init/init_lmod.sh
+   #source $MODULESHOME/init/sh
+   module load PrgEnv-intel/6.0.5
+   module rm intel
+   module rm cray-mpich
+   module rm netcdf
+   module load intel/18.0.6.288
+   module load cray-mpich/7.7.11
+   module load cray-python/3.7.3.2
+   # Needed at runtime:
+   module load alps
+   module use /lustre/f2/pdata/ncep_shared/cmake-3.20.1/modulefiles
+   module load cmake/3.20.1
+   module use /lustre/f2/pdata/esrl/gsd/ufs/hpc-stack-v1.1.0/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.6.288
+   module load hpc-cray-mpich/7.7.11
+   module load prod_util/1.2.2
+   module load bufr/11.4.0
+   module load ip/3.3.3
+   module load nemsio/2.5.2
+   module load sfcio/1.4.1
+   module load sigio/2.3.2
+   module load sp/2.3.3
+   module load w3nco/2.4.1
+   module load w3emc/2.7.3
+   module load bacio/2.4.1
+   module load crtm/2.3.0
+   module load netcdf/4.7.4
+   module load wgrib
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
    export datadir=$basedir
@@ -71,17 +101,18 @@ export logdir="${datadir}/logs/${exptname}"
 
 # directory with bias correction files for GSI
 # comment this out and 3DVar will be run to generate bias coeffs
-export biascorrdir=/scratch2/BMC/gsienkf/whitaker/biascor
+export biascorrdir=${basedir}/biascor
 
 # directory with analysis netcdf files
 #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
 #export analfileprefix="C192_ifsanl"
-export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
+export replayanaldir=${basedir}/era5anl/C${RES}
+export ocnanaldir=${basedir}/oras5
 export analfileprefix="C${RES}_era5anl"
 
 export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
-export NOSAT="NO" # if yes, no radiances assimilated
+export NOSAT="YES" # if yes, no radiances assimilated
 export NOCONV="NO"
 #  nst_gsi  - indicator to control the Tr Analysis mode: 0 = no nst info in gsi at all;
 #                                                        1 = input nst info, but used for monitoring only
@@ -179,15 +210,18 @@ if [ "$machine" == 'hera' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
-# warning - these paths need to be updated on gaea
-   export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-## export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
-## export gsipath=${basedir}/ProdGSI
+   export fv3gfspath=${basedir}/fix_UFSp6
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
+   export FIXgsm=$FIXGLOBAL
+   export RT_DIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/
+   export FIXcice=$RT_DIR/CICE_FIX/${ORES3}
+   export FIXmom=$RT_DIR/MOM6_FIX/${ORES3}
+   export FIXcpl=$RT_DIR/CPL_FIX/aC${RES}o${ORES3}
+   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
+   export gsipath=${basedir}/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.3.0/fix
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
@@ -203,8 +237,21 @@ export OZINFO=$fixgsi/global_ozinfo.txt
 export SATINFO=$fixgsi/global_satinfo.txt
 
 # parameters for GSI
-export aircraft_bc=.true.
+export aircraft_bc=.false.
 export use_prepb_satwnd=.false.
+export imp_physics=11 # used by GSI, not model
+if [ $LEVS -eq 64 ]; then
+  export nsig_ext=12
+  export gpstop=50
+  export GRIDOPTS="nlayers(63)=3,nlayers(64)=6,"
+elif [ $LEVS -eq 127 ]; then
+  export nsig_ext=56
+  export gpstop=55
+  export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
+else
+  echo "LEVS must be 64 or 127"
+  exit 1
+fi
 
 # new namelist settings for coupled/not-coupled
 if [ "$coupled" == 'NO' ]; then
