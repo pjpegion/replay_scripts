@@ -112,8 +112,8 @@ ODA_TEMPINC_VAR = "pt_inc"      ! default = "ptemp_inc"
 ODA_SALTINC_VAR = "s_inc"       ! default = "sal_inc"
                                 ! The name of the salinity inc. variable in
                                 ! ODA_INCUPD_FILE.
-ODA_INTDINC_VAR = "p_inc"        ! default = "p_inc"
-                                ! The name of the int. depth inc. variable in
+ODA_THK_VAR = "h_fg"            ! default = "h"
+                                ! The name of the thickness variable in
                                 ! ODA_INCUPD_FILE.
 
 ODA_UINC_VAR = "u_inc"          ! default = "u_inc"

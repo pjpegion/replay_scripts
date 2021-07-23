@@ -46,19 +46,19 @@ elif [ "$machine" == 'orion' ]; then
    module load esmflocal/8.0.0.para
    module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
-   module purge
-   module load PrgEnv-intel/6.0.3
-   module rm intel
-   module load intel/18.0.3.222
-   #module load cray-netcdf-hdf5parallel/4.6.1.3
-   #module load cray-hdf5-parallel/1.10.2.0
-   module load cray-netcdf
-   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   module load esmflocal/8_0_48b
-   module load nco/4.6.4
-   module load wgrib
+   #module purge
+   #module load PrgEnv-intel/6.0.3
+   #module rm intel
+   #module load intel/18.0.3.222
+   ##module load cray-netcdf-hdf5parallel/4.6.1.3
+   ##module load cray-hdf5-parallel/1.10.2.0
+   #module load cray-netcdf
+   #module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
+   #module load esmflocal/8_0_48b
+   #module load nco/4.6.4
+   #module load wgrib
    export WGRIB=`which wgrib`
-   export HDF5_DISABLE_VERSION_CHECK=1
+   #export HDF5_DISABLE_VERSION_CHECK=1
 fi
 #module list
 
@@ -199,17 +199,17 @@ ln -sf ${FIXcice}/mesh.${OCNRES}.nc mesh.${OCNRES}.nc
 /bin/cp -f ${scriptsdir}/ice_in_${OCNRES} ice_in
 if [ "$cold_start" == "true" ]; then
   ice_date=${analdate}
-  istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
+  #istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
   run_type='initial'
   run_id='cpcice'
   ice_ic='cice5_model_0.25.res_2015120100.nc'
   use_restart_time='.false.'
 else
-  istep0=0
+  #istep0=0
   run_type='continue'
   run_id='unknown'
   ice_ic='none'
-  use_restart_time='.true.'
+  use_restart_time='.false.'
 fi
 #determin x and y block sized
 if [ $OCNRES == 'mx100' ]; then
@@ -222,8 +222,11 @@ else
    echo "higher resolution not supported"
    exit 2
 fi
-sed -i -e "s/YYYY/${year}/g" ice_in
-sed -i -e "s/ISTEP0/${istep0}/g" ice_in
+sed -i -e "s/YYYY/${year_start}/g" ice_in
+sed -i -e "s/MM/${mon_start}/g" ice_in
+sed -i -e "s/DD/${day_start}/g" ice_in
+sed -i -e "s/SECS/${secondofday}/g" ice_in
+sed -i -e "s/SECS/${secs}/g" ice_in
 sed -i -e "s/DT_ICE/${dt_atmos}/g" ice_in
 sed -i -e "s/RUN_TYPE/${run_type}/g" ice_in
 sed -i -e "s/RUN_ID/${run_id}/g" ice_in
@@ -253,7 +256,6 @@ fi
 
 # Grid and orography data
 n=1
-RT_DIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20210518
 while [ $n -le 6 ]; do
  ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
  ln -fs ${RT_DIR}/FV3_input_frac/C${RES}_L${LEVS}.${OCNRES}_frac/oro_data.tile${n}.nc oro_data.tile${n}.nc
@@ -287,9 +289,9 @@ done
 cd INPUT
 if [ "$OCNRES" == 'mx100' ];then
 # temporarily point to Phil's directory
-   ln -sf /scratch2/BMC/gsienkf/Philip.Pegion/UFS-datm/mx100/basedir/INPUT/interpolate_zgrid_ORAS5_75L.nc .
-   ln -sf /scratch2/BMC/gsienkf/Philip.Pegion/UFS-datm/mx100/basedir/INPUT/runoff.daitren.clim.1deg.nc .
-   ln -sf /scratch2/BMC/gsienkf/Philip.Pegion/UFS-datm/mx100/basedir/INPUT/salt_restore.nc .
+   ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc .
+   ln -sf ${scriptsdir}/INPUT/runoff.daitren.clim.1deg.nc .
+   ln -sf ${scriptsdir}/INPUT/salt_restore.nc .
    ln -sf ${FIXmom}/hycom1_75_800m.nc .
    ln -sf ${FIXmom}/land_mask.nc .
    ln -sf ${FIXmom}/layer_coord.nc .
@@ -306,7 +308,7 @@ if [ "$OCNRES" == 'mx100' ];then
   
 elif [ "$OCNRES" == 'mx025' ];then
 # temporarily point to Phil's directory
-   ln -sf /scratch2/BMC/gsienkf/Philip.Pegion/UFS-datm/mx100/basedir/INPUT/interpolate_zgrid_ORAS5_75L.nc .
+   ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc .
    ln -sf ${FIXmom}/runoff.daitren.clim.1440x1080.v20180328.nc .
    ln -sf ${FIXmom}/hycom1_75_800m.nc .
    ln -sf ${FIXmom}/layer_coord.nc .
@@ -382,6 +384,12 @@ fi
 # only do IAU on ocean for the 12z cycle
    if [ $houra -eq 12 ]; then
       sh ${scriptsdir}/calc_ocean_increment.sh
+      if [ $? -ne 0 ]; then
+         echo "calc_ocean_increment failed..."
+         exit 1
+      else
+         echo "done calculating ocean increment... `date`"
+      fi
    fi
 
 # setup model namelist
@@ -458,6 +466,8 @@ fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.engi
 #fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ice_fraction.grb
 fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb
 fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb
+echo "running $WGRIB ${fnsnoa} to see if there are any $snoid messages"
+$WGRIB ${fnsnoa}
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -568,6 +578,7 @@ RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
 output_1st_tstep_rst:    .false.
+atm_coupling_interval_sec: ${dt_atmos}
 calendar:                'julian'
 cpl:                     T
 memuse_verbose:          F
@@ -621,8 +632,8 @@ if [ "$cold_start" == "true" ]; then
   make_nh=F
   ocn_start=n
 # calculate istep0 for ice model initialization, which is timesteps from 1st of year
-  ice_date=${year_start}010100
-  istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
+  #ice_date=${year_start}010100
+  #istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
 else
   warm_start=T
   externalic=F

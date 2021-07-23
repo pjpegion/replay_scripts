@@ -26,16 +26,17 @@ real,allocatable,dimension(:,:,:) :: pt_fg,h_fg,s_fg,u_fg,v_fg,depth
 real,allocatable,dimension(:) :: z_anl,z_fg
 real(kind=8),allocatable,dimension(:) :: lath,lonh,latq,lonq,new_prof
 character*10 :: analdate
-character*240 :: expt
+character*240 :: expt,oras5path
 character*4 :: yyyy
 character*2 :: mm,dd
 
 nargs=iargc()
-if (nargs.EQ.2) then
+if (nargs.EQ.3) then
    call getarg(1,analdate)
    call getarg(2,expt)
+   call getarg(3,oras5path)
 else
-   print*,'usage calc_increment <date> <expt path>'
+   print*,'usage calc_increment <date> <expt path> <oras5 path>'
    STOP
 endif
 yyyy=analdate(1:4)
@@ -46,7 +47,7 @@ dd=analdate(7:8)
 path_fg=trim(expt)//'/'
 fname_fg1='ocn_'//yyyy//'_'//mm//'_'//dd//'_10.nc'
 fname_fg2='ocn_'//yyyy//'_'//mm//'_'//dd//'_13.nc'
-path_anl='/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/mx025/'//yyyy//mm//dd//'/'
+path_anl=trim(oras5path)//'/mx025/'//yyyy//mm//dd//'/'
 fname_anl='ORAS5.mx025.ic.nc'
 fname_inc='oras5_increment.nc'
 cct=1
@@ -168,8 +169,8 @@ call check(NF90_PUT_ATT(ncid_inc,varid1,"units","degC"),cct)
 call check(NF90_DEF_VAR(ncid_inc,"s_inc",NF90_DOUBLE,(/xt_dim_id, yt_dim_id ,zl_dim_id/), varid2),cct)
 call check(NF90_PUT_ATT(ncid_inc,varid2,"long_name","ORAS5 Salinity increments"),cct)
 call check(NF90_PUT_ATT(ncid_inc,varid2,"units","PPT"),cct)
-call check(NF90_DEF_VAR(ncid_inc,"p_inc",NF90_DOUBLE,(/xt_dim_id, yt_dim_id ,zl_dim_id/), varid3),cct)
-call check(NF90_PUT_ATT(ncid_inc,varid3,"long_name","ORAS5 thickness increments"),cct)
+call check(NF90_DEF_VAR(ncid_inc,"h_fg",NF90_DOUBLE,(/xt_dim_id, yt_dim_id ,zl_dim_id/), varid3),cct)
+call check(NF90_PUT_ATT(ncid_inc,varid3,"long_name","Background thickness"),cct)
 call check(NF90_PUT_ATT(ncid_inc,varid3,"units","m"),cct)
 call check(NF90_DEF_VAR(ncid_inc,"u_inc",NF90_DOUBLE,(/xq_dim_id, yt_dim_id ,zl_dim_id/), varid4),cct)
 call check(NF90_PUT_ATT(ncid_inc,varid4,"long_name","ORAS5 Zonal velocity increments"),cct)
@@ -266,9 +267,7 @@ call interp1( pt_inc,s_inc,u_inc,v_inc,z_anl,depth,nx,ny,nz)
 
 call check(NF90_PUT_VAR(ncid_inc,varid1,pt_inc),cct)
 call check(NF90_PUT_VAR(ncid_inc,varid2,s_inc),cct)
-! tmp
-s_inc(:,:,:)=0.0
-call check(NF90_PUT_VAR(ncid_inc,varid3,s_inc),cct) ! pressure inc is zero for now
+call check(NF90_PUT_VAR(ncid_inc,varid3,h_fg),cct) ! first guess thicknesses
 call check(NF90_PUT_VAR(ncid_inc,varid4,u_inc),cct)
 call check(NF90_PUT_VAR(ncid_inc,varid5,v_inc),cct)
 call check(NF90_CLOSE(ncid_inc),cct)
@@ -284,7 +283,7 @@ integer,intent(inout) :: ct
    include 'netcdf.inc'
 if(status /= 0) then
     print*,' check netcdf status=',status,ct
-    STOP
+    STOP 99
 endif
 ct=ct+1
 end subroutine check

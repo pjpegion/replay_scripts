@@ -1,8 +1,10 @@
 &setup_nml
     days_per_year  = 365
     use_leap_years = .true.
-    year_init      = 2015
-    istep0         = ISTEP0
+    year_init      = YYYY
+    month_init     = MM
+    day_init       = DD
+    sec_init       = SECS
     dt             = DT_ICE
     npt            = 999
     ndtd           = 1
@@ -32,7 +34,7 @@
     lonpnt(1)      =  0.
     latpnt(2)      = -65.
     lonpnt(2)      = -45.
-    dbug           = .false.
+    debug_forcing  = .false.
     histfreq       = 'm','d','h','x','x'
     histfreq_n     =  0 , 1 , 0 , 1 , 1
     hist_avg       = .true.

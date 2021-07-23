@@ -284,7 +284,6 @@ if [[ "$HXONLY" != "YES" ]]; then
 else
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
 fi
-GRIDOPTS=""
 BKGVERR=""
 ANBKGERR=""
 JCOPTS=""
@@ -337,13 +336,13 @@ cat <<EOF > gsiparm.anl
    factqmin=0.0,factqmax=0.0,deltim=$DELTIM,
    tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
-   use_pbl=.false.,use_compress=.true.,nsig_ext=56,gpstop=55.,
+   use_pbl=.false.,use_compress=.true.,nsig_ext=$nsig_ext,gpstop=$gpstop.,
    use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
    $SETUP
  /
  &GRIDOPTS
    JCAP_B=$JCAP_B,JCAP=$JCAP_A,NLAT=$NLAT,NLON=$LONA,nsig=$LEVS,
-   regional=.false.,nlayers(63)=1,nlayers(64)=1,
+   regional=.false.,
    $GRIDOPTS
  /
  &BKGERR

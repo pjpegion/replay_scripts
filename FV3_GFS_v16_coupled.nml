@@ -124,7 +124,6 @@
   fhcyc          = 0
   use_ufo        = T
   pre_rad        = F
-  ncld           = 5
   imp_physics    = 11
   pdfcld         = F
   fhswr          = 3600.
