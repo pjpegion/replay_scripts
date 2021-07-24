@@ -107,6 +107,7 @@ fi # do_cleanup = true
 cd $homedir
 if [ $save_hpss == 'true' ]; then
    cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
+   echo "submitting job_hpss.sh ..."
    sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir} job_hpss.sh
 fi
 
