@@ -41,10 +41,12 @@ cyc=$(echo $CDATE | cut -c9-10)
 export FNTSFA=${FNTSFA:-$DMPDIR/$CDATE/$CDUMP/${CDUMP}.t${cyc}z.rtgssthr.grb}
 export FNSNOA=${FNSNOA:-$DMPDIR/$CDATE/$CDUMP/${CDUMP}.t${cyc}z.snogrb_t1534.3072.1536}
 export FNACNA=${FNACNA:-$DMPDIR/$CDATE/$CDUMP/${CDUMP}.t${cyc}z.seaice.5min.blend.grb}
-export FSNOL=${FSNOL:-0}
+export FSNOL=${FSNOL:-0} # snow
+export FTSFS=${FTSFS:-0} # tsea
+export FAISS=${FAISS:-0} # sea ice
 export FSNOS=${FSNOS:-99999}
 
-export CYCLVARS=${CYCLVARS:-"FSNOL=$FSNOL,FSNOS=$FSNOS,"}
+export CYCLVARS=${CYCLVARS:-"FTSFS=$FTSFS,FAISS=$FAISS,FSNOL=$FSNOL,FSNOS=$FSNOS,"}
 
 if [ $DONST = "YES" ]; then
     export GSI_FILE=${GSI_FILE:-$COMOUT/dtfanl.nc}
