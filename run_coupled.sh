@@ -361,12 +361,24 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          /bin/rm -f ${increment_file}
          export "PGM=${scriptsdir}/calc_increment.py ${fgfile} ${analfile} ${increment_file}"
       else
+# usage:
+#   input files: filename_fg filename_anal (1st two command line args)
+#
+#   output files: filename_inc (3rd command line arg)
+
+#   4th command line arg is logical for controlling whether microphysics
+#   increment should not be computed. (no_mpinc)
+#   5th command line arg is logical for controlling whether delz
+#   increment should not be computed (no_delzinc)
+#   6th command line arg is logical for controlling whether humidity
+#   and microphysics vars should be tapered to zero in stratosphere.
+#   The vertical profile of the taper is controlled by ak_top and ak_bot.
          echo "create ${increment_file}"
          /bin/rm -f ${increment_file}
          # last two args:  no_mpinc no_delzinc
          export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F T"
       fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then

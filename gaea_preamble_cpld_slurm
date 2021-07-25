@@ -3,7 +3,7 @@
 #SBATCH -t 01:00:00
 #SBATCH -A nggps_psd
 #SBATCH --clusters c4
-#SBATCH -N 22   
+#SBATCH -N 11   
 #SBATCH -J ufs_era5_replay
 #SBATCH -e ufs_era5_replay.err
 #SBATCH -o ufs_era5_replay.out
@@ -68,12 +68,12 @@ elif [ $NODES -eq 22 ]; then # 0.25 degree setup
   export control_threads=1
   export control_proc=792
   export write_groups=4 # write groups for control forecast.
-  export write_tasks=18
+  export write_tasks=9
   export layout="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
   export nprocs_cpl=432 # layout*6
-  export nprocs_atm=504 # nprocs_cpl + write_tasks*write_groups
+  export nprocs_atm=468 # nprocs_cpl + write_tasks*write_groups
   export nprocs_ice=72
-  export nprocs_ocn=216
+  export nprocs_ocn=252
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
