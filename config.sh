@@ -122,6 +122,9 @@ export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
 export LSOIL=4
 #export LSOIL=9 #RUC LSM
+if [ $FHCYC -gt 0 ]; then
+    export skip_global_cycle='YES'
+fi
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ];then
@@ -170,6 +173,7 @@ export FHMIN=3
 export FHMAX=9
 export FHOUT=3
 export FHCYC=0
+export FRAC_GRID=F
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 

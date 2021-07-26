@@ -571,7 +571,7 @@ nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
 nst_anl=${nst_anl:-".true."}
 if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
    fntsfa='        ' # no input file, use GSI foundation temp
-   fnsnoa='        '
+   #fnsnoa='        '
    fnacna='        '
 fi
 
@@ -674,6 +674,13 @@ sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
 sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 sed -i -e "s/OCN_START/${ocn_start}/g" input.nml
+sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
+# gcycle related params
+sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
+sed -i -e "s/SSTFILE/${fntsfa}/g" input.nml
+sed -i -e "s/ICEFILE/${fnacna}/g" input.nml
+sed -i -e "s/SNOFILE/${fnsnoa}/g" input.nml
+sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
 cat input.nml
 ls -l INPUT
 # point to ice and ocean restart file
