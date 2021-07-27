@@ -257,11 +257,11 @@ fi
 # Grid and orography data
 n=1
 while [ $n -le 6 ]; do
- ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
- ln -fs ${RT_DIR}/FV3_input_frac/C${RES}_L${LEVS}.${OCNRES}_frac/oro_data.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXTILED/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  C${RES}_mosaic.nc
+ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_mosaic.nc  C${RES}_mosaic.nc
 ln -fs $FIXcpl/grid_spec.nc  grid_spec.nc
 cd ..
 #ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
@@ -269,17 +269,18 @@ cd ..
 ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
 ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
 # co2, ozone, surface emiss and aerosol data.
-ln -fs ${RT_DIR}/FV3_input_data/INPUT/solarconstant_noaa_an.txt solarconstant_noaa_an.txt
-ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXGLOBAL/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXGLOBAL/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXGLOBAL/co2dat_4a/global_co2historicaldata* ` ; do
+ln -fs $FIXGLOBAL/INPUT/solarconstant_noaa_an.txt solarconstant_noaa_an.txt
+ln -fs $FIXGLOBAL/INPUT/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
+ln -fs $FIXGLOBAL/INPUT/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
+ln -fs $FIXGLOBAL/INPUT/co2monthlycyc.txt                 co2monthlycyc.txt
+for file in `ls $FIXGLOBAL/INPUT/co2historicaldata* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
-ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
-for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
-done
+ln -fs $FIXGLOBAL/INPUT/aerosol.dat  aerosol.dat
+#ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
+#for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
+#   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+#done
 # for Thompson microphysics
 #ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
@@ -521,7 +522,6 @@ sed -i -e "s/RESTART_FREQ/${FHRESTART}/g" nems.configure
 if [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
-   export FIXfv3=$FIXFV3
    # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
    #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
    export CDATE=${analdate}
@@ -532,6 +532,7 @@ if [ -z $skip_global_cycle ]; then
    export FNTSFA="${fntsfa}"
    export FNSNOA="${fnsnoa}"
    export FNACNA="${fnacna}"
+   export FNMSKH="/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210614/FV3_input_data_ugwpv1/seaice_newland.grb"
    export CASE="C${RES}"
    export PGM="${execdir}/global_cycle"
    if [ $NST_GSI -gt 0 ]; then

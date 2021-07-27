@@ -214,11 +214,10 @@ if [ "$machine" == 'hera' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
-   export fv3gfspath=${basedir}/fix_UFSp6
-   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix_am
-   export FIXgsm=$FIXGLOBAL
    export RT_DIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/
+   export FIXFV3=$RT_DIR/FV3_input_data${RES}/INPUT
+   export FIXGLOBAL=$RT_DIR/FV3_input_data${RES}
+   export FIXgsm=$FIXGLOBAL # used by global_cycle driver script
    export FIXTILED=$RT_DIR/FV3_fix_tiled/C${RES}
    export FIXcice=$RT_DIR/CICE_FIX/${ORES3}
    export FIXmom=$RT_DIR/MOM6_FIX/${ORES3}

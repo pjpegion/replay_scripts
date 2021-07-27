@@ -16,6 +16,7 @@ hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
 cd ${datapath2}/control
 find -type l -delete # delete symlinks
+/bin/rm -f core
 cd ../..
 $hsi mkdir ${hsidir}
 $htar -cvf ${hsidir}/${analdate}.tar ${analdate}

@@ -19,7 +19,6 @@ export NWPROD=${NWPROD:-$pwd}
 export DMPDIR=${DMPDIR:-$NWPROD}
 export BASE_GSM=${BASE_GSM:-$NWPROD/global_shared}
 export FIXgsm=${FIXgsm:-$BASE_GSM/fix/fix_am}
-export FIXfv3=${FIXfv3:-$BASE_GSM/fix/fix_fv3_gmted2010}
 
 ntiles=${ntiles:-6}
 DONST=${DONST:-"NO"}
@@ -77,8 +76,8 @@ for n in $(seq 1 $ntiles); do
   #ln -fs $COMOUT/$PDY.${cyc}0000.sfcanl_data.tile${n}.nc  $DATA/fnbgso.00$n
   ln -fs $COMIN/sfc_data.tile${n}.nc      $DATA/fnbgsi.00$n
   ln -fs $COMOUT/sfcanl_data.tile${n}.nc  $DATA/fnbgso.00$n
-  ln -fs $FIXfv3/C${CRES}/C${CRES}_grid.tile${n}.nc       $DATA/fngrid.00$n
-  ln -fs $FIXfv3/C${CRES}/C${CRES}_oro_data.tile${n}.nc   $DATA/fnorog.00$n
+  ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_grid.tile${n}.nc $DATA/fngrid.00$n
+  ln -fs $FIXTILED/oro_C${RES}.${OCNRES}.tile${n}.nc $DATA/fnorog.00$n
 done
 
 $CYCLESH
