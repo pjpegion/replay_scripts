@@ -9,7 +9,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C384cpld_replay_test
+export exptname=C${RES}cpld_replay_test
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -122,7 +122,7 @@ export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
 export LSOIL=4
 #export LSOIL=9 #RUC LSM
-export FHCYC=3
+export FHCYC=6
 if [ $FHCYC -gt 0 ]; then
     export skip_global_cycle='YES'
 fi
@@ -148,8 +148,8 @@ elif [ $RES -eq 192 ]; then
    export dt_atmos=450
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
-   #export dt_atmos=900
-   export dt_atmos=225
+   export dt_atmos=900
+   #export dt_atmos=225
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else
    echo "model time step for ensemble resolution C$RES_CTL not set"
@@ -215,8 +215,12 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
    export RT_DIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/
-   export FIXFV3=$RT_DIR/FV3_input_data${RES}/INPUT
-   export FIXGLOBAL=$RT_DIR/FV3_input_data${RES}
+   if [ $RES -eq 96 ]; then
+      export FIXFV3=$RT_DIR/FV3_input_data/INPUT
+   else
+      export FIXFV3=$RT_DIR/FV3_input_data${RES}/INPUT
+   fi
+   export FIXGLOBAL=$RT_DIR/FV3_input_data384
    export FIXgsm=$FIXGLOBAL # used by global_cycle driver script
    export FIXTILED=$RT_DIR/FV3_fix_tiled/C${RES}
    export FIXcice=$RT_DIR/CICE_FIX/${ORES3}

@@ -89,9 +89,9 @@
 /
 
 &thermo_nml
-    kitd              = 0
-    ktherm            = 2
-    conduct           = 'bubbly'
+    kitd              = 1
+    ktherm            = 1
+    conduct           = 'MU71'
     a_rapid_mode      =  0.5e-3
     Rac_rapid_mode    =    10.0
     aspect_rapid_mode =     1.0
@@ -170,7 +170,7 @@
     restore_ice     = .false.
     restore_ocn     = .false.
     trestore        =  90
-    precip_units    = 'mm_per_sec'
+    precip_units    = 'mm_per_month'
     default_season  = 'winter'
     atm_data_type   = 'ncar'
     ocn_data_type   = 'default'
@@ -474,13 +474,13 @@
     f_icepresent   = 'x'
     f_iage         = 'x'
     f_FY           = 'x'
-    f_aicen        = 'mdhxx'
-    f_vicen        = 'mdhxx'
-    f_vsnon        = 'mdhxx'
+    f_aicen        = 'x'
+    f_vicen        = 'x'
+    f_vsnon        = 'x'
     f_snowfracn    = 'x'
     f_keffn_top    = 'x'
-    f_Tinz         = 'mdhxx'
-    f_Sinz         = 'mdhxx'
+    f_Tinz         = 'x'
+    f_Sinz         = 'x'
     f_Tsnz         = 'x'
     f_fsurfn_ai    = 'x'
     f_fcondtopn_ai = 'x'
