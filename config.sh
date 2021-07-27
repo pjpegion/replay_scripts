@@ -107,7 +107,7 @@ export biascorrdir=${basedir}/biascor
 #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
 #export analfileprefix="C192_ifsanl"
 export replayanaldir=${basedir}/era5anl/C${RES}
-export ocnanaldir=${basedir}/oras5
+export ocnanaldir=${basedir}/oras5/${OCNRES}
 export analfileprefix="C${RES}_era5anl"
 
 export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
