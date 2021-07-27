@@ -677,7 +677,7 @@ sed -i -e "s/OCN_START/${ocn_start}/g" input.nml
 sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
 # gcycle related params
 sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
-sed -i -e "s/RES/${RES}/g" input.nml
+sed -i -e "s/CRES/C${RES}/g" input.nml
 sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
 sed -i -e "s!FIXDIR!${FIXGLOBAL}!g" input.nml
 sed -i -e "s!FIXTILED!${FIXTILED}!g" input.nml
