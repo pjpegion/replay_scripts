@@ -287,7 +287,7 @@ FNABSC=${FNABSC:-${FIXgsm}/global_mxsnoalb.uariz.t$JCAP_CASE.$LONB_CASE.$LATB_CA
 FNVMNC=${FNVMNC:-${FIXgsm}/global_shdmin.0.144x0.144.grb}
 FNVMXC=${FNVMXC:-${FIXgsm}/global_shdmax.0.144x0.144.grb}
 FNSLPC=${FNSLPC:-${FIXgsm}/global_slope.1x1.grb}
-FNMSKH=${FNMSKH:-${FIXgsm}/seaice_newland.grb}
+FNMSKH=${FNMSKH:-${FIXgsm}/global_slmask.t1534.3072.1536.grb}
 GSI_FILE=${GSI_FILE:-"NULL"}
 FNTSFA=${FNTSFA:-${COMIN}/${PREINP}sstgrb${SUFINP}}
 FNACNA=${FNACNA:-${COMIN}/${PREINP}engicegrb${SUFINP}}
@@ -317,11 +317,11 @@ cd $DATA||exit 99
 [[ -d $COMOUT ]]||mkdir -p $COMOUT
 
 # If the appropriate resolution fix file is not present, use the highest resolution available (T1534)
-[[ ! -f $FNALBC ]] && FNALBC="$FIXgsm/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb"
-[[ ! -f $FNVETC ]] && FNVETC="$FIXgsm/global_vegtype.igbp.t1534.3072.1536.rg.grb"
-[[ ! -f $FNSOTC ]] && FNSOTC="$FIXgsm/global_soiltype.statsgo.t1534.3072.1536.rg.grb"
-[[ ! -f $FNABSC ]] && FNABSC="$FIXgsm/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb"
-[[ ! -f $FNSMCC ]] && FNSMCC="$FIXgsm/global_soilmgldas.t1534.3072.1536.grb"
+#[[ ! -f $FNALBC ]] && FNALBC="$FIXgsm/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb"
+#[[ ! -f $FNVETC ]] && FNVETC="$FIXgsm/global_vegtype.igbp.t1534.3072.1536.rg.grb"
+#[[ ! -f $FNSOTC ]] && FNSOTC="$FIXgsm/global_soiltype.statsgo.t1534.3072.1536.rg.grb"
+#[[ ! -f $FNABSC ]] && FNABSC="$FIXgsm/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb"
+#[[ ! -f $FNSMCC ]] && FNSMCC="$FIXgsm/global_soilmgldas.t1534.3072.1536.grb"
 
 ################################################################################
 #  Make surface analysis

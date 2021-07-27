@@ -529,10 +529,28 @@ if [ -z $skip_global_cycle ]; then
    export CYCLESH=${scriptsdir}/global_cycle.sh
    export COMIN=${PWD}/INPUT
    export COMOUT=$COMIN
+   # thse should agree with names in input.nml
+   export FNGLAC="${FIXGLOBAL}/global_glacier.2x2.grb"
+   export FNMXIC="${FIXGLOBAL}/global_maxice.2x2.grb"
+   export FNTSFC="${FIXGLOBAL}/RTGSST.1982.2012.monthly.clim.grb"
+   export FNSNOC="${FIXGLOBAL}/global_snoclim.1.875.grb"
+   export FNZORC="igbp"
+   export FNALBC="${FIXTILED}/C${RES}.snowfree_albedo.tileX.nc"
+   export FNALBC2="${FIXTILED}/C${RES}.facsf.tileX.nc"
+   export FNAISC="${FIXGLOBAL}/CFSR.SEAICE.1982.2012.monthly.clim.grb"
+   export FNVEGC="${FIXTILED}/C${RES}.vegetation_greenness.tileX.nc"
+   export FNVETC="${FIXTILED}/C${RES}.vegetation_type.tileX.nc"
+   export FNSOTC="${FIXTILED}/C${RES}.soil_type.tileX.nc"
+   export FNSMCC="${FIXGLOBAL}/global_soilmgldas.statsgo.t766.1536.768.grb"
+   export FNMSKH="${FIXGLOBAL}/global_slmask.t1534.3072.1536.grb"
+   export FNTG3C="${FIXGLOBAL}/global_tg3clim.2.6x1.5.grb"
+   export FNVMNC="${FIXTILED}/C${RES}.vegetation_greenness.tileX.nc"
+   export FNVMXC="${FIXTILED}/C${RES}.vegetation_greenness.tileX.nc"
+   export FNSLPC="${FIXTILED}/C${RES}.slope_type.tileX.nc"
+   export FNABSC="${FIXTILED}/C${RES}.maximum_snow_albedo.tileX.nc"
    export FNTSFA="${fntsfa}"
    export FNSNOA="${fnsnoa}"
    export FNACNA="${fnacna}"
-   export FNMSKH="/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210614/FV3_input_data_ugwpv1/seaice_newland.grb"
    export CASE="C${RES}"
    export PGM="${execdir}/global_cycle"
    if [ $NST_GSI -gt 0 ]; then

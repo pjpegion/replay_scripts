@@ -19,7 +19,7 @@ export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
 #export replay_run_observer='false'
 export replay_run_observer='true'
-#export cleanup_observer='true' 
+export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
 
