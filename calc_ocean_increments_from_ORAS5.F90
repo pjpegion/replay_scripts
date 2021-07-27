@@ -48,7 +48,7 @@ path_fg=trim(expt)//'/'
 fname_fg1='ocn_'//yyyy//'_'//mm//'_'//dd//'_10.nc'
 fname_fg2='ocn_'//yyyy//'_'//mm//'_'//dd//'_13.nc'
 path_anl=trim(oras5path)//'/'//yyyy//mm//dd//'/'
-fname_anl='ORAS5.mx025.ic.nc'
+fname_anl='ORAS5.ic.nc'
 fname_inc='oras5_increment.nc'
 cct=1
 print*,'opening',trim(path_fg)//trim(fname_fg1)
