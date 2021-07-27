@@ -48,8 +48,8 @@ YYYY MM DD HH 0 0
 "gfs_dyn",     "w",           "dzdt",         "fv3_history",    "all",  .false.,  "none",  2
 "gfs_dyn",     "ps",          "pressfc",      "fv3_history",    "all",  .false.,  "none",  2
 "gfs_dyn",     "hs",          "hgtsfc",       "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "delp",        "dpres",        "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "delz",        "delz",         "fv3_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "delp",        "dpres",        "fv3_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "delz",        "delz",         "fv3_history",    "all",  .false.,  "none",  2
 
 # pressure level data on cubed sphere grid
 #"dynamics"  "u_plev"      "u_plev"        "fv3_historyp" "all" .false. "none" 2

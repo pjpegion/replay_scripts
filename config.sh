@@ -17,9 +17,9 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-#export replay_run_observer='false'
+export replay_run_observer='false'
 export replay_run_observer='true'
-export cleanup_observer='true' 
+#export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
 
@@ -122,6 +122,7 @@ export NST_GSI=0          # No NST in GSI
 #export NST_GSI=2          # passive NST
 export LSOIL=4
 #export LSOIL=9 #RUC LSM
+export FHCYC=3
 if [ $FHCYC -gt 0 ]; then
     export skip_global_cycle='YES'
 fi
@@ -172,8 +173,7 @@ export LEVS=127
 export FHMIN=3
 export FHMAX=9
 export FHOUT=3
-export FHCYC=0
-export FRAC_GRID=F
+export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
@@ -219,6 +219,7 @@ elif [ "$machine" == 'gaea' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix_am
    export FIXgsm=$FIXGLOBAL
    export RT_DIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/
+   export FIXTILED=$RT_DIR/FV3_fix_tiled/C${RES}
    export FIXcice=$RT_DIR/CICE_FIX/${ORES3}
    export FIXmom=$RT_DIR/MOM6_FIX/${ORES3}
    export FIXcpl=$RT_DIR/CPL_FIX/aC${RES}o${ORES3}
