@@ -267,9 +267,11 @@ if [ "$coupled" == 'NO' ]; then
    export rungfs="run_fv3.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE' ];then
    export SUITE="FV3_GFS_v16_coupled"
+   #export SUITE=FV3_GFS_v16_coupled_nsstNoahmpUGWPv
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ];then
    export SUITE="FV3_GFS_v16_coupled"
+   #export SUITE=FV3_GFS_v16_coupled_nsstNoahmpUGWPv
    export rungfs="run_coupled_wav.sh"
    echo "${coupled} option not yet supported"
    echo "please chose betwee NO ATM_OCN_ICE"
