@@ -259,6 +259,8 @@ n=1
 while [ $n -le 6 ]; do
  ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
  ln -fs $FIXTILED/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXFV3/../INPUT_L${LEVS}/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXFV3/../INPUT_L${LEVS}/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
 ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_mosaic.nc  C${RES}_mosaic.nc
@@ -284,6 +286,7 @@ ln -fs $FIXGLOBAL/INPUT/aerosol.dat  aerosol.dat
 # for Thompson microphysics
 #ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
+ln -fs /lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/FV3_input_data/ugwp_c384_tau.nc ugwp_limb_tau.nc
 
 
 # MOM6 files
