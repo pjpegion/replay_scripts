@@ -71,9 +71,17 @@ if [ -z $biascorrdir ]; then # cycled bias correction files
     export GBIASAIR=${datapathm1}/${PREINPm1}abias_air
     export ABIAS=${datapath2}/${PREINP}abias
 else # externally specified bias correction files.
-    export GBIAS=${biascorrdir}/${analdate}//${PREINP}abias
-    export GBIAS_PC=${biascorrdir}/${analdate}//${PREINP}abias_pc
-    export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
+    echo "NOSAT = $NOSAT aircraft_bc=$aircraft_bc "
+    if [ $NOSAT == "YES" ] && [ $aircraft_bc == ".false." ]; then
+       # use dummy files	     
+       export GBIAS=${scriptsdir}/satbias_in
+       export GBIAS_PC=${scriptsdir}/satbias_pc
+       export GBIASAIR=${scriptsdir}/aircftbias_in
+    else
+       export GBIAS=${biascorrdir}/${analdate}//${PREINP}abias
+       export GBIAS_PC=${biascorrdir}/${analdate}//${PREINP}abias_pc
+       export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
+    fi
     export ABIAS=${biascorrdir}/${analdate}//${PREINP}abias
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
