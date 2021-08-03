@@ -257,6 +257,9 @@ WHERE(pt_fg .LT. -2.0 .OR. pt_fg .GT. 50)
    u_inc=0.0
    v_inc=0.0
 ENDWHERE
+print *,'min/max T_inc',minval(pt_inc),maxval(pt_inc)
+print *,'min/max u_inc',minval(u_inc),maxval(u_inc)
+print *,'min/max v_inc',minval(v_inc),maxval(v_inc)
 
 ! interpolate to first guess depth
 depth(:,:,1)=ssh_fg(:,:)-0.5*h_fg(:,:,1)
