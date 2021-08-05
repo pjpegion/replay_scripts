@@ -11,7 +11,6 @@
   blocksize = 32
   dycore_only = F
   ccpp_suite = FV3_GFS_v16_coupled
-  fdiag = 3
 /
 
 &diag_manager_nml
@@ -180,7 +179,7 @@
   h2o_phys       = T
   oz_phys        = F
   oz_phys_2015   = T
-  nstf_name      = 0,0,0,0,0
+  nstf_name      = NSTFNAME
   nst_anl        = .true.
   ldiag_ugwp     = .false.
   do_ugwp        = F

@@ -1,6 +1,6 @@
 #!/bin/sh
-#SBATCH -q debug
-#SBATCH -t 00:30:00
+#SBATCH -q urgent
+#SBATCH -t 01:00:00
 #SBATCH -A nggps_psd
 #SBATCH --clusters c4
 #SBATCH -N 44

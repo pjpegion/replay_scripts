@@ -2,14 +2,14 @@ echo "running on $machine using $NODES nodes"
 
 # forecast resolution 
 # 1/4 deg
+#export RES=384  
+#export OCNRES=mx025
+# 1-deg
 export RES=384  
 export OCNRES=mx025
-# 1-deg
-#export RES=96   
-#export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}cpld_replay_test
+export exptname=C${RES}cpld_replay_test2
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -17,8 +17,8 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-#export replay_run_observer='false'
-export replay_run_observer='true'
+export replay_run_observer='false'
+#export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
@@ -149,7 +149,7 @@ elif [ $RES -eq 192 ]; then
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
    export dt_atmos=900
-   #export dt_atmos=225
+   #export dt_atmos=450
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else
    echo "model time step for ensemble resolution C$RES_CTL not set"
@@ -173,6 +173,7 @@ export LEVS=127
 export FHMIN=3
 export FHMAX=9
 export FHOUT=3
+export FHRESTART=3
 export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
@@ -266,8 +267,10 @@ if [ "$coupled" == 'NO' ]; then
    export SUITE="FV3_GFS_v16beta_no_nsst"
    export rungfs="run_fv3.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE' ];then
-   export SUITE="FV3_GFS_v16_coupled"
-   #export SUITE=FV3_GFS_v16_coupled_nsstNoahmpUGWPv1
+   #export SUITE="FV3_GFS_v16_coupled"
+   #export NSTFNAME="0,0,0,0"
+   export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
+   export NSTFNAME="2,0,0,0"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ];then
    export SUITE="FV3_GFS_v16_coupled"

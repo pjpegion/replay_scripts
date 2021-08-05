@@ -140,8 +140,14 @@ else
    fi
 fi
 export secondofday=`expr $hour_start \* 3600`
+export secondofday=`printf %05i $secondofday`
+export secondofdaya=`expr $houra \* 3600`
+export secondofdaya=`printf %05i $secondofdaya`
 export secondofnextday=`expr $hrnext \* 3600`
+export secondofnextday=`printf %05i $secondofnextday`
 echo 'second of day='$secondofday
+echo 'second of day (anal time)='$secondofdaya
+echo 'second of next day='$secondofnextday
 
 
 # copy data, diag and field tables.
@@ -202,7 +208,14 @@ if [ "$cold_start" == "true" ]; then
   #istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
   run_type='initial'
   run_id='cpcice'
-  ice_ic='cice5_model_0.25.res_2015120100.nc'
+  if [ $OCNRES == 'mx100' ]; then
+     ice_ic='cice5_model_1.00.ic.nc'
+  elif [ $OCNRES == 'mx025' ]; then
+     ice_ic='cice5_model_0.25.ic.nc'
+  else
+     echo "ice resolution not supported"
+     exit 2
+  fi
   use_restart_time='.false.'
 else
   #istep0=0
@@ -286,7 +299,16 @@ ln -fs $FIXGLOBAL/INPUT/aerosol.dat  aerosol.dat
 # for Thompson microphysics
 #ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
-ln -fs /lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/FV3_input_data/ugwp_c384_tau.nc ugwp_limb_tau.nc
+# for ugwpv1 and MERRA aerosol climo (IAER=1011)
+ln -fs $RT_DIR/FV3_input_data/ugwp_c384_tau.nc ugwp_limb_tau.nc
+for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
+  ln -fs $RT_DIR/FV3_input_data_INCCN_aeroclim/MERRA2/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
+done
+ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
 
 
 # MOM6 files
@@ -511,7 +533,7 @@ FHRESTART=${FHRESTART:-$ANALINC}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHMAX_FCST=`expr $FHMAX + $ANALINC`
    FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
-   if [ "${fg_only}" == "true" ]; then
+   if [ "${cold_start}" == "true" ]; then
       FHSTOCH=${FHSTOCH:-$ANALINC}
       FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
@@ -677,7 +699,7 @@ else
   ocn_start=r
 fi
 /bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
-sed -i -e "s/SUITE/${SUITE}/g" input.nml
+#sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/CPLFLX/${CPLFLX}/g" input.nml
 sed -i -e "s/CPLWAV/${CPLWAV}/g" input.nml
 sed -i -e "s/CPLWAV2ATM/${CPLWAV2ATM}/g" input.nml
@@ -706,10 +728,14 @@ sed -i -e "s!FIXTILED!${FIXTILED}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
+   NSTFNAME="2,1,0,0"
+fi
+sed -i -e "s/NSTFNAME/${NSTFNAME}/g" input.nml
 cat input.nml
 ls -l INPUT
 # point to ice and ocean restart file
-if [ "$cold_start" != "true" ];then
+if [ "$cold_start" != "true" ]; then
    ls INPUT/iced.${year_start}-${mon_start}-${day_start}-${secondofday}.nc > ice.restart_file
    if [ -s INPUT/ufs.cpld.cpl.r.${year_start}-${mon_start}-${day_start}-${secondofday}.nc ]; then
       ls INPUT/ufs.cpld.cpl.r.${year_start}-${mon_start}-${day_start}-${secondofday}.nc > rpointer.cpl
@@ -764,7 +790,9 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    cd RESTART
    ls -l
    datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+   datestringa="${yeara}${mona}${daya}.${houra}0000."
    datestring_ocn="${yrnext}-${monnext}-${daynext}-${hrnext}-00-00"
+   datestring_ocna="${yeara}-${mona}-${daya}-${houra}-00-00"
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
       echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$file2"
@@ -774,14 +802,35 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         exit 1
       fi
    done
+   if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
+      for file in ${datestringa}*nc; do
+         echo "copying $file to ${datapath2}/${charnanal}/INPUT"
+         /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
+         if [ $? -ne 0 ]; then
+           echo "restart file missing..."
+           exit 1
+         fi
+      done
+   fi
    ls MOM.res.${datestring_ocn}*nc
    for file in MOM.res.${datestring_ocn}*nc; do
       file2=MOM.res`echo $file | cut -c 28-32`
       echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$file2"
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
    done
+   if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
+      ls MOM.res.${datestring_ocna}*nc
+      for file in MOM.res.${datestring_ocna}*nc; do
+         echo "copying $file to ${datapath2}/${charnanal}/INPUT"
+         /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
+      done
+   fi
    /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv ufs.cpld.cpl.r.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
+   if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
+      /bin/mv -f iced.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
+      /bin/mv -f ufs.cpld.cpl.r.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
+   fi
    cd ..
 fi
 

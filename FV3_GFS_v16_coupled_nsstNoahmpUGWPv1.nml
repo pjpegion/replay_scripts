@@ -10,8 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = F
-  ccpp_suite = FV3_GFS_v16_coupled_nsstNoahmpUGWPv1
-  fdiag = 3
+  ccpp_suite = "FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
 /
 
 &diag_manager_nml
@@ -130,7 +129,7 @@
   fhlwr          = 3600.
   ialb           = 2
   iems           = 2
-  IAER           = 5111
+  IAER           = 1011
   iovr           = 3
   icliq_sw       = 2
   ico2           = 2
@@ -180,7 +179,7 @@
   h2o_phys       = T
   oz_phys        = F
   oz_phys_2015   = T
-  nstf_name      = 0,0,0,0,0
+  nstf_name      = NSTFNAME
   nst_anl        = .true.
   ldiag_ugwp     = .false.
   do_ugwp        = F
@@ -296,7 +295,7 @@
   FNSOTC   = "FIXTILED/CRES.soil_type.tileX.nc",
   FNSMCC   = "FIXDIR/global_soilmgldas.statsgo.t766.1536.768.grb",
   FNMSKH   = "FIXDIR/global_slmask.t1534.3072.1536.grb",
-  FNTG3C   = "FIXDIR/global_tg3clim.2.6x1.5.grb",
+  FNTG3C   = "FIXTILED/CRES.substrate_temperature.tileX.nc"
   FNTSFA   = "SSTFILE",
   FNACNA   = "ICEFILE",
   FNSNOA   = "SNOFILE",
@@ -305,9 +304,9 @@
   FNSLPC   = "FIXTILED/CRES.slope_type.tileX.nc",
   FNABSC   = "FIXTILED/CRES.maximum_snow_albedo.tileX.nc",
   LDEBUG   =.false.,
-  FSMCL(2) = 60,   
-  FSMCL(3) = 60,   
-  FSMCL(4) = 60,   
+  FSMCL(2) = 99999 
+  FSMCL(3) = 99999 
+  FSMCL(4) = 99999 
   LANDICE = .false.
   FTSFS = 99999
   FAISL = 99999
