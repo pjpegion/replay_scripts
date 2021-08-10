@@ -10,10 +10,10 @@ expt = sys.argv[1]
 date1 = sys.argv[2]
 date2 = sys.argv[3]
 dates = daterange(date1,date2,6)
-datapath = '/scratch2/BMC/gsienkf/whitaker/%s' % expt
+datapath = '/lustre/f2/scratch/Jeffrey.S.Whitaker/%s' % expt
 lats = None
-var = 'T_inc'
-#var = 'sphum_inc'
+#var = 'T_inc'
+var = 'sphum_inc'
 def getmean(data,coslats):
     meancoslats = coslats.mean()
     return (coslats*data).mean()/meancoslats
@@ -57,9 +57,13 @@ if var == 'T_inc':
 elif var == 'sphum_inc':
     clevs = np.arange(0.0,1.0001e-3,0.0001)
 plt.contourf(lats, levs[0:levsplot], rmsinc[0:levsplot], clevs, cmap=plt.cm.hot_r, extend='both')
-plt.title('increment T RMS')
 plt.colorbar()
-plt.savefig('replay_incrmst.png')
+if var == 'T_inc':
+    plt.title('increment T RMS')
+    plt.savefig('replay_incrmst_%s.png' % expt)
+elif var == 'sphum_inc':
+    plt.title('increment q RMS')
+    plt.savefig('replay_incrmsq_%s.png' % expt)
 
 if var == 'T_inc':
     clevs = np.arange(0.0,4.0001,0.2)
@@ -67,7 +71,7 @@ elif var == 'sphum_inc':
     clevs = np.arange(0.0,2.0001e-3,0.0002)
 plt.figure()
 #plt.contourf(lons2, lats2, rmsincmap[nlev], clevs, cmap=plt.cm.hot_r, extend='both')
-#plt.title('increment T RMS level %s GFS-16.0.3' % nlev)
+#plt.title('increment q RMS level %s UFS-16.0.3' % nlev)
 #plt.colorbar()
 
 m = Basemap(llcrnrlat=-90,urcrnrlat=90,llcrnrlon=0,urcrnrlon=360,resolution='c')
@@ -76,18 +80,26 @@ m.drawcoastlines()
 m.drawparallels(np.arange(-90,90,30),labels=[1,0,0,0])
 m.drawmeridians(np.arange(0,360,60),labels=[0,0,0,1])
 m.colorbar()
-plt.title('increment T RMS level %s GFS-16.0.3' % nlev)
-plt.savefig('replay_incrmst_map.png')
+if var == 'T_inc':
+    plt.title('increment T RMS level %s UFS-16.0.3' % nlev)
+    plt.savefig('replay_incrmst_map_%s.png' % expt)
+elif var == 'sphum_inc':
+    plt.title('increment q RMS level %s UFS-16.0.3' % nlev)
+    plt.savefig('replay_incrmsq_map_%s.png' % expt)
 
 plt.figure()
 if var == 'T_inc':
     clevs = np.linspace(-1.0,1.0,21)
 elif var == 'sphum_inc':
-    clevs = np.linspace(-0.001,0.0001,21)
+    clevs = np.linspace(-0.001,0.001,21)
 plt.contourf(lats, levs[0:levsplot], meaninc[0:levsplot], clevs, cmap=plt.cm.bwr, extend='both')
-plt.title('increment (GFS-IFS) T mean GFSv16.0.3')
 plt.colorbar()
-plt.savefig('replay_incmeant.png')
+if var == 'T_inc':
+    plt.title('increment (UFS-IFS) T mean %s' % expt)
+    plt.savefig('replay_incmeant_%s.png' % expt)
+elif var == 'sphum_inc':
+    plt.title('increment (UFS-IFS) q mean %s' % expt)
+    plt.savefig('replay_incmeanq_%s.png' % expt)
 
 plt.figure()
 if var == 'T_inc':
@@ -95,14 +107,18 @@ if var == 'T_inc':
 elif var == 'sphum_inc':
     clevs = np.linspace(-0.00095,0.00095,21)
 #plt.contourf(lons2, lats2, meanincmap[nlev], clevs, cmap=plt.cm.bwr, extend='both')
-#plt.title('increment (GFS-IFS) T mean GFSv16.0.3 level %s' % nlev)
+#plt.title('increment (UFS-IFS) q mean UFSP7b level %s' % nlev)
 #plt.colorbar()
 cs = m.contourf(lons2,lats2,meanincmap[nlev],clevs,cmap=plt.cm.bwr,extend='both')
 m.drawcoastlines()
 m.drawparallels(np.arange(-90,90,30),labels=[1,0,0,0])
 m.drawmeridians(np.arange(0,360,60),labels=[0,0,0,1])
 m.colorbar()
-plt.title('increment (GFS-IFS) T mean GFSv16.0.3 level %s' % nlev)
-plt.savefig('replay_incmeant_map.png')
+if var == 'T_inc':
+    plt.title('increment (UFS-IFS) T mean %s level %s' % (nlev,expt))
+    plt.savefig('replay_incmeant_map_%s.png' % expt)
+elif var == 'sphum_inc':
+    plt.title('increment (UFS-IFS) q mean %s level %s' % (nlev,expt))
+    plt.savefig('replay_incmeanq_map_%s.png' % expt)
 
 plt.show()
