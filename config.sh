@@ -183,7 +183,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 export RUN=gdas # use gdas obs
 
-export nitermax=1
+export nitermax=2
 
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir

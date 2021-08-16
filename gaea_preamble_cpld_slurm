@@ -1,9 +1,9 @@
 #!/bin/sh
-#SBATCH -q urgent
+#SBATCH -q urgent 
 #SBATCH -t 01:00:00
 #SBATCH -A nggps_psd
 #SBATCH --clusters c4
-#SBATCH -N 44
+#SBATCH -N 44 
 #SBATCH -J ufs_era5_replay
 #SBATCH -e ufs_era5_replay.err
 #SBATCH -o ufs_era5_replay.out
@@ -24,17 +24,6 @@ if [ $NODES -eq 2 ]; then
   export nprocs_atm=40
   export nprocs_ice=8 
   export nprocs_ocn=24
-elif [ $NODES -eq 4 ]; then
-  export gsi_control_threads=1
-  export control_threads=1
-  export control_proc=144
-  export write_groups=4 # write groups for control forecast.
-  export write_tasks=2
-  export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-  export nprocs_cpl=72
-  export nprocs_atm=80
-  export nprocs_ice=16 
-  export nprocs_ocn=48
 elif [ $NODES -eq 11 ]; then # 0.25 degree setup
   export gsi_control_threads=4
   export control_threads=1
@@ -68,6 +57,37 @@ elif [ $NODES -eq 44 ]; then # 0.25 degree setup
   export nprocs_atm=1224 # nprocs_cpl + write_tasks*write_groups
   export nprocs_ice=72   
   export nprocs_ocn=288
+elif [ $NODES -eq 75 ]; then # 0.25 degree setup
+  export gsi_control_threads=9
+  export control_threads=1
+  export control_proc=2700 # total processors used including threads
+  export write_groups=4
+  export write_tasks=18
+  export layout="20,18" 
+  export nprocs_cpl=2160 # layout*6
+  export nprocs_atm=2232 # nprocs_cpl + write_tasks*write_groups
+  export nprocs_ice=108  
+  export nprocs_ocn=360
+elif [ $NODES -eq 88 ]; then # 0.25 degree setup
+  export gsi_control_threads=12
+# export control_threads=2
+# export control_proc=3168 # total processors used including threads
+# export write_groups=4
+# export write_tasks=18
+# export layout="12,16" 
+# export nprocs_cpl=1152 # layout*6
+# export nprocs_atm=1224 # nprocs_cpl + write_tasks*write_groups
+# export nprocs_ice=72   
+# export nprocs_ocn=288
+  export control_threads=1
+  export control_proc=3168 # total processors used including threads
+  export write_groups=4
+  export write_tasks=36
+  export layout="24,16" 
+  export nprocs_cpl=2304 # layout*6
+  export nprocs_atm=2448 # nprocs_cpl + write_tasks*write_groups
+  export nprocs_ice=144  
+  export nprocs_ocn=576
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
