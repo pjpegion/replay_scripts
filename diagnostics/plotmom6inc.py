@@ -10,20 +10,24 @@ import sys
 date1=sys.argv[1]
 date2=sys.argv[2]
 expt=sys.argv[3]
+res=sys.argv[4]
 dates = dateutils.daterange(date1,date2,24)
 
-filename='ocean_geometry_mx025.nc'
+filename='ocean_geometry_mx%s.nc' % res
 ds1 = xr.open_dataset(filename)
-geolons = ds1['geolon']
-geolats = ds1['geolat']
+geolons = np.asarray(ds1['geolon'][:])
+geolats = np.asarray(ds1['geolat'][:])
+ds1.close()
 
 sstinc = None
 for date in dates:
     filename='/lustre/f2/scratch/Jeffrey.S.Whitaker/%s/%s/control/INPUT/oras5_increment.nc' % (expt,date)
     print(date)
     ds = xr.open_dataset(filename)
-    ds = ds.assign_coords({'xc': geolons,
-                           'yc': geolats})
+    ds = ds.assign_coords({'xc': (('lath','lonh'),geolons),
+                           'yc': (('lath','lonh'),geolats)})
+    #ds = ds.assign_coords({'lonh': lons,
+    #                       'lath': lats})
     if sstinc is None:
         sstinc = -ds['pt_inc'][0,...]/len(dates)
     else:
@@ -41,4 +45,3 @@ sstinc.plot(x='xc', y='yc',
 plt.title('mean pt_inc (MOM6-ORAS5) at z_l=0.5 %s to %s %s' % (date1,date2,expt))
 ax.coastlines()
 plt.savefig('mom6inc_%s.png' % expt)
-ds1.close()
