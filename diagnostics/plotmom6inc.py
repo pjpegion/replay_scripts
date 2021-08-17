@@ -24,10 +24,8 @@ for date in dates:
     filename='/lustre/f2/scratch/Jeffrey.S.Whitaker/%s/%s/control/INPUT/oras5_increment.nc' % (expt,date)
     print(date)
     ds = xr.open_dataset(filename)
-    ds = ds.assign_coords({'xc': (('lath','lonh'),geolons),
-                           'yc': (('lath','lonh'),geolats)})
-    #ds = ds.assign_coords({'lonh': lons,
-    #                       'lath': lats})
+    ds = ds.assign_coords({'geolons': (('lath','lonh'),geolons),
+                           'geolats': (('lath','lonh'),geolats)})
     if sstinc is None:
         sstinc = -ds['pt_inc'][0,...]/len(dates)
     else:
@@ -38,7 +36,7 @@ fig=plt.figure(figsize=(12,5.5))
 ax = plt.axes(projection=ccrs.PlateCarree())
 print(sstinc)
 print(np.asarray(sstinc.min()),np.asarray(sstinc.max))
-sstinc.plot(x='xc', y='yc',
+sstinc.plot(x='geolons', y='geolats',
               vmin=-1, vmax=1,
               cmap=plt.cm.bwr,
               transform=ccrs.PlateCarree())
