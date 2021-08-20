@@ -16,14 +16,13 @@ export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 echo "mpitaskspernode = $mpitaskspernode"
 
 echo "RES = $RES"
-echo "LONB = ${LONB_CTL}"
-echo "LATB = ${LATB_CTL}"
+echo "LONB = ${LONB}"
+echo "LATB = ${LATB}"
 echo "write_groups = $write_groups"
 echo "write_tasks = $write_tasks"
 echo "layout = $layout"
 echo "dt_atmos = $dt_atmos"
 echo "cdmbgwd = $cdmbgwd"
-echo "fg_proc = $fg_proc"
 
 # turn off stochastic physics
 export SKEB=0

@@ -17,16 +17,17 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-#export replay_run_observer='false'
-export replay_run_observer='true'
+export replay_run_observer='false'
+#export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
 
 # override values from above for debugging.
 #export cleanup_fg='false'
-#export resubmit='false'
-#export do_cleanup='false'
+export resubmit='false'
+export do_cleanup='false'
+export save_hpss="false"
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
@@ -152,7 +153,7 @@ elif [ $RES -eq 96 ]; then
    #export dt_atmos=450
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else
-   echo "model time step for ensemble resolution C$RES_CTL not set"
+   echo "model time step for ensemble resolution C$RES not set"
    exit 1
 fi
 if [ "$OCNRES" == 'mx100' ]; then
@@ -170,7 +171,7 @@ export LONA=$LONB
 export LATA=$LATB      
 export ANALINC=6
 export LEVS=127
-export FHMIN=3
+export FHMIN=0
 export FHMAX=9
 export FHOUT=3
 export FHRESTART=3
@@ -183,7 +184,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 export RUN=gdas # use gdas obs
 
-export nitermax=2
+export nitermax=1
 
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
@@ -287,4 +288,10 @@ fi
 
 cd $scriptsdir
 echo "run main driver script"
-sh -x main.sh
+if [ -z $longfcst ]; then
+   echo "running replay cycle..."
+   sh -x main.sh
+else
+   echo "running long fcst for analdate=$analdate .."
+   sh -x run_longfcst.sh
+fi

@@ -14,7 +14,11 @@ if [ -z $USE_SLURM ]; then
    fi
 else
    if [ "$coupled"  == 'ATM_OCN_ICE' ];then
+      if [ -z $longfcst ]; then
       cat ${machine}_preamble_cpld_slurm config.sh > job.sh
+      else
+      cat ${machine}_preamble_cpldlong_slurm config.sh > job.sh
+      fi
    else
       cat ${machine}_preamble_slurm config.sh > job.sh
    fi

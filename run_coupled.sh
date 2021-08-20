@@ -57,6 +57,7 @@ elif [ "$machine" == 'gaea' ]; then
    #module load esmflocal/8_0_48b
    #module load nco/4.6.4
    #module load wgrib
+   module load nco
    export WGRIB=`which wgrib`
    #export HDF5_DISABLE_VERSION_CHECK=1
 fi
@@ -97,7 +98,28 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+if [ ! -z $longfcst ]; then
+   export skip_calc_increment=1
+   export skip_global_cycle=1
+   export cold_start="false"
+   export dont_copy_restart=1
+   export iau_delthrs=-1
+   # start date for forecast (previous analysis time)
+   export year=`echo $analdatem1 |cut -c 1-4`
+   export mon=`echo $analdatem1 |cut -c 5-6`
+   export day=`echo $analdatem1 |cut -c 7-8`
+   export hour=`echo $analdatem1 |cut -c 9-10`
+   # current date in restart (beginning of analysis window)
+   export year_start=`echo $analdatem3 |cut -c 1-4`
+   export mon_start=`echo $analdatem3 |cut -c 5-6`
+   export day_start=`echo $analdatem3 |cut -c 7-8`
+   export hour_start=`echo $analdatem3 |cut -c 9-10`
+   # end time of analysis window (time for next restart)
+   export yrnext=`echo $analdatep1m3 |cut -c 1-4`
+   export monnext=`echo $analdatep1m3 |cut -c 5-6`
+   export daynext=`echo $analdatep1m3 |cut -c 7-8`
+   export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+elif [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -354,7 +376,7 @@ else
 fi
 
 # if analysis time is 12Z, then replay to ORAS-5
-if [ $houra -eq 12 ]; then
+if [ $houra -eq 12 ] && [ -z $longfcst ]; then
    OCN_IAU=True
 else
    OCN_IAU=False
@@ -530,7 +552,11 @@ fi
 ls -l 
 
 FHRESTART=${FHRESTART:-$ANALINC}
-if [ "${iau_delthrs}" != "-1" ]; then
+if [ ! -z $longfcst ]; then
+   FHMAX_FCST=$FHMAX
+   FHRESTART=$FHMAX
+   FHSTOCH=$FHMAX
+elif [ "${iau_delthrs}" != "-1" ]; then
    FHMAX_FCST=`expr $FHMAX + $ANALINC`
    FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
    if [ "${cold_start}" == "true" ]; then
@@ -755,20 +781,25 @@ fi
 
 # rename netcdf files (if quilting = .true.).
 export DATOUT=${DATOUT:-$datapathp1}
+if [ -z $longfcst ]; then
+   datelabel=${analdatep1}
+else
+   datelabel=${analdatem1}
+fi
+
 if [ "$quilting" == ".true." ]; then
    ls -l dyn*.nc
    ls -l phy*.nc
-   #fh=$FHMIN
-   fh=0
+   fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${datelabel}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdffile missing..."
         exit 1
      fi
-     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${datelabel}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdf file missing..."
         exit 1
@@ -778,8 +809,17 @@ if [ "$quilting" == ".true." ]; then
 fi
 
 # move ocean and ice utput,  still need to check for existance TBD
+if [ -z $longfcst ]; then
 /bin/mv -f ocn_*.nc ${DATOUT}
-/bin/mv -f history/ice_*.nc ${DATOUT}
+/bin/mv -f history/iceh_*.nc ${DATOUT}
+else
+# for long forecast, just save last file
+lastocnfile=`ls -1t ocn_*nc | head -1`
+/bin/mv -f $lastocnfile ${DATOUT}
+lasticefile=`ls -1t history/iceh_*nc | head -1`
+/bin/mv -f $lasticefile ${DATOUT}
+/bin/rm -f ocn_*nc; /bin/rm -rf history/iceh_*nc
+fi
 
 ls -l *nc
 if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
@@ -832,6 +872,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       /bin/mv -f ufs.cpld.cpl.r.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
    fi
    cd ..
+   ls -l ${datapathp1}/${charnanal}/INPUT
 fi
 
 # also move history files if copy_history_files is set.
@@ -853,14 +894,13 @@ fi
 # if random pattern restart file exists for end of IAU window, copy it.
 ls -l stoch_out*
 charfh="F"`printf %06i $FHSTOCH`
-if [ -s stoch_out.${charfh} ]; then
+if [ -z $longfcst ] && [ -s stoch_out.${charfh} ]; then
   mkdir -p ${DATOUT}/${charnanal}
   echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
   /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
 fi
 
 ls -l ${DATOUT}
-ls -l ${datapathp1}/${charnanal}/INPUT
 
 # remove symlinks from INPUT directory
 cd INPUT
