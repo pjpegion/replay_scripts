@@ -790,8 +790,19 @@ fi
 if [ "$quilting" == ".true." ]; then
    ls -l dyn*.nc
    ls -l phy*.nc
-   fh=$FHMIN
-   while [ $fh -le $FHMAX ]; do
+   if [ -z $longfcst ]; then
+      fh1=$FHMIN
+      fh2=$FHMAX
+      fo=$FHOUT
+   else
+      fh1=$FHMIN_LONG
+      fh2=$FHMAX_LONG
+      fo=$FHOUT_LONG
+      /bin/mv -f dynf012.nc ${DATOUT}/sfg_${datelabel}_fhr12_${charnanal}
+      /bin/mv -f phyf012.nc ${DATOUT}/bfg_${datelabel}_fhr12_${charnanal}
+   fi
+   fh=$fh1
+   while [ $fh -le $fh2 ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${datelabel}_${charfhr}_${charnanal}
@@ -804,21 +815,23 @@ if [ "$quilting" == ".true." ]; then
         echo "netcdf file missing..."
         exit 1
      fi
-     fh=$[$fh+$FHOUT]
+     fh=$[$fh+$fo]
    done
 fi
 
 # move ocean and ice utput,  still need to check for existance TBD
 if [ -z $longfcst ]; then
-/bin/mv -f ocn_*.nc ${DATOUT}
-/bin/mv -f history/iceh_*.nc ${DATOUT}
+   /bin/mv -f ocn_*.nc ${DATOUT}
+   /bin/mv -f history/iceh_*.nc ${DATOUT}
 else
-# for long forecast, just save last file
-lastocnfile=`ls -1t ocn_*nc | head -1`
-/bin/mv -f $lastocnfile ${DATOUT}
-lasticefile=`ls -1t history/iceh_*nc | head -1`
-/bin/mv -f $lasticefile ${DATOUT}
-/bin/rm -f ocn_*nc; /bin/rm -rf history/iceh_*nc
+   # for long forecast, just save few files
+   for histfile in `ls -1t ocn_*nc | head -4`; do
+       /bin/mv -f $histfile ${DATOUT}
+   done
+   for histfile in `ls -1t history/iceh.*nc | head -4`; do
+       /bin/mv -f $histfile ${DATOUT}
+   done
+   /bin/rm -f ocn_*nc; /bin/rm -rf history/iceh_*nc
 fi
 
 ls -l *nc

@@ -20,6 +20,7 @@ find -type l -delete # delete symlinks
 cd ../..
 $hsi mkdir ${hsidir}
 $htar -cvf ${hsidir}/${analdate}.tar ${analdate}
+exitstat=$?
 $hsi ls -l ${hsidir}/${analdate}.tar
 #if [ $? -eq 0 ]; then
 #   cd ${analdate}
@@ -27,6 +28,6 @@ $hsi ls -l ${hsidir}/${analdate}.tar
 #   cd control/INPUT
 #   /bin/rm -f *tile*nc
 #fi
-cd ${datapath2}
+#cd ${datapath2}
 #/bin/rm -f diag*cris* diag*airs* diag*iasi* 
 exit $exitstat

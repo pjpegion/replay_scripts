@@ -32,9 +32,12 @@ echo "charnanal = $charnanal"
 export DATOUT="${datapath}/${analdatem1}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
-export FHMAX=240
+export FHMAX=243
 export FHMIN=6
 export FHOUT=6
+export FHMAX_LONG=240
+export FHMIN_LONG=24
+export FHOUT_LONG=24
 
 export OMP_NUM_THREADS=$control_threads
 export OMP_STACKSIZE=2048m
