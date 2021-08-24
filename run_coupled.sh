@@ -549,8 +549,6 @@ else
    fi
 fi
 
-ls -l 
-
 FHRESTART=${FHRESTART:-$ANALINC}
 if [ ! -z $longfcst ]; then
    FHMAX_FCST=$FHMAX
@@ -645,6 +643,13 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
    fnacna='        '
 fi
 
+if [ $WRITE_DOPOST == ".true." ]; then
+   /bin/cp -f ${scriptsdir}/postxconfig* .
+   /bin/cp -f ${scriptsdir}/params_grib2_tbl_new .
+   /bin/cp -f ${scriptsdir}/post_tag_gfs${LEVP} itag
+fi
+ls -l 
+
 cat > model_configure <<EOF
 print_esmf:              .true.
 total_member:            1
@@ -660,6 +665,8 @@ RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
 output_1st_tstep_rst:    .false.
+output_history:          ${OUTPUT_HISTORY:-".true."}
+write_dopost:            ${WRITE_DOPOST:-".false."}
 atm_coupling_interval_sec: ${dt_atmos}
 calendar:                'julian'
 cpl:                     T
@@ -889,9 +896,8 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
 fi
 
 # also move history files if copy_history_files is set.
-if [ ! -z $copy_history_files ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  #/bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
+#if [ ! -z $copy_history_files ]; then
+  /bin/mv -f fv3_historyp*.nc ${DATOUT}
   # copy with compression
   #n=1
   #while [ $n -le 6 ]; do
