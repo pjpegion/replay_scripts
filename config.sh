@@ -5,11 +5,11 @@ echo "running on $machine using $NODES nodes"
 #export RES=384  
 #export OCNRES=mx025
 # 1-deg
-export RES=384  
-export OCNRES=mx025
+export RES=96   
+export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}cpld_replay_test2
+export exptname=C${RES}cpld_replay_test
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -17,17 +17,17 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-export replay_run_observer='false'
-#export replay_run_observer='true'
+#export replay_run_observer='false'
+export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
 
 # override values from above for debugging.
 #export cleanup_fg='false'
-export resubmit='false'
-export do_cleanup='false'
-export save_hpss="false"
+#export resubmit='false'
+#export do_cleanup='false'
+#export save_hpss="false"
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
