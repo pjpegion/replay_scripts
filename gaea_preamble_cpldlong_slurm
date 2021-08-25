@@ -1,9 +1,11 @@
 #!/bin/sh
 #SBATCH -q urgent 
 #SBATCH -t 04:00:00
+##SBATCH -q debug
+##SBATCH -t 00:30:00
 #SBATCH -A nggps_psd
 #SBATCH --clusters c4
-#SBATCH -N 11 
+#SBATCH -N 44 
 #SBATCH -J ufs_era5_replay_longfcst
 #SBATCH -e ufs_era5_replay_longfcst.err
 #SBATCH -o ufs_era5_replay_longfcst.out
@@ -48,15 +50,26 @@ elif [ $NODES -eq 22 ]; then # 0.25 degree setup
   export nprocs_ocn=252
 elif [ $NODES -eq 44 ]; then # 0.25 degree setup
   export gsi_control_threads=6
-  export control_threads=1
+  export control_threads=2
   export control_proc=1584
-  export write_groups=4
-  export write_tasks=18
-  export layout="12,16" 
-  export nprocs_cpl=1152 # layout*6
-  export nprocs_atm=1224 # nprocs_cpl + write_tasks*write_groups
-  export nprocs_ice=72   
-  export nprocs_ocn=288
+  export write_groups=2
+  export write_tasks=36
+  export layout="12,8" 
+  export nprocs_cpl=576  # layout*6
+  export nprocs_atm=612 # nprocs_cpl + write_tasks*write_groups
+  export nprocs_ice=36   
+  export nprocs_ocn=144
+#elif [ $NODES -eq 44 ]; then # 0.25 degree setup
+#  export gsi_control_threads=6
+#  export control_threads=1
+#  export control_proc=1584
+#  export write_groups=2
+#  export write_tasks=18
+#  export layout="12,16" 
+#  export nprocs_cpl=1152 # layout*6
+#  export nprocs_atm=1224 # nprocs_cpl + write_tasks*write_groups
+#  export nprocs_ice=72   
+#  export nprocs_ocn=288
 elif [ $NODES -eq 75 ]; then # 0.25 degree setup
   export gsi_control_threads=9
   export control_threads=1

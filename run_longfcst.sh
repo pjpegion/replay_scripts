@@ -26,7 +26,7 @@ export hr=`echo $analdate | cut -c9-10`
 export datapathp1="${datapath}/${analdatep1}/"
 export datapathm1="${datapath}/${analdatem1}/"
 export CDATE=$analdate
-export save_hpss="true"
+export save_hpss="false"
 export WRITE_DOPOST=".true."
 
 export charnanal="control"
@@ -34,10 +34,12 @@ echo "charnanal = $charnanal"
 export DATOUT="${datapath}/${analdatem1}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
-export FHMAX=243
+# model run length, output freq
+export FHMAX=243  
 export FHMIN=6
 export FHOUT=6
-export FHMAX_LONG=240
+# only save these
+export FHMAX_LONG=240  
 export FHMIN_LONG=24
 export FHOUT_LONG=24
 
@@ -67,48 +69,62 @@ export SHUM=0
 export DO_SHUM=F
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
-#if [ $cleanup_fg == 'true' ]; then
-#   echo "deleting existing files..."
-#   /bin/rm -f ${DATOUT}/sfg_${analdatem1}*${charnanal}
-#   /bin/rm -f ${DATOUT}/bfg_${analdatem1}*${charnanal} 
-#fi
+if [ $cleanup_fg == 'true' ]; then
+   echo "deleting existing files..."
+   /bin/rm -f ${DATOUT}/sfg_${analdatem1}*${charnanal}
+   /bin/rm -f ${DATOUT}/bfg_${analdatem1}*${charnanal} 
+fi
 export current_logdir=$DATOUT
 
+export niter=1
 outfiles=""
-fhr=$FHMIN_LONG
-while  [ $fhr -le $FHMAX_LONG ]; do
+fhr=$FHMIN
+while  [ $fhr -le $FHMAX ]; do
    charhr="fhr`printf %02i $fhr`"
    outfiles="${outfiles} ${DATOUT}/sfg_${analdatem1}_${charhr}_${charnanal} ${DATOUT}/bfg_${analdatem1}_${charhr}_${charnanal}"
-   fhr=$((fhr+FHOUT_LONG))
+   fhr=$((fhr+FHOUT))
+done
+alldone='yes'
+for outfile in $outfiles; do
+  if [ ! -s $outfile ]; then
+    echo "${outfile} is missing"
+    alldone='no'
+  else
+    echo "${outfile} is OK"
+  fi
 done
 echo "${analdate} compute long fcst `date`"
 echo "DATOUT=$DATOUT"
-sh ${scriptsdir}/run_coupled.sh > ${DATOUT}/run_longfcst.log 2>&1
-exitstat=$?
-if [ $exitstat -eq 0 ]; then
-   alldone='yes'
-   for outfile in $outfiles; do
-     if [ ! -s $outfile ]; then
-       echo "${outfile} is missing"
+while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
+    sh ${scriptsdir}/run_coupled.sh > ${DATOUT}/run_longfcst.log 2>&1
+    exitstat=$?
+    if [ $exitstat -eq 0 ]; then
+       alldone='yes'
+       for outfile in $outfiles; do
+         if [ ! -s $outfile ]; then
+           echo "${outfile} is missing"
+           alldone='no'
+         else
+           echo "${outfile} is OK"
+         fi
+       done
+    else
        alldone='no'
-     else
-       echo "${outfile} is OK"
-     fi
-   done
-else
-   alldone='no'
-   echo "some files missingn .."
+       echo "some files missing, try again .."
+       niter=$((niter+1))
+       export niter=$niter
+    fi
+done
+
+# archive long forecast to HPSS
+if [ $save_hpss == 'true' ]; then
+   cat ${machine}_preamble_hpss_slurm hpss_longfcst.sh > job_hpss_longfcst.sh
+   echo "submitting job_hpss_longfcst.sh ..."
+   sbatch job_hpss_longfcst.sh
 fi
 
 if [ $alldone == 'no' ]; then
-    echo "Failed to run long fcst for ${analdate}"
+    echo "Tried ${nitermax} times to run high-res control long fcst and failed: ${analdate}"
 else
     echo "all done"
-    # archive long forecast to HPSS
-    if [ $save_hpss == 'true' ]; then
-       cd ${scriptsdir}
-       cat ${machine}_preamble_hpss_slurm hpss_longfcst.sh > job_hpss_longfcst.sh
-       echo "submitting job_hpss_longfcst.sh for analdate=$analdate `date`..."
-       sbatch job_hpss_longfcst.sh
-    fi
 fi
