@@ -76,7 +76,6 @@ if [ $cleanup_fg == 'true' ]; then
 fi
 export current_logdir=$DATOUT
 
-export niter=1
 outfiles=""
 fhr=$FHMIN
 while  [ $fhr -le $FHMAX ]; do
@@ -84,36 +83,15 @@ while  [ $fhr -le $FHMAX ]; do
    outfiles="${outfiles} ${DATOUT}/sfg_${analdatem1}_${charhr}_${charnanal} ${DATOUT}/bfg_${analdatem1}_${charhr}_${charnanal}"
    fhr=$((fhr+FHOUT))
 done
-alldone='yes'
+
+echo "${analdate} compute long fcst `date`"
+echo "DATOUT=$DATOUT"
+sh ${scriptsdir}/run_coupled.sh > ${DATOUT}/run_longfcst.log 2>&1
+
 for outfile in $outfiles; do
   if [ ! -s $outfile ]; then
     echo "${outfile} is missing"
-    alldone='no'
-  else
-    echo "${outfile} is OK"
   fi
-done
-echo "${analdate} compute long fcst `date`"
-echo "DATOUT=$DATOUT"
-while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
-    sh ${scriptsdir}/run_coupled.sh > ${DATOUT}/run_longfcst.log 2>&1
-    exitstat=$?
-    if [ $exitstat -eq 0 ]; then
-       alldone='yes'
-       for outfile in $outfiles; do
-         if [ ! -s $outfile ]; then
-           echo "${outfile} is missing"
-           alldone='no'
-         else
-           echo "${outfile} is OK"
-         fi
-       done
-    else
-       alldone='no'
-       echo "some files missing, try again .."
-       niter=$((niter+1))
-       export niter=$niter
-    fi
 done
 
 # archive long forecast to HPSS
@@ -123,8 +101,4 @@ if [ $save_hpss == 'true' ]; then
    sbatch job_hpss_longfcst.sh
 fi
 
-if [ $alldone == 'no' ]; then
-    echo "Tried ${nitermax} times to run high-res control long fcst and failed: ${analdate}"
-else
-    echo "all done"
-fi
+echo "all done"

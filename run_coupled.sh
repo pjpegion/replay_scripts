@@ -807,11 +807,17 @@ if [ "$quilting" == ".true." ]; then
       fo=$FHOUT_LONG
       /bin/mv -f dynf012.nc ${DATOUT}/sfg_${datelabel}_fhr12_${charnanal}
       /bin/mv -f phyf012.nc ${DATOUT}/bfg_${datelabel}_fhr12_${charnanal}
+      ls -l
+      if [ $WRITE_DOPOST == ".true." ]; then
+         /bin/mv -f GFSPRS*F12 ${DATOUT}
+         /bin/mv -f GFSFLX*F12 ${DATOUT}
+      fi
    fi
    fh=$fh1
    while [ $fh -le $fh2 ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
+     charfhr2c="F"`printf %03i $fh`
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${datelabel}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdffile missing..."
@@ -821,6 +827,10 @@ if [ "$quilting" == ".true." ]; then
      if [ $? -ne 0 ]; then
         echo "netcdf file missing..."
         exit 1
+     fi
+     if [ $WRITE_DOPOST == ".true." ]; then
+        /bin/mv -f GFSPRS*${charfhr2c} ${DATOUT}
+        /bin/mv -f GFSFLX*${charfhr2c} ${DATOUT}
      fi
      fh=$[$fh+$fo]
    done
