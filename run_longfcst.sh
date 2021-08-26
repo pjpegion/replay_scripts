@@ -34,11 +34,11 @@ echo "charnanal = $charnanal"
 export DATOUT="${datapath}/${analdatem1}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
-# model run length, output freq
-export FHMAX=243  
+# output interval and forecast length
+export FHMAX=243 
 export FHMIN=6
 export FHOUT=6
-# only save these
+# save only these
 export FHMAX_LONG=240  
 export FHMIN_LONG=24
 export FHOUT_LONG=24

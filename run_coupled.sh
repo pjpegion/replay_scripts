@@ -897,7 +897,7 @@ fi
 
 # also move history files if copy_history_files is set.
 #if [ ! -z $copy_history_files ]; then
-  /bin/mv -f fv3_historyp*.nc ${DATOUT}
+  #/bin/mv -f fv3_historyp*.nc ${DATOUT}
   # copy with compression
   #n=1
   #while [ $n -le 6 ]; do
@@ -908,7 +908,7 @@ fi
   #   /bin/rm -f fv3_historyp.tile${n}.nc
   #   n=$((n+1))
   #done
-fi
+#fi
 
 # if random pattern restart file exists for end of IAU window, copy it.
 ls -l stoch_out*
