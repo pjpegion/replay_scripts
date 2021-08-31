@@ -26,7 +26,7 @@ export hr=`echo $analdate | cut -c9-10`
 export datapathp1="${datapath}/${analdatep1}/"
 export datapathm1="${datapath}/${analdatem1}/"
 export CDATE=$analdate
-export save_hpss="false"
+export save_hpss="true"
 export WRITE_DOPOST=".true."
 
 export charnanal="control"
@@ -88,9 +88,11 @@ echo "${analdate} compute long fcst `date`"
 echo "DATOUT=$DATOUT"
 sh ${scriptsdir}/run_coupled.sh > ${DATOUT}/run_longfcst.log 2>&1
 
+alldone="yes"
 for outfile in $outfiles; do
   if [ ! -s $outfile ]; then
     echo "${outfile} is missing"
+    alldone="no"
   fi
 done
 
@@ -101,4 +103,6 @@ if [ $save_hpss == 'true' ]; then
    sbatch job_hpss_longfcst.sh
 fi
 
-echo "all done"
+if [ $alldone == "yes" ]; then
+   echo "all done"
+fi
