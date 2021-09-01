@@ -51,9 +51,9 @@ im = ax.pcolormesh(lons,lats,tinc,
           vmin=-4., vmax=4.,
           cmap=plt.cm.bwr,
           transform=ccrs.PlateCarree())
-plt.colorbar(im)
+plt.colorbar(im,shrink=0.9)
 plt.title('mean t bias fh=%s (FV3-ERA5) at nlev=%s' % (fhr,nlev))
-plt.savefig('fv3inct_nlev%s_%s_fhr%s.png' % (nlev,expt,fhr))
+plt.savefig('fv3inct_nlev%s_%s_fhr%s.png' % (nlev,expt,fhr),bbox_inches='tight')
 fig=plt.figure(figsize=(12,5.5))
 ax = plt.axes(projection=ccrs.PlateCarree())
 ax.set_global()
@@ -62,6 +62,6 @@ im = ax.pcolormesh(lons,lats,qinc,
           vmin=-0.002, vmax=0.002,
           cmap=plt.cm.bwr,
           transform=ccrs.PlateCarree())
-plt.colorbar(im)
+plt.colorbar(im,shrink=0.9)
 plt.title('mean q bias fh=%s (FV3-ERA5) at nlev=%s' % (fhr,nlev))
-plt.savefig('fv3incq_nlev%s_%s_fhr%s.png' % (nlev,expt,fhr))
+plt.savefig('fv3incq_nlev%s_%s_fhr%s.png' % (nlev,expt,fhr),bbox_inches='tight')

@@ -2,14 +2,14 @@ echo "running on $machine using $NODES nodes"
 
 # forecast resolution 
 # 1/4 deg
-#export RES=384  
-#export OCNRES=mx025
+export RES=384  
+export OCNRES=mx025
 # 1-deg
-export RES=96   
-export OCNRES=mx100
+#export RES=96   
+#export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}cpld_replay_test
+export exptname=C${RES}cpld_replay_winter
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -17,13 +17,13 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-#export replay_run_observer='false'
 export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
 
 # override values from above for debugging.
+#export replay_run_observer='false'
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -216,18 +216,10 @@ if [ "$machine" == 'hera' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
-   export RT_DIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20210717/
-   if [ $RES -eq 96 ]; then
-      export FIXFV3=$RT_DIR/FV3_input_data/INPUT
-   else
-      export FIXFV3=$RT_DIR/FV3_input_data${RES}/INPUT
-   fi
-   export FIXGLOBAL=$RT_DIR/FV3_input_data384
-   export FIXgsm=$FIXGLOBAL # used by global_cycle driver script
-   export FIXTILED=$RT_DIR/FV3_fix_tiled/C${RES}
-   export FIXcice=$RT_DIR/CICE_FIX/${ORES3}
-   export FIXmom=$RT_DIR/MOM6_FIX/${ORES3}
-   export FIXcpl=$RT_DIR/CPL_FIX/aC${RES}o${ORES3}
+   # copied from /scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix on 8/31/2021
+   export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/P7fix
+   export FIXcice=$FIXDIR/fix_cice/${ORES3}
+   export FIXmom=$FIXDIR/fix_mom6/${ORES3}
    export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export gsipath=${basedir}/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
@@ -289,9 +281,10 @@ fi
 cd $scriptsdir
 echo "run main driver script"
 if [ -z $longfcst ]; then
-   echo "running replay cycle..."
+   echo "running replay cycle `date`..."
    sh -x main.sh
 else
-   echo "running long fcst for analdate=$analdate .."
-   sh -x run_longfcst.sh
+   echo "running long fcst for analdate=$analdate `date` .."
+   sh run_longfcst.sh
+   echo "done running long forecast for analdate=$analdate `date` .."
 fi

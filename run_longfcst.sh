@@ -28,6 +28,7 @@ export datapathm1="${datapath}/${analdatem1}/"
 export CDATE=$analdate
 export save_hpss="true"
 export WRITE_DOPOST=".true."
+export DIAG_TABLE=${scriptsdir}/diag_table_coupled_long
 
 export charnanal="control"
 echo "charnanal = $charnanal"
