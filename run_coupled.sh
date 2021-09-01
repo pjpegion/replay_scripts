@@ -83,6 +83,7 @@ charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
+export ISEED_CA=$analdate
 #export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
 #export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
 #export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
@@ -292,28 +293,28 @@ fi
 # Grid and orography data
 n=1
 while [ $n -le 6 ]; do
- ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
- ln -fs $FIXTILED/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
- ln -fs $FIXFV3/../INPUT_L${LEVS}/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
- ln -fs $FIXFV3/../INPUT_L${LEVS}/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
+ ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXFV3/../INPUT_L${LEVS}/C${RES}_mosaic.nc  C${RES}_mosaic.nc
-ln -fs $FIXcpl/grid_spec.nc  grid_spec.nc
+ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_mosaic.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/fix_cpl/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
 cd ..
 #ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
 # new ozone and h2o physics for stratosphere
-ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
+ln -fs $FIXDIR/fix_am/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
+ln -fs $FIXDIR/fix_am/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
 # co2, ozone, surface emiss and aerosol data.
-ln -fs $FIXGLOBAL/INPUT/solarconstant_noaa_an.txt solarconstant_noaa_an.txt
-ln -fs $FIXGLOBAL/INPUT/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXGLOBAL/INPUT/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXGLOBAL/INPUT/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXGLOBAL/INPUT/co2historicaldata* ` ; do
+ln -fs $FIXDIR/fix_am/global_solarconstant_noaa_an.txt solarconstant_noaa_an.txt
+ln -fs $FIXDIR/fix_am/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
+ln -fs $FIXDIR/fix_am/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
+ln -fs $FIXDIR/fix_am/co2monthlycyc.txt                 co2monthlycyc.txt
+for file in `ls $FIXDIR/fix_am/global_co2historicaldata* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
-ln -fs $FIXGLOBAL/INPUT/aerosol.dat  aerosol.dat
+ln -fs $FIXDIR/fix_am/global_climaeropac_global.txt aerosol.dat
 #ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
 #for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
 #   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
@@ -322,15 +323,15 @@ ln -fs $FIXGLOBAL/INPUT/aerosol.dat  aerosol.dat
 #ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
 # for ugwpv1 and MERRA aerosol climo (IAER=1011)
-ln -fs $RT_DIR/FV3_input_data/ugwp_c384_tau.nc ugwp_limb_tau.nc
+ln -fs $FIXDIR/fix_ugwd/ugwp_limb_tau.nc ugwp_limb_tau.nc
 for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
-  ln -fs $RT_DIR/FV3_input_data_INCCN_aeroclim/MERRA2/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
+  ln -fs $FIXDIR/fix_aer/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
 done
-ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat  optics_BC.dat
-ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  optics_OC.dat
-ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
-ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
-ln -fs  $RT_DIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
+ln -fs  $FIXDIR/fix_lut/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $FIXDIR/fix_lut/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $FIXDIR/fix_lut/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $FIXDIR/fix_lut/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $FIXDIR/fix_lut/optics_SU.v1_3.dat  optics_SU.dat
 
 
 # MOM6 files
@@ -519,10 +520,10 @@ snoid='SNOD'
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
 #fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.sstgrb
-fntsfa=' '
+fntsfa='        '
 export FTSFS=99999 # no sst analysis, use model
 #fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.engicegrb
-fnacna=' '
+fnacna=''
 export FAISS=99999 # no sea ice analysis, use model
 fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb
 fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb
@@ -531,7 +532,7 @@ $WGRIB ${fnsnoa}
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
-   fnsnoa=' ' # no input file
+   fnsnoa='' # no input file
    export FSNOL=99999 # use model value
    echo "no snow depth in snow analysis file, use model"
 else
@@ -541,7 +542,7 @@ else
         `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
-      fnsnoa=' ' # no input file
+      fnsnoa='' # no input file
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
@@ -643,6 +644,7 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
    fnacna='        '
 fi
 
+WRITE_DOPOST=${WRITE_DOPOST:-".false."}
 if [ $WRITE_DOPOST == ".true." ]; then
    /bin/cp -f ${scriptsdir}/postxconfig* .
    /bin/cp -f ${scriptsdir}/params_grib2_tbl_new .
@@ -690,7 +692,7 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_nemsioflip:        .true.
+write_nsflip:            .true.
 write_fsyncflag:         .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
@@ -733,9 +735,6 @@ else
 fi
 /bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
 #sed -i -e "s/SUITE/${SUITE}/g" input.nml
-sed -i -e "s/CPLFLX/${CPLFLX}/g" input.nml
-sed -i -e "s/CPLWAV/${CPLWAV}/g" input.nml
-sed -i -e "s/CPLWAV2ATM/${CPLWAV2ATM}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
 sed -i -e "s/NPY/${npx}/g" input.nml
@@ -752,12 +751,13 @@ sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 sed -i -e "s/OCN_START/${ocn_start}/g" input.nml
 sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
+sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
 # gcycle related params
 sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
 sed -i -e "s/CRES/C${RES}/g" input.nml
+sed -i -e "s/ORES/${OCNRES}/g" input.nml
 sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
-sed -i -e "s!FIXDIR!${FIXGLOBAL}!g" input.nml
-sed -i -e "s!FIXTILED!${FIXTILED}!g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
@@ -871,6 +871,9 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         echo "restart file missing..."
         exit 1
       fi
+      if [ $file2 == "ca_data.tile1.nc" ]; then
+         touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+      fi
    done
    if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
       for file in ${datestringa}*nc; do
@@ -879,6 +882,9 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
          if [ $? -ne 0 ]; then
            echo "restart file missing..."
            exit 1
+         fi
+         if [ $file2 == "ca_data.tile1.nc" ]; then
+            touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
          fi
       done
    fi
