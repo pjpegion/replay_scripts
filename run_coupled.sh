@@ -550,24 +550,23 @@ else
    fi
 fi
 
-FHRESTART=${FHRESTART:-$ANALINC}
+FHRESTART=${FHRESTART:-"${RESTART_FREQ} -1"}
 if [ ! -z $longfcst ]; then
    FHMAX_FCST=$FHMAX
-   FHRESTART=$FHMAX
+   FHRESTART=0
    FHSTOCH=$FHMAX
 elif [ "${iau_delthrs}" != "-1" ]; then
-   FHMAX_FCST=`expr $FHMAX + $ANALINC`
-   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
    if [ "${cold_start}" == "true" ]; then
-      FHSTOCH=${FHSTOCH:-$ANALINC}
-      FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
+   else
+      FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
+   FHSTOCH=`expr $FMAX_FCST - $ANALINC`
 else
-   FHSTOCH=$FHRESTART
+   FHSTOCH=$FHMAX
    FHMAX_FCST=$FHMAX
 fi
-sed -i -e "s/RESTART_FREQ/${FHRESTART}/g" nems.configure
+sed -i -e "s/RESTART_FREQ/${RESTART_FREQ}/g" nems.configure
 
 if [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
@@ -663,6 +662,7 @@ start_hour:              ${hour}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
+fhrot:                   ${FHROT}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
@@ -677,14 +677,13 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
-fhrot:                   ${FHROT}
 quilting:                ${quilting}
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf_parallel' 'netcdf_parallel'
+output_file:             'netcdf_parallel' 'netcdf'
 nbits:                   14
 ideflate:                1
 ichunk2d:                ${LONB}
@@ -704,15 +703,17 @@ nsout:                   -1
 EOF
 cat model_configure
 
-# setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-else
-   /bin/rm -f INPUT/coupler.res # assume current time == start time
-fi
+# don't need coupler.res if fhrot specified in model_configure!
+
+## setup coupler.res (needed for restarts if current time != start time)
+#if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+#   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
+#   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
+#   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
+#   cat INPUT/coupler.res
+#else
+#   /bin/rm -f INPUT/coupler.res # assume current time == start time
+#fi
 
 # copy template namelist file, replace variables.
 if [ "$cold_start" == "true" ]; then
@@ -875,7 +876,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
          touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
       fi
    done
-   if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
+   if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
       for file in ${datestringa}*nc; do
          echo "copying $file to ${datapath2}/${charnanal}/INPUT"
          /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
@@ -894,7 +895,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$file2"
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
    done
-   if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
+   if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
       ls MOM.res.${datestring_ocna}*nc
       for file in MOM.res.${datestring_ocna}*nc; do
          echo "copying $file to ${datapath2}/${charnanal}/INPUT"
@@ -903,7 +904,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    fi
    /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv ufs.cpld.cpl.r.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
-   if [ $FHRESTART -eq 3 ] && [ "$cold_start" != "true" ]; then
+   if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
       /bin/mv -f iced.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
       /bin/mv -f ufs.cpld.cpl.r.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
    fi
