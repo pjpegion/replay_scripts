@@ -46,12 +46,15 @@ elif [ "$machine" == 'hera' ]; then
    export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    source $MODULESHOME/init/sh
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4 
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
-   module load netcdf_parallel/4.7.4
-   module load esmf/8.0.0_ParallelNetCDF
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.2
+   module load esmf/8_1_1
+   module load fms/2020.04.03
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -198,19 +201,10 @@ else
 fi
 
 if [ "$machine" == 'hera' ]; then
-   export fv3gfspath=/scratch2/NCEPDEV/climate/climpara/S2S/FIX/fix_UFSp6
-   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
-   export FIXcice=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-datm/${OCNRES}/basedir
-   export FIXmom=${fv3gfspath}/fix_mom6/${ORES3}
-   if [ "$ORES3" == '100' ]; then
-      export FIXcpl=/scratch2/BMC/gsienkf/Philip.Pegion/coupled-workflow-oct2020/fix/fix_cpl/aC${RES}o${ORES3}
-   else
-      export FIXcpl=${fv3gfspath}/fix_cpl/aC${RES}o${ORES3}
-   fi
-   
-   export FIXGLOBAL=${fv3gfspath}/fix_am
-   export FIXgsm=$FIXGLOBAL
-   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
+   export FIXDIR=/scratch2/BMC/gsienkf/whitaker/P7fix
+   export FIXcice=$FIXDIR/fix_cice/${ORES3}
+   export FIXmom=$FIXDIR/fix_mom6/${ORES3}
+   export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
