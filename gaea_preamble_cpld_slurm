@@ -1,12 +1,14 @@
 #!/bin/sh
 #SBATCH -q urgent 
-#SBATCH -t 01:00:00
+#SBATCH -t 02:00:00
+##SBATCH -q debug
+##SBATCH -t 00:30:00
 #SBATCH -A nggps_psd
 #SBATCH --clusters c4
 #SBATCH -N 44 
-#SBATCH -J ufs_era5_replay
-#SBATCH -e ufs_era5_replay.err
-#SBATCH -o ufs_era5_replay.out
+#SBATCH -J ufs_era5_pertreplay
+#SBATCH -e ufs_era5_pertreplay.err
+#SBATCH -o ufs_era5_pertreplay.out
 export NODES=$SLURM_NNODES
 # c4 is 36 cores per node, c3 is 32
 export corespernode=$SLURM_CPUS_ON_NODE

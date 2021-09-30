@@ -183,6 +183,48 @@ export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
+#export perturbed_replay="NO"
+#export nmem=0
+export perturbed_replay="NO"
+export nmem=0 # perturbed member (gets added to random seeds)
+if [ $perturbed_replay == "YES" ]; then
+    export iau_forcing_factor=100
+    # these go in  nam_stochy block of atmospheric model input.nml
+    export DO_SPPT=.true.
+    export SPPT=0.5
+    export DO_SHUM=.true.
+    export SHUM=0.005
+    export DO_SKEB=.true.
+    export SKEB=0.3
+    export OCNSPPT=0.8
+    export OCNSPPT_TAU=21600
+    export OCNSPPT_LSCALE=500000
+    export EPBL=0.8
+    export EPBL_TAU=21600
+    export EPBL_LSCALE=500000
+    # tese go in MOM_input
+    export DO_OCNSPPT=True
+    export DO_PERT_EPBL=True
+else
+    export iau_forcing_factor=100 # gets divideed by 100.0
+    # these go in  nam_stochy block of atmospheric model input.nml
+    export SKEB=0
+    export DO_SKEB=.false.
+    export SPPT=0
+    export DO_SPPT=.false.
+    export SHUM=0
+    export DO_SHUM=.false.
+    export OCNSPPT=0.
+    export OCNSPPT_TAU=21600
+    export OCNSPPT_LSCALE=500000
+    export EPBL=0.
+    export EPBL_TAU=21600
+    export EPBL_LSCALE=500000
+    # tese go in MOM_input
+    export DO_OCNSPPT=False
+    export DO_PERT_EPBL=False
+fi
+
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
@@ -254,13 +296,13 @@ fi
 if [ "$coupled" == 'NO' ]; then
    export SUITE="FV3_GFS_v16beta_no_nsst"
    export rungfs="run_fv3.sh"
-elif [ "$coupled" == 'ATM_OCN_ICE' ];then
+elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
    #export SUITE="FV3_GFS_v16_coupled"
    #export NSTFNAME="0,0,0,0"
    export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
    export NSTFNAME="2,0,0,0"
    export rungfs="run_coupled.sh"
-elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ];then
+elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
    export SUITE="FV3_GFS_v16_coupled"
    #export SUITE=FV3_GFS_v16_coupled_nsstNoahmpUGWPv1
    export rungfs="run_coupled_wav.sh"

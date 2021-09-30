@@ -25,12 +25,6 @@ echo "dt_atmos = $dt_atmos"
 echo "cdmbgwd = $cdmbgwd"
 
 # turn off stochastic physics
-export SKEB=0
-export DO_SKEB=F
-export SPPT=0
-export DO_SPPT=F
-export SHUM=0
-export DO_SHUM=F
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 if [ $cleanup_fg == 'true' ]; then

@@ -73,20 +73,13 @@ ulimit -s unlimited
 export OMP_STACKSIZE=2048M
 
 niter=${niter:-1}
-if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
-   nmem=`echo $charnanal | cut -f3 -d"m"`
-   nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
-else
-   nmem=0
-fi
-charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
-export ISEED_CA=$analdate
-#export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
-#export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
-#export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
+#export ISEED_CA=$((analdate*1000 + nmem*10 + 3 + niter))
+export ISEED_CA=$((analdate+nmem))
+export ISEED_OCNSPPT=$((analdate*1000 + nmem*10 + 4 + niter))
+export ISEED_EPBL=$((analdate*1000 + nmem*10 + 5 + niter))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)
@@ -162,15 +155,23 @@ else
       export hrnext=`echo $analdatep1 |cut -c 9-10`
    fi
 fi
+# end time of analysis window (time for next restart)
+export yrendnext=`echo $analdatep1p3 |cut -c 1-4`
+export monendnext=`echo $analdatep1p3 |cut -c 5-6`
+export dayendnext=`echo $analdatep1p3 |cut -c 7-8`
+export hrendnext=`echo $analdatep1p3 |cut -c 9-10`
 export secondofday=`expr $hour_start \* 3600`
 export secondofday=`printf %05i $secondofday`
 export secondofdaya=`expr $houra \* 3600`
 export secondofdaya=`printf %05i $secondofdaya`
 export secondofnextday=`expr $hrnext \* 3600`
 export secondofnextday=`printf %05i $secondofnextday`
+export secondofendnextday=`expr $hrendnext \* 3600`
+export secondofendnextday=`printf %05i $secondofendnextday`
 echo 'second of day='$secondofday
 echo 'second of day (anal time)='$secondofdaya
 echo 'second of next day='$secondofnextday
+echo 'second of end next day='$secondofendnextday
 
 
 # copy data, diag and field tables.
@@ -387,6 +388,9 @@ DT_OCN_FAST=`expr $dt_ocn \/ 2`  # split N-S in 2 procs
 sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
 sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input
+sed -i -e "s/DO_OCNSPPT/${DO_OCNSPPT}/g" MOM_input
+sed -i -e "s/DO_PERT_EPBL/${DO_PERT_EPBL}/g" MOM_input
+
 touch MOM_override
 cd ..
 
@@ -427,7 +431,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          # last two args:  no_mpinc no_delzinc
          export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F T"
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F T $iau_forcing_factor"
       fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
@@ -465,30 +469,13 @@ if [ "$fg_only" == "true" ]; then
    iau_inc_files=""
 else
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   if [ -s INPUT/atm_stoch.res.nc ]; then
+     echo "stoch restart available, setting stochini=T"
+     stochini=T # restart random patterns from existing file
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # set to large value so no random patterns will be output
-      # and random pattern will be reinitialized
-      FHSTOCH=240
-      # reduce model time step
-      #dt_atmos=`python -c "print ${dt_atmos}/2"`
+     echo "stoch restarts not available, setting stochini=F"
+     stochini=F
    fi
-   
    iaudelthrs=${iau_delthrs}
    FHCYC=${FHCYC}
    if [ "${iau_delthrs}" != "-1" ]; then
@@ -510,10 +497,6 @@ else
       iau_inc_files=""
    fi
 fi
-
-#fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
-#fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
-#fnsnoa='        ' # no input file, use model snow
 
 snoid='SNOD'
 
@@ -546,7 +529,8 @@ else
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=-2 # use analysis value
+      #export FSNOL=-2 # use analysis value
+      export FSNOL=99999 # for NOAH-MP
    fi
 fi
 
@@ -554,16 +538,13 @@ FHRESTART=${FHRESTART:-"${RESTART_FREQ} -1"}
 if [ ! -z $longfcst ]; then
    FHMAX_FCST=$FHMAX
    FHRESTART=0
-   FHSTOCH=$FHMAX
 elif [ "${iau_delthrs}" != "-1" ]; then
    if [ "${cold_start}" == "true" ]; then
       FHMAX_FCST=$FHMAX
    else
       FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
-   FHSTOCH=`expr $FMAX_FCST - $ANALINC`
 else
-   FHSTOCH=$FHMAX
    FHMAX_FCST=$FHMAX
 fi
 sed -i -e "s/RESTART_FREQ/${RESTART_FREQ}/g" nems.configure
@@ -766,6 +747,30 @@ if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
    NSTFNAME="2,1,0,0"
 fi
 sed -i -e "s/NSTFNAME/${NSTFNAME}/g" input.nml
+
+sed -i -e "s/DO_sppt/${DO_SPPT}/g" input.nml
+sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
+sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
+
+sed -i -e "s/LONB/${LONB}/g" input.nml
+sed -i -e "s/LATB/${LATB}/g" input.nml
+sed -i -e "s/JCAP/${JCAP}/g" input.nml
+sed -i -e "s/SPPT/${SPPT}/g" input.nml
+sed -i -e "s/SHUM/${SHUM}/g" input.nml
+sed -i -e "s/SKEB/${SKEB}/g" input.nml
+sed -i -e "s/STOCHINI/${stochini}/g" input.nml
+sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
+sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
+sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
+sed -i -e "s/ISEED_ocnsppt/${ISEED_OCNSPPT}/g" input.nml
+sed -i -e "s/ISEED_epbl/${ISEED_EPBL}/g" input.nml
+sed -i -e "s/OCN_sppt/${OCNSPPT}/g" input.nml
+sed -i -e "s/OCNsppt_TAU/${OCNSPPT_TAU}/g" input.nml
+sed -i -e "s/OCNsppt_LSCALE/${OCNSPPT_LSCALE}/g" input.nml
+sed -i -e "s/EPBL/${EPBL}/g" input.nml
+sed -i -e "s/epbl_TAU/${EPBL_TAU}/g" input.nml
+sed -i -e "s/epbl_LSCALE/${EPBL_LSCALE}/g" input.nml
+
 cat input.nml
 ls -l INPUT
 # point to ice and ocean restart file
@@ -877,6 +882,8 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       fi
    done
    if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
+#call write_stoch_restart_atm('RESTART/'//trim(timestamp)//'.atm_stoch.res.nc')
+#ocn_stoch.res.nc
       for file in ${datestringa}*nc; do
          echo "copying $file to ${datapath2}/${charnanal}/INPUT"
          /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
@@ -895,12 +902,26 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$file2"
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
    done
+   if [ $perturbed_replay == "YES" ]; then
+   ls ocn_stoch.res.${datestring_ocn}*nc
+   for file in ocn_stoch.res.${datestring_ocn}*nc; do
+      echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$ocn_stoc.res.nc"
+      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/ocn_stoch.res.nc
+   done
+   fi
    if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
       ls MOM.res.${datestring_ocna}*nc
       for file in MOM.res.${datestring_ocna}*nc; do
          echo "copying $file to ${datapath2}/${charnanal}/INPUT"
          /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
       done
+      if [ $perturbed_replay == "YES" ]; then
+      ls ocn_stoch.res.${datestring_ocna}*nc
+      for file in ocn_stoch.res.${datestring_ocna}*nc; do
+         echo "copying $file to ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc"
+         /bin/mv -f $file ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc
+      done
+      fi
    fi
    /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv ufs.cpld.cpl.r.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
@@ -926,23 +947,34 @@ fi
   #   n=$((n+1))
   #done
 #fi
-
-# if random pattern restart file exists for end of IAU window, copy it.
-ls -l stoch_out*
-charfh="F"`printf %06i $FHSTOCH`
-if [ -z $longfcst ] && [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
-fi
-
 ls -l ${DATOUT}
 
 # remove symlinks from INPUT directory
 cd INPUT
 find -type l -delete
 cd ..
-/bin/rm -rf RESTART # don't need RESTART dir anymore.
+#/bin/rm -rf RESTART # don't need RESTART dir anymore.
+# save RESTARTS at end of predictor segment (end of next window)
+#cd RESTART
+#mkdir -p SAVE
+#mv fv*nc SAVE
+#mv ca*nc SAVE
+#mv phy*nc SAVE
+#mv sfc*nc SAVE
+#mv atm_stoch.res.nc SAVE
+#mv ocn_stoch.res.nc SAVE
+#mv MOM.res_1.nc SAVE
+#mv MOM.res_2.nc SAVE
+#mv MOM.res_3.nc SAVE
+#mv MOM.res.nc SAVE
+#mv iced.${yrendnext}-${monendnext}-${dayendnext}-${secondofendnextday}.nc  SAVE
+#mv ufs.cpld.cpl.r.${yrendnext}-${monendnext}-${dayendnext}-${secondofendnextday}.nc SAVE
+#/bin/rm -f *
+#mv SAVE/* .
+#/bin/rm -rf SAVE
+#cd ..
+#ls -l RESTART
+/bin/rm -rf RESTART
 
 echo "all done at `date`"
 

@@ -902,3 +902,6 @@ LIQUID_RUNOFF_FROM_DATA = True  !   [Boolean] default = False
 ! === module MOM_restart ===
 RESTART_CHECKSUMS_REQUIRED = False
 ! === module MOM_file_parser ===
+! stochastic physics
+DO_SPPT = DO_OCNSPPT
+PERT_EPBL = DO_PERT_EPBL

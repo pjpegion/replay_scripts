@@ -42,6 +42,8 @@ export analdatep1=`${incdate} $analdate $ANALINC`
 export analdatem3=`${incdate} $analdate -$FHOFFSET`
 # beginning of next assimilation window
 export analdatep1m3=`${incdate} $analdate $FHOFFSET`
+# end of next assimilation window
+export analdatep1p3=`${incdate} $analdatep1 $FHOFFSET`
 export hrp1=`echo $analdatep1 | cut -c9-10`
 export hrm1=`echo $analdatem1 | cut -c9-10`
 export hr=`echo $analdate | cut -c9-10`

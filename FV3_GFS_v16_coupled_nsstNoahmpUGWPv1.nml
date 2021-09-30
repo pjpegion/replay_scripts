@@ -201,9 +201,12 @@
   do_gsl_drag_ls_bl    = .true.
   do_gsl_drag_ss       = .true.
   do_gsl_drag_tofd     = .true.
-  do_skeb        = .false.
-  do_sppt        = .false.
-  do_shum        = .false.
+  do_skeb        = DO_skeb  
+  do_sppt        = DO_sppt 
+  do_shum        = DO_shum  
+  pert_mp        = .true.
+  pert_clds      = .true.
+  pert_radtend   = .false.
   cplflx         = .true.
   cplwav         = .false.
   cplwav2atm     = .false.
@@ -360,6 +363,36 @@
 /
 
 &nam_stochy
+  lon_s=LONB, lat_s=LATB, ntrunc=JCAP,
+  shum=SHUM,
+  shum_tau=21600,
+  shum_lscale=500000,
+  iseed_shum=ISEED_shum,
+  sppt=SPPT,
+  sppt_tau=21600,
+  sppt_lscale=500000,
+  sppt_logit=.true.,
+  sppt_sfclimit=.true.,
+  iseed_sppt=ISEED_sppt,
+  skeb=SKEB,
+  skeb_tau=21600,
+  skeb_lscale=250000
+  skeb_vdof=5,
+  skeb_npass=30,
+  skebnorm=0,
+  skebint=0,
+  iseed_skeb=ISEED_skeb,
+  use_zmtnblck=.true.,
+  stochini=STOCHINI,
+  new_lscale=.true.,
+  ocnsppt=OCN_sppt,
+  ocnsppt_tau=OCNsppt_TAU,
+  ocnsppt_lscale=OCNsppt_LSCALE,
+  epbl=EPBL,
+  epbl_tau=epbl_TAU,
+  epbl_lscale=epbl_LSCALE,
+  iseed_ocnsppt=ISEED_ocnsppt,
+  iseed_epbl=ISEED_epbl
 /
 
 &nam_sfcperts

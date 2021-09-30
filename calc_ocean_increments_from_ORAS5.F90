@@ -11,7 +11,7 @@ integer                 :: zl_dim_id,zl_var_id,ierr
 
 include 'netcdf.inc'
 
-integer     :: i,j,k,nx,ny,nz,nx2,ny2,nz2,cct,nargs
+integer     :: i,j,k,nx,ny,nz,nx2,ny2,nz2,cct,nargs,iforcing_factor
 character*80 :: fname_fg1,fname_fg2,fname_anl,fname_inc
 character*240 :: path_fg,path_anl
 
@@ -29,14 +29,24 @@ character*10 :: analdate
 character*240 :: expt,oras5path
 character*4 :: yyyy
 character*2 :: mm,dd
+character*3 charnin
+real forcing_factor
 
 nargs=iargc()
 if (nargs.EQ.3) then
    call getarg(1,analdate)
    call getarg(2,expt)
    call getarg(3,oras5path)
+   forcing_factor=1.0
+else if (nargs.EQ.4) then
+   call getarg(1,analdate)
+   call getarg(2,expt)
+   call getarg(3,oras5path)
+   call getarg(4,charnin)
+   read(charnin,'(i3)') iforcing_factor ! percent
+   forcing_factor=iforcing_factor/100.
 else
-   print*,'usage calc_increment <date> <expt path> <oras5 path>'
+   print*,'usage calc_increment <date> <expt path> <oras5 path> <iau_forcing_factor>'
    STOP
 endif
 yyyy=analdate(1:4)
@@ -51,6 +61,7 @@ path_anl=trim(oras5path)//'/'//yyyy//mm//dd//'/'
 fname_anl='ORAS5.ic.nc'
 fname_inc='oras5_increment.nc'
 cct=1
+print*,'iau_forcing_factor=',forcing_factor
 print*,'opening',trim(path_fg)//trim(fname_fg1)
 call check(NF90_OPEN(trim(path_fg)//trim(fname_fg1),NF90_NOWRITE,ncid_fg1),cct)
 print*,'opening',trim(path_fg)//trim(fname_fg2)
@@ -244,11 +255,11 @@ call check(NF90_PUT_VAR(ncid_inc,xq_var_id,lonq),cct)
 call check(NF90_PUT_VAR(ncid_inc,yq_var_id,latq),cct)
 call check(NF90_PUT_VAR(ncid_inc,zl_var_id,z_fg),cct)
 ! compute incrments
-ssh_inc(:,:)=ssh_anl(:,:) - ssh_fg(:,:)
-pt_inc(:,:,:)=pt_anl(:,:,:) - pt_fg(:,:,:)
-s_inc(:,:,:)=s_anl(:,:,:) - s_fg(:,:,:)
-u_inc(:,:,:)=u_anl(:,:,:) - u_fg(:,:,:)
-v_inc(:,:,:)=v_anl(:,:,:) - v_fg(:,:,:)
+ssh_inc(:,:)=forcing_factor*(ssh_anl(:,:) - ssh_fg(:,:))
+pt_inc(:,:,:)=forcing_factor*(pt_anl(:,:,:) - pt_fg(:,:,:))
+s_inc(:,:,:)=forcing_factor*(s_anl(:,:,:) - s_fg(:,:,:))
+u_inc(:,:,:)=forcing_factor*(u_anl(:,:,:) - u_fg(:,:,:))
+v_inc(:,:,:)=forcing_factor*(v_anl(:,:,:) - v_fg(:,:,:))
 
 ! mask out missing values
 WHERE(pt_fg .LT. -2.0 .OR. pt_fg .GT. 50)
