@@ -3,6 +3,7 @@ echo "running on $machine using $NODES nodes"
 # forecast resolution 
 # 1/4 deg
 export RES=384  
+export RES_INC=384
 export OCNRES=mx025
 # 1-deg
 #export RES=96   
@@ -111,8 +112,10 @@ export biascorrdir=${basedir}/biascor
 #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
 #export analfileprefix="C192_ifsanl"
 export replayanaldir=${basedir}/era5anl/C${RES}
+export replayanaldir_lores=${basedir}/era5anl/C${RES_INC}
 export ocnanaldir=${basedir}/oras5/${OCNRES}
 export analfileprefix="C${RES}_era5anl"
+export analfileprefix_lores="C${RES_INC}_era5anl"
 
 export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
@@ -141,6 +144,10 @@ if [ $RES -eq 96 ];then
    export JCAP=188 
    export LONB=384   
    export LATB=192  
+fi
+if [ $RES_INC -eq 96 ];then
+   export LONB_INC=384   
+   export LATB_INC=192  
 fi
 if [ $RES -eq 768 ]; then
    export dt_atmos=120
@@ -186,9 +193,11 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 #export perturbed_replay="NO"
 #export nmem=0
 export perturbed_replay="NO"
-export nmem=0 # perturbed member (gets added to random seeds)
+export nmem=1 # perturbed member (gets added to random seeds)
 if [ $perturbed_replay == "YES" ]; then
-    export iau_forcing_factor=100
+    export analfileprefix="C${RES}_era5anl_nmem0"
+    export iau_forcing_factor_atm=100  
+    export iau_forcing_factor_ocn=100  
     # these go in  nam_stochy block of atmospheric model input.nml
     export DO_SPPT=.true.
     export SPPT=0.5
@@ -206,7 +215,8 @@ if [ $perturbed_replay == "YES" ]; then
     export DO_OCNSPPT=True
     export DO_PERT_EPBL=True
 else
-    export iau_forcing_factor=100 # gets divideed by 100.0
+    export iau_forcing_factor_atm=100  
+    export iau_forcing_factor_ocn=100  
     # these go in  nam_stochy block of atmospheric model input.nml
     export SKEB=0
     export DO_SKEB=.false.
