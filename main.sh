@@ -66,6 +66,27 @@ export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
+if [ $RES_INC -lt $RES ] && [ $cold_start == 'false' ] ; then
+   charnanal='control'
+   echo "$analdate reduce resolution of FV3 history files `date`"
+   iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+# IAU - multiple increments.
+   for fh in $iaufhrs2; do
+   # run concurrently, wait
+   sh ${scriptsdir}/chgres.sh $datapath2/sfg_${analdate}_fhr0${fh}_${charnanal} ${replayanaldir_lores}/${analfileprefix_lores}_${analdate}.nc $datapath2/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres > ${current_logdir}/chgres_fhr0${fh}.out
+   errstatus=$?
+   if [ $errstatus -ne 0 ]; then
+     errexit=$errstatus
+   fi
+   fh=$((fh+FHOUT))
+   if [ $errexit -ne 0 ]; then
+      echo "adjustps/chgres step failed, exiting...."
+      exit 1
+   fi
+   done
+   echo "$analdate done reducing resolution of FV3 history files `date`"
+fi
+
 if [ $fg_only == 'false' ]; then
     if [ $replay_run_observer == "true" ]; then
        export charnanal='control'
@@ -115,7 +136,7 @@ fi
 
 fi # skip to here if fg_only = true
 
-echo "$analdate all done"
+echo "$analdate all done `date`"
 
 # next analdate: increment by $ANALINC
 export analdate=`${incdate} $analdate $ANALINC`
@@ -126,12 +147,11 @@ echo "export fg_only=false" > $datapath/fg_only.sh
 echo "export cold_start=false" >> $datapath/fg_only.sh
 
 cd $homedir
-echo "$analdate all done `date`"
 
 if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    echo "current time is $analdate"
    if [ $resubmit == "true" ]; then
-      echo "resubmit script"
+      echo "resubmit script for `date`"
       echo "machine = $machine"
       if [ "$coupled"  == 'ATM_OCN_ICE' ];then
          cat ${machine}_preamble_cpld_slurm config.sh > job.sh
