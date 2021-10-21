@@ -154,6 +154,7 @@ if [ $RES -eq 768 ]; then
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
 elif [ $RES -eq 384 ]; then
    export dt_atmos=225
+   #export dt_atmos=180
    export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
    export dt_atmos=450
@@ -190,16 +191,19 @@ export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
-#export perturbed_replay="NO"
-#export nmem=0
 export perturbed_replay="NO"
-export nmem=1 # perturbed member (gets added to random seeds)
+export nmem=0
+#export perturbed_replay="YES"
+#export nmem=2 # perturbed member (gets added to random seeds)
 if [ $perturbed_replay == "YES" ]; then
-    export analfileprefix="C${RES}_era5anl_nmem0"
+    nmemm1=$((nmem01))
+    export analfileprefix="C${RES}_era5anl_${nmemm1}"
     export iau_forcing_factor_atm=100  
     export iau_forcing_factor_ocn=100  
     # these go in  nam_stochy block of atmospheric model input.nml
     export DO_SPPT=.true.
+    export PERT_MP=.true.
+    export PERT_CLDS=.true.
     export SPPT=0.5
     export DO_SHUM=.true.
     export SHUM=0.005
@@ -222,6 +226,8 @@ else
     export DO_SKEB=.false.
     export SPPT=0
     export DO_SPPT=.false.
+    export PERT_MP=.false.
+    export PERT_CLDS=.false.
     export SHUM=0
     export DO_SHUM=.false.
     export OCNSPPT=0.
