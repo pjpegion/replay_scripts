@@ -414,6 +414,22 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          /bin/rm -f ${increment_file}
          export "PGM=${scriptsdir}/calc_increment.py ${fgfile} ${analfile} ${increment_file}"
       else
+         /bin/rm -f calc_increment_ncio.nml
+	 ff=`python -c "print($iau_forcing_factor_atm / 100.)"`
+         cat > calc_increment_ncio.nml << EOF
+&setup
+  no_mpinc=.true.
+  no_delzinc=.false.
+  forcing_factor=${ff},
+  taper_strat=.true.
+  taper_pbl=.false.
+  ak_bot=10000.,
+  ak_top=5000.,
+  bk_bot=1.0,
+  bk_top=0.95
+/
+EOF
+         cat calc_increment_ncio.nml
 # usage:
 #   input files: filename_fg filename_anal (1st two command line args)
 #
@@ -434,11 +450,11 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          export DONT_USE_DPRES=1
          export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file} T F T $iau_forcing_factor_atm"
+         export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
          else
          export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F T $iau_forcing_factor_atm"
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
          fi
       fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
@@ -757,6 +773,8 @@ fi
 sed -i -e "s/NSTFNAME/${NSTFNAME}/g" input.nml
 
 sed -i -e "s/DO_sppt/${DO_SPPT}/g" input.nml
+sed -i -e "s/PERT_MP/${PERT_MP}/g" input.nml
+sed -i -e "s/PERT_CLDS/${PERT_CLDS}/g" input.nml
 sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
 sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
 
