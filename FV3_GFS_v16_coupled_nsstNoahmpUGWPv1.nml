@@ -221,8 +221,8 @@
   do_ca      = .true..
   ca_sgs     = .true..
   nca        = 1
-  scells     = 2600
-  tlives     = 1800
+  scells     = 5000
+  tlives     = 2700
   nseed      = 1
   nfracseed  = 0.5
   rcell      = 0.72
