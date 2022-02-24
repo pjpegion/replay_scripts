@@ -2,6 +2,9 @@
 ####  NEMS Run-Time Configuration File  #####
 #############################################
 
+# -# ESMF #
+logKindFlag:            ESMF_LOGKIND_MULTI
+
 # EARTH #
 EARTH_component_list: MED ATM OCN ICE
 EARTH_attributes::
@@ -43,7 +46,7 @@ ICE_attributes::
   ProfileMemory = false
   OverwriteSlice = true
   mesh_ice = mesh.OCNRES.nc
-  stop_n = 12
+  stop_n = 3
   stop_option = nhours
   stop_ymd = -999
 ::
@@ -86,6 +89,7 @@ MED_attributes::
       history_option = nhours
       history_ymd = -999
       coupling_mode = nems_frac
+      history_tile_atm = ATMRES
 ::
 ALLCOMP_attributes::
       ScalarFieldCount = 2
@@ -100,6 +104,9 @@ ALLCOMP_attributes::
       restart_ymd = -999
       dbug_flag = 0
       use_coldstart = false
-      eps_imesh = 2.5e-1
       use_mommesh = true
+      eps_imesh = 1.0e-1
+      stop_n = 6
+      stop_option = nhours
+      stop_ymd = -999
 ::

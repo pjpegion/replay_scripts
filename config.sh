@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}cpld_replay_winter
+export exptname=C${RES}_replay_p8b
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -63,34 +63,22 @@ elif [ "$machine" == 'gaea' ]; then
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
    source /lustre/f2/pdata/esrl/gsd/contrib/lua-5.1.4.9/init/init_lmod.sh
+   module use /lustre/f2/pdata/ncep_shared/hpc-stack/modulefiles/stack
    #source $MODULESHOME/init/sh
    module load PrgEnv-intel/6.0.5
    module rm intel
    module rm cray-mpich
    module rm netcdf
-   module load intel/18.0.6.288
-   module load cray-mpich/7.7.11
-   module load cray-python/3.7.3.2
-   # Needed at runtime:
-   module load alps
-   module use /lustre/f2/pdata/ncep_shared/cmake-3.20.1/modulefiles
-   module load cmake/3.20.1
-   module use /lustre/f2/pdata/esrl/gsd/ufs/hpc-stack-v1.1.0/modulefiles/stack
    module load hpc/1.1.0
    module load hpc-intel/18.0.6.288
    module load hpc-cray-mpich/7.7.11
-   module load prod_util/1.2.2
-   module load bufr/11.4.0
-   module load ip/3.3.3
-   module load nemsio/2.5.2
-   module load sfcio/1.4.1
-   module load sigio/2.3.2
-   module load sp/2.3.3
-   module load w3nco/2.4.1
-   module load w3emc/2.7.3
-   module load bacio/2.4.1
-   module load crtm/2.3.0
+   # Needed at runtime:
+   module load alps
+   module load hdf5/1.10.6
    module load netcdf/4.7.4
+   module load pio/2.5.2
+   module load esmf/8.2.1b04
+   module load fms/2021.03
    module load wgrib
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
@@ -149,17 +137,22 @@ if [ $RES_INC -eq 96 ];then
    export LONB_INC=384   
    export LATB_INC=192  
 fi
+
 if [ $RES -eq 768 ]; then
    export dt_atmos=120
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
+   export dt_inner=75
 elif [ $RES -eq 384 ]; then
    export dt_atmos=225
+   export dt_inner=120
    #export dt_atmos=180
    export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
+   export dt_inner=300
    export dt_atmos=450
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
+   export dt_inner=350	 
    export dt_atmos=900
    #export dt_atmos=450
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
@@ -270,10 +263,7 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
    # copied from /scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix on 8/31/2021
-   export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/P7fix
-   export FIXcice=$FIXDIR/fix_cice/${ORES3}
-   export FIXmom=$FIXDIR/fix_mom6/${ORES3}
-   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
+   export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/p8fix
    export gsipath=${basedir}/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.3.0/fix
@@ -315,7 +305,7 @@ if [ "$coupled" == 'NO' ]; then
 elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
    #export SUITE="FV3_GFS_v16_coupled"
    #export NSTFNAME="0,0,0,0"
-   export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
+   export SUITE="FV3_GFS_v17_coupled_p8b"
    export NSTFNAME="2,0,0,0"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then

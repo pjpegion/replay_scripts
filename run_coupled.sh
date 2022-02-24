@@ -10,58 +10,7 @@ else
    FHROT=3
 fi
 
-if [ "$machine" == 'hera' ]; then
-   module purge
-   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load jasper/2.0.22
-   module load zlib/1.2.11
-   module load png/1.6.35
-   module load pio/2.5.2
-   module load esmf/8_1_1
-   module load fms/2020.04.03
-   module load bacio/2.4.1
-   module load crtm/2.3.0
-   module load g2/3.4.1
-   module load g2tmpl/1.9.1
-   module load ip/3.3.3
-   module load nemsio/2.5.2
-   module load sp/2.3.3
-   module load w3emc/2.7.3
-   #module load esmf/8_1_0_beta_snapshot_27
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'orion' ]; then
-   module purge 
-   module load intel/2019.5 
-   module load impi/2019.6 
-   module load mkl/2019.5  
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
-   module load netcdfp/4.7.4
-   module load esmflocal/8.0.0.para
-   module load grib_util-intel-sandybridge # wgrib
-elif [ "$machine" == 'gaea' ]; then
-   #module purge
-   #module load PrgEnv-intel/6.0.3
-   #module rm intel
-   #module load intel/18.0.3.222
-   ##module load cray-netcdf-hdf5parallel/4.6.1.3
-   ##module load cray-hdf5-parallel/1.10.2.0
-   #module load cray-netcdf
-   #module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   #module load esmflocal/8_0_48b
-   #module load nco/4.6.4
-   #module load wgrib
-   module load nco
-   export WGRIB=`which wgrib`
-   #export HDF5_DISABLE_VERSION_CHECK=1
-fi
-#module list
+export WGRIB=`which wgrib`
 
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
@@ -180,6 +129,7 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
+find -type l -delete
 /bin/rm -f dyn* phy* *nemsio* PET* history/* MOM6_OUTPUT/* ocn_*nc
 export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table_coupled}
 /bin/cp -f $DIAG_TABLE diag_table
@@ -215,17 +165,13 @@ sed -i -e "s/NPROCS_OCN2/${OCN2}/g" nems.configure
 sed -i -e "s/NPROCS_ICE1/${ICE1}/g" nems.configure
 sed -i -e "s/NPROCS_ICE2/${ICE2}/g" nems.configure
 sed -i -e "s/OCNRES/${OCNRES}/g" nems.configure
+sed -i -e "s/ATMRES/${RES}/g" nems.configure
 
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 /bin/cp -f $scriptsdir/field_table_${SUITE} field_table
 /bin/cp -f $scriptsdir/data_table_${OCNRES} data_table
-# CICE files
-ln -sf ${FIXcice}/grid_cice_NEMS_${OCNRES}.nc grid_cice_NEMS_${OCNRES}.nc
-ln -sf ${FIXcice}/kmtu_cice_NEMS_${OCNRES}.nc kmtu_cice_NEMS_${OCNRES}.nc
-ln -sf ${FIXcice}/mesh.${OCNRES}.nc mesh.${OCNRES}.nc
-
 /bin/cp -f ${scriptsdir}/ice_in_${OCNRES} ice_in
 if [ "$cold_start" == "true" ]; then
   ice_date=${analdate}
@@ -284,6 +230,7 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
+find -type l -delete
 if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
@@ -294,87 +241,44 @@ fi
 # Grid and orography data
 n=1
 while [ $n -le 6 ]; do
- ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
- ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
- ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
- ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
+ ln -fs $FIXDIR/FV3_input_data${RES}/INPUT/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/FV3_fix_tiled/C${RES}/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/FV3_input_data${RES}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/FV3_input_data${RES}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_mosaic.nc  C${RES}_mosaic.nc
-ln -fs $FIXDIR/fix_cpl/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+ln -fs $FIXDIR/FV3_input_data${RES}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+# symlinks one level up from INPUT
 cd ..
-#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
-# new ozone and h2o physics for stratosphere
-ln -fs $FIXDIR/fix_am/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXDIR/fix_am/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
-# co2, ozone, surface emiss and aerosol data.
-ln -fs $FIXDIR/fix_am/global_solarconstant_noaa_an.txt solarconstant_noaa_an.txt
-ln -fs $FIXDIR/fix_am/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXDIR/fix_am/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXDIR/fix_am/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXDIR/fix_am/global_co2historicaldata* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
-done
-ln -fs $FIXDIR/fix_am/global_climaeropac_global.txt aerosol.dat
-#ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
-#for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
-#   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
-#done
-# for Thompson microphysics
-#ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
-#ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
+ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
+#ln -fs $FIXDIR/FV3_fix/*grb .
+ln -fs $FIXDIR/FV3_fix/*txt .
+ln -fs $FIXDIR/FV3_fix/*f77 .
+ln -fs $FIXDIR/FV3_fix/*dat .
+ln -fs $FIXDIR/FV3_input_data_RRTMGP/* .
+ln -fs $FIXDIR/FV3_input_data_gsd/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN 
+ln -fs $FIXDIR/FV3_input_data_gsd/freezeH2O.dat freezeH2O.dat   
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qg.dat qr_acr_qg.dat
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qs.dat qr_acr_qs.dat 
+ln -fs $FIXDIR/FV3_input_data/ugwp_C384_tau.nc ugwp_limb_tau.nc
 # for ugwpv1 and MERRA aerosol climo (IAER=1011)
-ln -fs $FIXDIR/fix_ugwd/ugwp_limb_tau.nc ugwp_limb_tau.nc
 for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
-  ln -fs $FIXDIR/fix_aer/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
+  ln -fs $FIXDIR/FV3_input_data_INCCN_aeroclim/MERRA2/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
 done
-ln -fs  $FIXDIR/fix_lut/optics_BC.v1_3.dat  optics_BC.dat
-ln -fs  $FIXDIR/fix_lut/optics_OC.v1_3.dat  optics_OC.dat
-ln -fs  $FIXDIR/fix_lut/optics_DU.v15_3.dat optics_DU.dat
-ln -fs  $FIXDIR/fix_lut/optics_SS.v3_3.dat  optics_SS.dat
-ln -fs  $FIXDIR/fix_lut/optics_SU.v1_3.dat  optics_SU.dat
-
-
-# MOM6 files
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
+# MOM6/CICE files  (MOM6 in INPUT, CICE one level up)
+ln -sf ${FIXDIR}/CICE_FIX/${ORES3}/* . 
 cd INPUT
+ln -sf ${FIXDIR}/MOM6_FIX/${ORES3}/* .
+ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc .
 if [ "$OCNRES" == 'mx100' ];then
-# temporarily point to Phil's directory
-   ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc .
-   ln -sf ${scriptsdir}/INPUT/runoff.daitren.clim.1deg.nc .
    ln -sf ${scriptsdir}/INPUT/salt_restore.nc .
-   ln -sf ${FIXmom}/hycom1_75_800m.nc .
-   ln -sf ${FIXmom}/land_mask.nc .
-   ln -sf ${FIXmom}/layer_coord.nc .
-   ln -sf ${FIXmom}/ocean_hgrid.nc .
-   ln -sf ${FIXmom}/ocean_mask.nc .
-   ln -sf ${FIXmom}/ocean_mosaic.nc .
-   ln -sf ${FIXmom}/tidal_amplitude.nc .
-   ln -sf ${FIXmom}/topog.nc .
-   ln -sf ${FIXmom}/topo_edits_011818.nc .
-   ln -sf ${FIXmom}/vgrid_75_2m.nc
-   ln -sf ${FIXmom}/KH_background_2d.nc .
-   ln -sf ${FIXmom}/MOM_channels_SPEAR .
-   ln -sf ${FIXmom}/seawifs_1998-2006_smoothed_2X.nc .
-  
-elif [ "$OCNRES" == 'mx025' ];then
-# temporarily point to Phil's directory
-   ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc .
-   ln -sf ${FIXmom}/runoff.daitren.clim.1440x1080.v20180328.nc .
-   ln -sf ${FIXmom}/hycom1_75_800m.nc .
-   ln -sf ${FIXmom}/layer_coord.nc .
-   ln -sf ${FIXmom}/ocean_hgrid.nc .
-   ln -sf ${FIXmom}/ocean_mask.nc .
-   ln -sf ${FIXmom}/ocean_mosaic.nc .
-   ln -sf ${FIXmom}/tidal_amplitude.v20140616.nc .
-   ln -sf ${FIXmom}/ocean_topog.nc .
-   ln -sf ${FIXmom}/All_edits.nc .
-   ln -sf ${FIXmom}/geothermal_davies2013_v1.nc .
-   ln -sf ${FIXmom}/MOM_channels_global_025 .
-   ln -sf ${FIXmom}/MOM_layout .
-   ln -sf ${FIXmom}/seawifs-clim-1997-2010.1440x1080.v20180328.nc .
-else
-   echo "other ocean resolutions not supported yet"
-   exit 1
+   ln -sf ${scriptsdir}/INPUT/runoff.daitren.clim.1deg.nc .
 fi
 
 # if analysis time is 12Z, then replay to ORAS-5
@@ -697,7 +601,6 @@ ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
 write_nsflip:            .true.
-write_fsyncflag:         .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -724,9 +627,9 @@ cat model_configure
 if [ "$cold_start" == "true" ]; then
   warm_start=F
   externalic=T
-  na_init=0
+  na_init=1
   mountain=F
-  make_nh=F
+  make_nh=T
   ocn_start=n
 # calculate istep0 for ice model initialization, which is timesteps from 1st of year
   #ice_date=${year_start}010100
@@ -784,6 +687,7 @@ sed -i -e "s/JCAP/${JCAP}/g" input.nml
 sed -i -e "s/SPPT/${SPPT}/g" input.nml
 sed -i -e "s/SHUM/${SHUM}/g" input.nml
 sed -i -e "s/SKEB/${SKEB}/g" input.nml
+sed -i -e "s/DT_INNER/${dt_inner}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
 sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
