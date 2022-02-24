@@ -143,9 +143,8 @@ if [ $RES -eq 768 ]; then
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
    export dt_inner=75
 elif [ $RES -eq 384 ]; then
-   export dt_atmos=225
+   export dt_atmos=300
    export dt_inner=120
-   #export dt_atmos=180
    export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
    export dt_inner=300
@@ -263,7 +262,8 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'gaea' ]; then
    # copied from /scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix on 8/31/2021
-   export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/p8fix
+   #export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/p8fix
+   export FIXDIR= /lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20211210
    export gsipath=${basedir}/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.3.0/fix
