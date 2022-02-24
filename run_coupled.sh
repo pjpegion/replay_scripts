@@ -320,6 +320,8 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       else
          /bin/rm -f calc_increment_ncio.nml
 	 ff=`python -c "print($iau_forcing_factor_atm / 100.)"`
+	 export DONT_USE_DPRES=1
+	 export DONT_USE_DELZ=1
          cat > calc_increment_ncio.nml << EOF
 &setup
   no_mpinc=.true.
