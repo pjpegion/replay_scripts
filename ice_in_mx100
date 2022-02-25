@@ -94,7 +94,7 @@
     kdyn            = 1
     ndte            = 120
     revised_evp     = .false.
-    kevp_kernel     = 0
+    evp_algorithm   = 'standard_2d'
     brlx            = 300.0
     arlx            = 300.0
     ssh_stress      = 'coupled'
@@ -105,7 +105,8 @@
     mu_rdg          = 3
     Cf              = 17.
     Ktens           = 0.
-    e_ratio         = 2.
+    e_yieldcurve    = 2.
+    e_plasticpot    = 2.
     coriolis        = 'latitude'
     kridge          = 1
     ktransport      = 1
@@ -139,6 +140,10 @@
     pndaspect       = 0.8
 /
 
+&snow_nml
+    snwredist       = 'none'
+/
+
 &forcing_nml
     formdrag        = .false.
     atmbndy         = 'default'
@@ -157,8 +162,8 @@
 
 &domain_nml
     nprocs            = NPROCS
-    nx_global         = 360  
-    ny_global         = 320  
+    nx_global         = 1440
+    ny_global         = 1080
     block_size_x      = BS_X
     block_size_y      = BS_Y
     max_blocks        = -1
