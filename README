@@ -9,9 +9,9 @@ compiled model with:
 /bin/rm -rf ufs-weather-model-p8b
 git clone https://github.com/JessicaMeixner-NOAA/ufs-weather-model ufs-weather-model-p8b
 cd ufs-weather-model-p8b
-git checkout feature/p8b
+git checkout feature/p8b_aero
 git submodule update --init --recursive
 # patch to turn off saving of IAU increments in MOM6 restart
-patch -p 0 < /lustre/f2/dev/Jeffrey.S.Whitaker/mom6_iau_restart.diff
+patch -p 0 < /lustre/f2/dev/Jeffrey.S.Whitaker/mom6_iau_restart.diff.new
 cd tests
-./compile.sh gaea.intel "-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v16_coupled,FV3_GFS_v16_coupled_noahmp,FV3_GFS_v16_coupled_nsstNoahmpUGWPv1,FV3_GFS_v17_coupled_p8b" coupled YES NO
+./compile.sh gaea.intel "-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8b" coupled YES NO

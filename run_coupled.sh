@@ -465,6 +465,7 @@ else
 fi
 
 FHRESTART=${FHRESTART:-"${RESTART_FREQ} -1"}
+OUTPUTFH=${OUTPUTFH:-"${FHOUT} -1"}
 if [ ! -z $longfcst ]; then
    FHMAX_FCST=$FHMAX
    FHRESTART=0
@@ -588,6 +589,7 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
+output_fh:               ${OUTPUTFH}
 quilting:                ${quilting}
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
@@ -606,10 +608,6 @@ write_nsflip:            .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
-nfhout:                  ${FHOUT}
-nfhmax_hf:               -1
-nfhout_hf:               -1
-nsout:                   -1
 EOF
 cat model_configure
 

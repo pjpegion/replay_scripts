@@ -47,7 +47,7 @@
   grid_type = -1,
   make_nh = MAKE_NH,
   fv_debug = .false.,
-  range_warn = .false.,
+  range_warn = .true.,
   reset_eta = .false.,
   n_sponge = 42,
   nudge_qv = .true.,
@@ -72,7 +72,7 @@
   nwat = 6,
   na_init = NA_INIT,
   d_ext = 0.0,
-  dnats = 0,
+  dnats = 2,
   fv_sg_adj = 450,
   nord = 2,
   dddmp = 0.1,
@@ -145,6 +145,12 @@
   hybedmf        = .false.
   satmedmf       = .true.
   isatmedmf      = 1
+  bl_mynn_edmf   = 1
+  bl_mynn_edmf_mom = 1
+  bl_mynn_tkeadvect = .true.
+  do_mynnedmf    = .false.
+  do_mynnsfclay  = .false.
+  icloud_bl      = 1
   lheatstrg      = .true.
   lseaspray      = .true.
   random_clds    = .false.
