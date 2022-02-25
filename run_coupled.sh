@@ -774,7 +774,7 @@ if [ "$quilting" == ".true." ]; then
    done
 fi
 
-# move ocean and ice utput,  still need to check for existance TBD
+# move ocean and ice output,  still need to check for existance TBD
 if [ -z $longfcst ]; then
    /bin/mv -f ocn_*.nc ${DATOUT}
    /bin/mv -f history/iceh_*.nc ${DATOUT}
@@ -813,21 +813,19 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
          touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
       fi
    done
-   if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
-#call write_stoch_restart_atm('RESTART/'//trim(timestamp)//'.atm_stoch.res.nc')
-#ocn_stoch.res.nc
-      for file in ${datestringa}*nc; do
-         echo "copying $file to ${datapath2}/${charnanal}/INPUT"
-         /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
-         if [ $? -ne 0 ]; then
-           echo "restart file missing..."
-           exit 1
-         fi
-         if [ $file2 == "ca_data.tile1.nc" ]; then
-            touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
-         fi
-      done
-   fi
+   #if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
+   #   for file in ${datestringa}*nc; do
+   #      echo "copying $file to ${datapath2}/${charnanal}/INPUT"
+   #      /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
+   #      if [ $? -ne 0 ]; then
+   #        echo "restart file missing..."
+   #        exit 1
+   #      fi
+   #      if [ $file2 == "ca_data.tile1.nc" ]; then
+   #         touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+   #      fi
+   #   done
+   #fi
    ls MOM.res.${datestring_ocn}*nc
    for file in MOM.res.${datestring_ocn}*nc; do
       file2=MOM.res`echo $file | cut -c 28-32`
@@ -841,20 +839,20 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/ocn_stoch.res.nc
    done
    fi
-   if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
-      ls MOM.res.${datestring_ocna}*nc
-      for file in MOM.res.${datestring_ocna}*nc; do
-         echo "copying $file to ${datapath2}/${charnanal}/INPUT"
-         /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
-      done
-      if [ $perturbed_replay == "YES" ]; then
-      ls ocn_stoch.res.${datestring_ocna}*nc
-      for file in ocn_stoch.res.${datestring_ocna}*nc; do
-         echo "copying $file to ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc"
-         /bin/mv -f $file ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc
-      done
-      fi
-   fi
+   #if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
+   #   ls MOM.res.${datestring_ocna}*nc
+   #   for file in MOM.res.${datestring_ocna}*nc; do
+   #      echo "copying $file to ${datapath2}/${charnanal}/INPUT"
+   #      /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
+   #   done
+   #   if [ $perturbed_replay == "YES" ]; then
+   #   ls ocn_stoch.res.${datestring_ocna}*nc
+   #   for file in ocn_stoch.res.${datestring_ocna}*nc; do
+   #      echo "copying $file to ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc"
+   #      /bin/mv -f $file ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc
+   #   done
+   #   fi
+   #fi
    /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv ufs.cpld.cpl.r.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
