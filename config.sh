@@ -28,7 +28,7 @@ export save_hpss="true"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-export save_hpss="false"
+#export save_hpss="false"
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
