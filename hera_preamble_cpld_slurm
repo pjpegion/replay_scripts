@@ -4,7 +4,7 @@
 #SBATCH -q batch
 #SBATCH -t 01:00:00
 #SBATCH -A gsienkf
-#SBATCH -N 30   
+#SBATCH -N 15   
 #SBATCH -J ufs_era5_replay
 #SBATCH -e ufs_era5_replay.err
 #SBATCH -o ufs_era5_replay.out
@@ -45,28 +45,28 @@ elif [ $NODES -eq 12 ]; then # 0.25 degree setup
   export nprocs_atm=320
   export nprocs_ice=40
   export nprocs_ocn=120
-elif [ $NODES -eq 14 ]; then # 0.25 degree setup
+elif [ $NODES -eq 15 ]; then # 0.25 degree setup
   export gsi_control_thread=2
   export control_threads=1
-  export control_proc=560
+  export control_proc=600
   export write_groups=4 # write groups for control forecast.
-  export write_tasks=4
+  export write_tasks=14
   export layout="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
   export nprocs_cpl=384
-  export nprocs_atm=400
+  export nprocs_atm=440
   export nprocs_ice=40
   export nprocs_ocn=120
-elif [ $NODES -eq 30 ]; then # 0.25 degree setup
+elif [ $NODES -eq 28 ]; then # 0.25 degree setup
   export gsi_control_thread=4
   export control_threads=1
-  export control_proc=1200
+  export control_proc=1120
   export write_groups=4 # write groups for control forecast.
-  export write_tasks=4
+  export write_tasks=14
   export layout="12,12" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
   export nprocs_cpl=864
-  export nprocs_atm=880
+  export nprocs_atm=920
   export nprocs_ice=40
-  export nprocs_ocn=280
+  export nprocs_ocn=160
 elif [ $NODES -eq 40 ]; then # 0.25 degree setup
   export gsi_control_threads=4
   export control_threads=1
