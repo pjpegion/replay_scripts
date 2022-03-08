@@ -35,6 +35,7 @@ elif [ $NODES -eq 4 ]; then
   export nprocs_ice=16
   export nprocs_ocn=60
 elif [ $NODES -eq 12 ]; then # 0.25 degree setup
+  export gsi_control_thread=2
   export control_threads=1
   export control_proc=480
   export write_groups=1 # write groups for control forecast.
@@ -44,6 +45,28 @@ elif [ $NODES -eq 12 ]; then # 0.25 degree setup
   export nprocs_atm=312
   export nprocs_ice=48
   export nprocs_ocn=120
+elif [ $NODES -eq 30 ]; then # 0.25 degree setup
+  export gsi_control_thread=4
+  export control_threads=1
+  export control_proc=1200
+  export write_groups=4 # write groups for control forecast.
+  export write_tasks=4
+  export layout="12,12" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export nprocs_cpl=864
+  export nprocs_atm=880
+  export nprocs_ice=40
+  export nprocs_ocn=280
+elif [ $NODES -eq 40 ]; then # 0.25 degree setup
+  export gsi_control_threads=4
+  export control_threads=1
+  export control_proc=1600
+  export write_groups=4
+  export write_tasks=12
+  export layout="12,16" 
+  export nprocs_cpl=1152 # layout*6
+  export nprocs_atm=1200 # nprocs_cpl + write_tasks*write_groups
+  export nprocs_ice=80   
+  export nprocs_ocn=320
 else
   echo "processor layout for $NODES nodes not set"
   exit 1

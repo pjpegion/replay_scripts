@@ -10,7 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = .false.
-  ccpp_suite = "FV3_GFS_v17_coupled_p8b"
+  ccpp_suite = "FV3_GFS_v17_coupled_p8"
 /
 
 &diag_manager_nml
@@ -180,7 +180,7 @@
   iopt_stc     = 3
   frac_grid      = FRAC_GRID
   fscav_aero   = '*:0.0'
-  debug          = .true.
+  debug          = .false.
   lgfdlmprad     = .false.
   effr_in        = .true.
   cdmbgwd        = CDMBGWD
