@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8b
+export exptname=C${RES}_replay_p8
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -28,7 +28,7 @@ export save_hpss="true"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-#export save_hpss="false"
+export save_hpss="false"
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
@@ -54,8 +54,10 @@ elif [ "$machine" == 'hera' ]; then
    module load hdf5/1.10.6
    module load netcdf/4.7.4
    module load pio/2.5.2
-   module load esmf/8_1_1
-   module load fms/2020.04.03
+   module load esmf/8.2.1b04
+   module load fms/2021.03-avx
+   module load cdo
+   module load wgrib
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -80,6 +82,7 @@ elif [ "$machine" == 'gaea' ]; then
    module load esmf/8.2.1b04
    module load fms/2021.03
    module load wgrib
+   module load cdo
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
    export datadir=$basedir
@@ -97,11 +100,15 @@ export logdir="${datadir}/logs/${exptname}"
 export biascorrdir=${basedir}/biascor
 
 # directory with analysis netcdf files
-#export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanal
-#export analfileprefix="C192_ifsanl"
-export replayanaldir=${basedir}/era5anl/C${RES}
-export replayanaldir_lores=${basedir}/era5anl/C${RES_INC}
-export ocnanaldir=${basedir}/oras5/${OCNRES}
+if [ $machine == 'hera' ]; then
+    export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
+    export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
+    export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+else
+    export replayanaldir=${basedir}/era5anl/C${RES}
+    export replayanaldir_lores=${basedir}/era5anl/C${RES_INC}
+    export ocnanaldir=${basedir}/oras5/${OCNRES}
+fi
 export analfileprefix="C${RES}_era5anl"
 export analfileprefix_lores="C${RES_INC}_era5anl"
 
@@ -250,9 +257,7 @@ else
 fi
 
 if [ "$machine" == 'hera' ]; then
-   export FIXDIR=/scratch2/BMC/gsienkf/whitaker/P7fix
-   export FIXcice=$FIXDIR/fix_cice/${ORES3}
-   export FIXmom=$FIXDIR/fix_mom6/${ORES3}
+   export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20211210
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
@@ -304,7 +309,7 @@ if [ "$coupled" == 'NO' ]; then
 elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
    #export SUITE="FV3_GFS_v16_coupled"
    #export NSTFNAME="0,0,0,0"
-   export SUITE="FV3_GFS_v17_coupled_p8b"
+   export SUITE="FV3_GFS_v17_coupled_p8"
    export NSTFNAME="2,0,0,0"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
