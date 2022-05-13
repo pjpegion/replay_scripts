@@ -28,7 +28,7 @@ export save_hpss="true"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-#export save_hpss="false"
+export save_hpss="false"
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
@@ -188,6 +188,8 @@ export RESTART_FREQ=3
 export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+export WRITE_DOPOST=".true."
+export DIAG_TABLE="diag_table_coupled"
 
 export perturbed_replay="NO"
 export nmem=0

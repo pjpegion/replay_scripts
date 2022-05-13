@@ -753,7 +753,11 @@ if [ "$quilting" == ".true." ]; then
    while [ $fh -le $fh2 ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     charfhr2c="F"`printf %03i $fh`
+     if [ $fh -gt 100 ]; then
+        charfhr2c="F"`printf %03i $fh`
+     else
+        charfhr2c="F"`printf %02i $fh`
+     fi
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${datelabel}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdffile missing..."
