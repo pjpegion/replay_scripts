@@ -24,7 +24,7 @@ export resubmit='true'
 export save_hpss="true"
 
 # override values from above for debugging.
-#export replay_run_observer='false'
+export replay_run_observer='false'
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -189,7 +189,6 @@ export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 export WRITE_DOPOST=".true."
-export DIAG_TABLE="diag_table_coupled"
 
 export perturbed_replay="NO"
 export nmem=0
@@ -251,6 +250,7 @@ export nitermax=1
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
 export incdate="${scriptsdir}/incdate.sh"
+export DIAG_TABLE="${scriptsdir}/diag_table_coupled"
 
 if [ "$coupled" == 'NO' ];then
    export fv3exec='fv3-nonhydro.exe'
@@ -259,7 +259,7 @@ else
 fi
 
 if [ "$machine" == 'hera' ]; then
-   export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20211210
+   export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
