@@ -24,7 +24,7 @@ export resubmit='true'
 export save_hpss="true"
 
 # override values from above for debugging.
-export replay_run_observer='false'
+#export replay_run_observer='false'
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
