@@ -47,7 +47,7 @@
   grid_type = -1,
   make_nh = MAKE_NH,
   fv_debug = .false.,
-  range_warn = .true.,
+  range_warn = .false.,
   reset_eta = .false.,
   n_sponge = 42,
   nudge_qv = .true.,
