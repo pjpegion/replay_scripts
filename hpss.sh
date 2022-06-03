@@ -12,8 +12,8 @@ else
    hsi=`which hsi`
 fi
 #env
-hsi ls -l $hsidir
-hsi mkdir ${hsidir}/
+$hsi ls -l $hsidir
+$hsi mkdir ${hsidir}/
 cd ${datapath2}/control
 find -type l -delete # delete symlinks
 /bin/rm -f core

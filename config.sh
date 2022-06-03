@@ -269,7 +269,7 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'gaea' ]; then
    # copied from /scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix on 8/31/2021
    #export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/p8fix
-   export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20211210
+   export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    export gsipath=${basedir}/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.3.0/fix
