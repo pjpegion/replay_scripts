@@ -15,3 +15,13 @@ git submodule update --init --recursive
 patch -p 0 < /lustre/f2/dev/Jeffrey.S.Whitaker/mom6_iau_restart.diff.new
 cd tests
 ./compile.sh gaea.intel "-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8b" coupled YES NO
+
+
+other input files:
+
+oras5 and era5 analysis files needed, and conventional bufr files (prepbufr, prepbufr.acft_profiles, tcvitals, satwnd, gpsro)
+
+export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
+export replayanaldir=${basedir}/era5anl/C${RES}
+export ocnanaldir=${basedir}/oras5/${OCNRES}
+(RES=384, OCNRES=mx025)
