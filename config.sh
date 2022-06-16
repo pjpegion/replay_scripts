@@ -45,6 +45,7 @@ elif [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    source $MODULESHOME/init/sh
    module purge
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
