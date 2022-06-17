@@ -186,6 +186,9 @@ if [ "$cold_start" == "true" ]; then
      echo "ice resolution not supported"
      exit 2
   fi
+  if [ $coldstart_ice == "true" ]; then
+     ice_ic="default"
+  fi
   use_restart_time='.false.'
 else
   #istep0=0

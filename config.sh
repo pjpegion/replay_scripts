@@ -190,6 +190,7 @@ export FRAC_GRID=T
 export iaufhrs="6"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 export WRITE_DOPOST=".true."
+export coldstart_ice="true"  # no ice init available
 
 export perturbed_replay="NO"
 export nmem=0
