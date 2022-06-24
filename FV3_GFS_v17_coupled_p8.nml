@@ -151,7 +151,7 @@
   do_mynnedmf    = .false.
   do_mynnsfclay  = .false.
   icloud_bl      = 1
-  lheatstrg      = .true.
+  lheatstrg      = .false.
   lseaspray      = .true.
   random_clds    = .false.
   trans_trac     = .true.
