@@ -690,7 +690,6 @@ sed -i -e "s/JCAP/${JCAP}/g" input.nml
 sed -i -e "s/SPPT/${SPPT}/g" input.nml
 sed -i -e "s/SHUM/${SHUM}/g" input.nml
 sed -i -e "s/SKEB/${SKEB}/g" input.nml
-sed -i -e "s/DT_INNER/${dt_inner}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
 sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml

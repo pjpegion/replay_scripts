@@ -149,17 +149,13 @@ fi
 if [ $RES -eq 768 ]; then
    export dt_atmos=120
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
-   export dt_inner=60
 elif [ $RES -eq 384 ]; then
    export dt_atmos=300
-   export dt_inner=150
    export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
-   export dt_inner=300
    export dt_atmos=450
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
-   export dt_inner=300	 
    export dt_atmos=900
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else

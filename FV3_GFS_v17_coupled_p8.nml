@@ -190,7 +190,6 @@
   ltaerosol    = .false.
   lradar       = .false.
   ttendlim     = -999
-  dt_inner     = DT_INNER
   sedi_semi    = .true.
   decfl        = 10
   h2o_phys       = .true.
