@@ -122,6 +122,12 @@ echo 'second of day (anal time)='$secondofdaya
 echo 'second of next day='$secondofnextday
 echo 'second of end next day='$secondofendnextday
 
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    echo "dt_atmos changed to $dt_atmos..."
+fi
+
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
