@@ -164,7 +164,7 @@ TOPO_CONFIG = "file"            !
                                 !     Phillips - ACC-like idealized topography used in the Phillips config.
                                 !     dense - Denmark Strait-like dense water formation and overflow.
                                 !     USER - call a user modified routine.
-TOPO_EDITS_FILE = "topo_edits_011818.nc" ! default = ""
+TOPO_EDITS_FILE = "ufs.topo_edits_011818.nc" ! default = ""
                                 ! The file from which to read a list of i,j,z topography overrides.
 ALLOW_LANDMASK_CHANGES = True   ! default = "False"
                                 ! If true, allow topography overrides to change ocean points to land
