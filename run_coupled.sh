@@ -122,6 +122,11 @@ echo 'second of day (anal time)='$secondofdaya
 echo 'second of next day='$secondofnextday
 echo 'second of end next day='$secondofendnextday
 
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    echo "dt_atmos changed to $dt_atmos..."
+fi
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
@@ -243,14 +248,19 @@ fi
 
 # Grid and orography data
 n=1
+if [[ $RES -eq 96 ]]; then
+   fv3_input_data=FV3_input_data
+else
+   fv3_input_data=FV3_input_data${RES}
+fi
 while [ $n -le 6 ]; do
- ln -fs $FIXDIR/FV3_input_data${RES}/INPUT/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
  ln -fs $FIXDIR/FV3_fix_tiled/C${RES}/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
- ln -fs $FIXDIR/FV3_input_data${RES}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
- ln -fs $FIXDIR/FV3_input_data${RES}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXDIR/FV3_input_data${RES}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/${fv3_input_data}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
 ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
 # symlinks one level up from INPUT
 cd ..

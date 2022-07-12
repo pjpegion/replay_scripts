@@ -162,8 +162,8 @@
 
 &domain_nml
     nprocs            = NPROCS
-    nx_global         = 1440
-    ny_global         = 1080
+    nx_global         = 360   
+    ny_global         = 320  
     block_size_x      = BS_X
     block_size_y      = BS_Y
     max_blocks        = -1
