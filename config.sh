@@ -156,7 +156,7 @@ elif [ $RES -eq 192 ]; then
    export dt_atmos=450
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 96 ]; then
-   export dt_atmos=900
+   export dt_atmos=720
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 else
    echo "model time step for ensemble resolution C$RES not set"
