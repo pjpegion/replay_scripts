@@ -45,7 +45,7 @@
   dz_min = 6
   psm_bc = 1
   grid_type = -1,
-  make_nh = MAKE_NH,
+  make_nh = .false.,
   fv_debug = .false.,
   range_warn = .false.,
   reset_eta = .false.,
@@ -72,7 +72,7 @@
   nwat = 6,
   na_init = NA_INIT,
   d_ext = 0.0,
-  dnats = 2,
+  dnats = 0,
   fv_sg_adj = 450,
   nord = 2,
   dddmp = 0.1,
@@ -141,7 +141,7 @@
   shal_cnv       = .true.
   cal_pre        = .false.
   redrag         = .true.
-  dspheat        = .true.
+  dspheat        = .false.
   hybedmf        = .false.
   satmedmf       = .true.
   isatmedmf      = 1
@@ -222,8 +222,8 @@
   cplflx       = .true.
   cplice       = .true.
   min_lakeice    = 0.15
-  min_seaice     = 1.0e-6
-  use_cice_alb   = .true.
+  min_seaice     = 0.15   
+  use_cice_alb   = .false.
   gwd_opt      = 2
   ldiag_ugwp   = .false.
   do_ugwp      = .false.
@@ -234,7 +234,7 @@
   do_ugwp_v0_nst_only  = .false.
   do_gsl_drag_ls_bl    = .false.
   do_gsl_drag_ss       = .true.
-  do_gsl_drag_tofd     = .true.
+  do_gsl_drag_tofd     = .false.
   do_ugwp_v1_orog_only = .false.
   do_ca        = .true.
   ca_global    = .false.
