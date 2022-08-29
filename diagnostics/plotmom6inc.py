@@ -21,7 +21,8 @@ ds1.close()
 
 sstinc = None
 for date in dates:
-    filename='/lustre/f2/scratch/Jeffrey.S.Whitaker/%s/%s/control/INPUT/oras5_increment.nc' % (expt,date)
+    #filename='/lustre/f2/scratch/Jeffrey.S.Whitaker/%s/%s/control/INPUT/oras5_increment.nc' % (expt,date)
+    filename='/scratch2/BMC/gsienkf/whitaker/%s/%s/control/INPUT/oras5_increment.nc' % (expt,date)
     print(date)
     ds = xr.open_dataset(filename)
     ds = ds.assign_coords({'geolons': (('lath','lonh'),geolons),
@@ -41,5 +42,5 @@ sstinc.plot(x='geolons', y='geolats',
               cmap=plt.cm.bwr,
               transform=ccrs.PlateCarree())
 plt.title('mean pt_inc (MOM6-ORAS5) at z_l=0.5 %s to %s %s' % (date1,date2,expt))
-ax.coastlines()
+#ax.coastlines()
 plt.savefig('mom6inc_%s.png' % expt)
