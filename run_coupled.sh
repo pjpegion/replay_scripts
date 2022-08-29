@@ -62,7 +62,7 @@ if [ ! -z $longfcst ]; then
    export monnext=`echo $analdatep1m3 |cut -c 5-6`
    export daynext=`echo $analdatep1m3 |cut -c 7-8`
    export hrnext=`echo $analdatep1m3 |cut -c 9-10`
-elif [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+elif [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -239,7 +239,7 @@ mkdir -p INPUT
 # make symlinks for fixed files and initial conditions.
 cd INPUT
 find -type l -delete
-if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
+if [ "$cold_start" == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -313,7 +313,7 @@ cd ..
 
 
 # create netcdf increment files.
-if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
+if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
 
    iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
@@ -401,7 +401,7 @@ fi
    fi
 
 # setup model namelist
-if [ "$fg_only" == "true" ]; then
+if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
    reslatlondynamics=""
@@ -624,25 +624,12 @@ jmo:                     ${LATB}
 EOF
 cat model_configure
 
-# don't need coupler.res if fhrot specified in model_configure!
-
-## setup coupler.res (needed for restarts if current time != start time)
-#if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
-#   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-#   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-#   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-#   cat INPUT/coupler.res
-#else
-#   /bin/rm -f INPUT/coupler.res # assume current time == start time
-#fi
-
 # copy template namelist file, replace variables.
 if [ "$cold_start" == "true" ]; then
   warm_start=F
   externalic=T
   na_init=1
   mountain=F
-  make_nh=T
   ocn_start=n
 # calculate istep0 for ice model initialization, which is timesteps from 1st of year
   #ice_date=${year_start}010100
@@ -652,7 +639,6 @@ else
   externalic=F
   na_init=0
   mountain=T
-  make_nh=F
   ocn_start=r
 fi
 /bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
@@ -669,8 +655,6 @@ sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/NA_INIT/${na_init}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
-sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
-sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 sed -i -e "s/OCN_START/${ocn_start}/g" input.nml
 sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
 sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
