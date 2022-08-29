@@ -304,17 +304,15 @@ fi
 
 # new namelist settings for coupled/not-coupled
 if [ "$coupled" == 'NO' ]; then
-   export SUITE="FV3_GFS_v16beta_no_nsst"
+   export SUITE="FV3_GFS_v17_p8"
    export rungfs="run_fv3.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
-   #export SUITE="FV3_GFS_v16_coupled"
    #export NSTFNAME="0,0,0,0"
    export SUITE="FV3_GFS_v17_coupled_p8"
    export NSTFNAME="2,0,0,0"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
    export SUITE="FV3_GFS_v16_coupled"
-   #export SUITE=FV3_GFS_v16_coupled_nsstNoahmpUGWPv1
    export rungfs="run_coupled_wav.sh"
    echo "${coupled} option not yet supported"
    echo "please chose betwee NO ATM_OCN_ICE"
