@@ -141,7 +141,7 @@
   shal_cnv       = .true.
   cal_pre        = .false.
   redrag         = .true.
-  dspheat        = .false.
+  dspheat        = .true.
   hybedmf        = .false.
   satmedmf       = .true.
   isatmedmf      = 1
