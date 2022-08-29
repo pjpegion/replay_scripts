@@ -14,7 +14,6 @@ YYYY MM DD HH 0 0
  "ocean_model_z","temp","temp"  ,"ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
  "ocean_model","vert_remap_h","ho"  ,"ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
  "ocean_model", "pbo",   "pbo",  "ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2 
-
  "ocean_model", "SSH",       "SSH",      "ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
 # forcing
  "ocean_model", "taux",      "taux",                     "ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
@@ -45,10 +44,11 @@ YYYY MM DD HH 0 0
 "gfs_dyn",     "graupel",     "grle",      "fv3_history",    "all",  .false.,  "none",  2
 "gfs_dyn",     "ps",          "pressfc",   "fv3_history",    "all",  .false.,  "none",  2
 "gfs_dyn",     "hs",          "hgtsfc",    "fv3_history",    "all",  .false.,  "none",  2
-#"gfs_dyn",     "ice_nc",      "nicp",      "fv3_history",  "all",  .false.,  "none",  2
-#"gfs_dyn",     "rain_nc",     "ntrnc",     "fv3_history",  "all",  .false.,  "none",  2
-#"gfs_dyn",     "cld_amt",     "cld_amt",      "fv3_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "ice_nc",      "nicp",      "fv3_history",  "all",  .false.,  "none",  2
+"gfs_dyn",     "rain_nc",     "ntrnc",     "fv3_history",  "all",  .false.,  "none",  2
+"gfs_dyn",     "cld_amt",     "cld_amt",      "fv3_history",    "all",  .false.,  "none",  2
 
+"gfs_phys",    "cldfra",        "cldfra",        "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "ALBDO_ave",     "albdo_ave",     "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "cnvprcp_ave",   "cprat_ave",     "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "cnvprcpb_ave",  "cpratb_ave",    "fv3_history2d",  "all",  .false.,  "none",  2
@@ -69,7 +69,7 @@ YYYY MM DD HH 0 0
 "gfs_phys",    "hpbl",          "hpbl",          "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "lhtfl_ave",     "lhtfl_ave",     "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "shtfl_ave",     "shtfl_ave",     "fv3_history2d",  "all",  .false.,  "none",  2
-"gfs_phys",    "pwat",          "pwatclm",       "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_phys",    "pwat",          "pwat",          "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "soilm",         "soilm",         "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "TCDC_aveclm",   "tcdc_aveclm",   "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "TCDC_avebndcl", "tcdc_avebndcl", "fv3_history2d",  "all",  .false.,  "none",  2
@@ -136,6 +136,14 @@ YYYY MM DD HH 0 0
 "gfs_phys",    "psurf",         "pressfc",       "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "u10m",          "ugrd10m",       "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_phys",    "v10m",          "vgrd10m",       "fv3_history2d",  "all",  .false.,  "none",  2
+
+"gfs_phys",    "pahi",          "pahi",          "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_phys",    "pah_ave",       "pah_ave",       "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_phys",    "ecan_acc",      "ecan_acc",      "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_phys",    "etran_acc",     "etran_acc",     "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_phys",    "edir_acc",      "edir_acc",      "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_phys",    "wa_acc",        "wa_acc",        "fv3_history2d",  "all",  .false.,  "none",  2
+"gfs_sfc",     "lfrac",         "lfrac",         "fv3_history2d",  "all",  .false.,  "none",  2
 
 "gfs_sfc",     "crain",         "crain",        "fv3_history2d",  "all",  .false.,  "none",  2
 "gfs_sfc",     "tprcp",         "tprcp",        "fv3_history2d",  "all",  .false.,  "none",  2
