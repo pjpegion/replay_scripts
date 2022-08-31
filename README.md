@@ -9,9 +9,9 @@ scripts to replay UFS to ERA-5 and ORAS5 analyses
   All scripts and executables live in basedir/scripts/exptname (basedir and exptname set in config.sh).
   Data generated from replay cycle lives in basedir/exptname.
 
-* the physics suite is specified via the SUITE env in config.sh. ${SUITE}.nml, field_tagble_${SUITE}
+* the physics suite is specified via the SUITE env in `config.sh`. `${SUITE}.nml`, `field_tagble_${SUITE}`
   must exist in this (the scripts) directory. The nml file is templated and some variables are
-  substituted via sed in the model run script (run_coupled.sh) based on env vars set in config.sh
+  substituted via sed in the model run script (`run_coupled.sh`) based on env vars set in `config.sh`
 
 * main.sh performs the replay cycle.  This includes
   1)  running the GSI observer to compute the fit of the predictor segment to obs
@@ -32,16 +32,16 @@ scripts to replay UFS to ERA-5 and ORAS5 analyses
 Setting up a new run:
    1) create an experiement directory, which is $datadir/$exptname in config.sh
    2) populate analdate.sh and fg_only.sh files
-      example for a cold start on Dec 1 2015:
+      example for a warm start on Sept 1 2019:
        > cat analdate.txt
          export analdate=2019090100
          export analdate_end=2019100100
        > cat fg_only.sh
          export fg_only=false
          export cold_start=false
-    3) cd to experiement directory and 
+   3) cd to experiement directory and 
        > mkdir 2015120100
        > cd 2015120100
        > mkdir INPUT
-    4) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
-       to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
+   4) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
+      to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
