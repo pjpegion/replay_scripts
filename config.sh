@@ -30,21 +30,11 @@ export save_hpss="true"
 #export do_cleanup='false'
 #export save_hpss="false"
  
-if [ "$machine" == 'wcoss' ]; then
-   export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
-   export datadir=/gpfs/hps2/ptmp/${USER}
-   export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
-   export obs_datapath=${basedir}/gdas1bufr
-elif [ "$machine" == 'theia' ]; then
-   export basedir=/scratch3/BMC/gsienkf/${USER}
-   export datadir=$basedir
-   export hsidir="/ESRL/BMC/gsienkf/2year/Philip.Pegion/${exptname}"
-   export obs_datapath=/scratch4/NCEPDEV/global/noscrub/dump
-elif [ "$machine" == 'hera' ]; then
+if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   export hsidir="/ESRL/BMC/gsienkf/2year/${USER}/${exptname}"
+}
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    source $MODULESHOME/init/sh
    module purge
@@ -62,7 +52,7 @@ elif [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=/work/noaa/gsienkf/${USER}
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export hsidir="/ESRL/BMC/gsienkf/2year/${USER}/${exptname}"
    export obs_datapath=/work/noaa/rstprod/dump
    source $MODULESHOME/init/sh
    export save_hpss="false"
@@ -81,7 +71,7 @@ elif [ "$machine" == 'orion' ]; then
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export hsidir="/ESRL/BMC/gsienkf/2year/${USER}/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
    source /lustre/f2/pdata/esrl/gsd/contrib/lua-5.1.4.9/init/init_lmod.sh
@@ -103,13 +93,8 @@ elif [ "$machine" == 'gaea' ]; then
    module load fms/2021.03
    module load wgrib
    module load cdo
-elif [ "$machine" == 'cori' ]; then
-   export basedir=${SCRATCH}
-   export datadir=$basedir
-   export hsidir="fv3_reanl/${exptname}"
-   export obs_datapath=${basedir}/gdas1bufr
 else
-   echo "machine must be 'wcoss', 'theia', 'gaea' or 'cori', got $machine"
+   echo "${machine} unsupported machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -126,7 +111,7 @@ if [ $machine == 'hera' ]; then
     export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
 elif [ $machine == 'orion' ]; then
     export replayanaldir=/work/noaa/gsienkf/whitaker/era5/C${RES}
-    export replayanaldir_ores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
+    export replayanaldir_lores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
     export ocnanaldir=/work/noaa/gsienkf/whitaker/oras5/${OCNRES}
 else
     export replayanaldir=${basedir}/era5anl/C${RES}
