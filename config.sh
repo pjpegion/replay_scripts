@@ -22,6 +22,7 @@ export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
+export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 
 # override values from above for debugging.
 #export replay_run_observer='false'
@@ -111,7 +112,11 @@ if [ $machine == 'hera' ]; then
 elif [ $machine == 'orion' ]; then
     export replayanaldir=/work/noaa/gsienkf/whitaker/era5/C${RES}
     export replayanaldir_lores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
-    export ocnanaldir=/work/noaa/gsienkf/whitaker/oras5/${OCNRES}
+    if [ $NGGODAS == "true" ]; then
+        export ocnanaldir=/work/noaa/marine/Shastri.Paturi/PSL-final/ana # NG-GODAS
+    else
+        export ocnanaldir=/work/noaa/gsienkf/whitaker/oras5/${OCNRES}
+    fi
 else
     export replayanaldir=${basedir}/era5anl/C${RES}
     export replayanaldir_lores=${basedir}/era5anl/C${RES_INC}
