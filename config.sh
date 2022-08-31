@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8
+export exptname=C${RES}_replay_p8_godas
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -59,6 +59,25 @@ elif [ "$machine" == 'hera' ]; then
    module load fms/2021.03-avx
    module load cdo
    module load wgrib
+elif [ "$machine" == 'orion' ]; then
+   export basedir=/work/noaa/gsienkf/${USER}
+   export datadir=/work/noaa/gsienkf/${USER}
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/work/noaa/rstprod/dump
+   source $MODULESHOME/init/sh
+   export save_hpss="false"
+   module purge
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/2018.4
+   module unload mkl/2020.2
+   module load mkl/2018.4
+   module load hpc-impi/2018.4
+   module load python/3.7.5
+   module load hdf5/1.10.6-parallel
+   module load wgrib/1.8.0b
+   module load nco
+   export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -105,6 +124,10 @@ if [ $machine == 'hera' ]; then
     export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
     export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
     export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+elif [ $machine == 'orion' ]; then
+    export replayanaldir=/work/noaa/gsienkf/whitaker/era5/C${RES}
+    export replayanaldir_ores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
+    export ocnanaldir=/work/noaa/gsienkf/whitaker/oras5/${OCNRES}
 else
     export replayanaldir=${basedir}/era5anl/C${RES}
     export replayanaldir_lores=${basedir}/era5anl/C${RES_INC}
@@ -248,7 +271,7 @@ export nitermax=2
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
 export incdate="${scriptsdir}/incdate.sh"
-export DIAG_TABLE="${scriptsdir}/diag_table_coupled"
+export DIAG_TABLE="${scriptsdir}/diag_table_cpl"
 
 if [ "$coupled" == 'NO' ];then
    export fv3exec='fv3-nonhydro.exe'
@@ -261,6 +284,15 @@ if [ "$machine" == 'hera' ]; then
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
+   export execdir=${scriptsdir}/exec_${machine}
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+elif [ "$machine" == 'orion' ]; then
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export fv3gfspath=/work/noaa/global/glopara
+   export gsipath=${basedir}/GSI
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
