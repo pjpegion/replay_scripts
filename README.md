@@ -33,15 +33,15 @@ Setting up a new run:
    1) create an experiement directory, which is $datadir/$exptname in config.sh
    2) populate analdate.sh and fg_only.sh files
       example for a warm start on Sept 1 2019:
-       > cat analdate.txt
-         export analdate=2019090100
-         export analdate_end=2019100100
-       > cat fg_only.sh
-         export fg_only=false
-         export cold_start=false
+      > cat analdate.txt
+        export analdate=2019090100
+        export analdate_end=2019100100
+      > cat fg_only.sh
+        export fg_only=false
+        export cold_start=false
    3) cd to experiement directory and 
-       > mkdir 2015120100
-       > cd 2015120100
-       > mkdir INPUT
+      > mkdir 2015120100
+      > cd 2015120100
+      > mkdir INPUT
    4) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
       to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
