@@ -4,7 +4,7 @@ scripts to replay UFS to ERA-5 and ORAS5 analyses
 * `config.sh` is the main driver script.  It sets parameters (via env variables) and then
   runs `main.sh`.  It can be submitted via `> sh submit_coupled_job.sh <machine_name>`  where
   `<machine_name>` must be hera, orion or gaea.  Executables for each platform live
-  in `exec_<machine_name>` (except for the model executable fv3-nonhydro.ext which must be copied into
+  in `exec_<machine_name>` (except for the model executable `ufs_coupled.exe` which must be copied into
   the `exex_<machine_name>` directory by the user.  
   All scripts and executables live in basedir/scripts/exptname (basedir and exptname set in config.sh).
   Data generated from replay cycle lives in basedir/exptname.
