@@ -1,15 +1,15 @@
 # replay_scripts
 scripts to replay UFS to ERA-5 and ORAS5 analyses
 
-* config.sh is the main driver script.  It sets parameters (via env variables) and then
-  runs main.sh.  It can be submitted via 'sh submit_coupled_job.sh <machine_name>'  where
-  <machine_name> must be hera, orion or gaea.  Executables for each platform live
-  in exec_<machine_name> (except for the model executable fv3-nonhydro.ext which must be copied into
-  the exex_<machine_name> directory by the user.  
+* `config.sh` is the main driver script.  It sets parameters (via env variables) and then
+  runs `main.sh`.  It can be submitted via `> sh submit_coupled_job.sh <machine_name>`  where
+  `<machine_name>` must be hera, orion or gaea.  Executables for each platform live
+  in `exec_<machine_name>` (except for the model executable fv3-nonhydro.ext which must be copied into
+  the `exex_<machine_name>` directory by the user.  
   All scripts and executables live in basedir/scripts/exptname (basedir and exptname set in config.sh).
   Data generated from replay cycle lives in basedir/exptname.
 
-* the physics suite is specified via the SUITE env in `config.sh`. `${SUITE}.nml`, `field_tagble_${SUITE}`
+* the physics suite is specified via the `SUITE` env in `config.sh`. `${SUITE}.nml`, `field_tagble_${SUITE}`
   must exist in this (the scripts) directory. The nml file is templated and some variables are
   substituted via sed in the model run script (`run_coupled.sh`) based on env vars set in `config.sh`
 
@@ -33,15 +33,13 @@ Setting up a new run:
    1) create an experiement directory, which is $datadir/$exptname in config.sh
    2) populate analdate.sh and fg_only.sh files
       example for a warm start on Sept 1 2019:
+      ```
       > cat analdate.txt
-        export analdate=2019090100
-        export analdate_end=2019100100
+      > export analdate=2019090100
+      > export analdate_end=2019100100
       > cat fg_only.sh
-        export fg_only=false
-        export cold_start=false
-   3) cd to experiement directory and 
-      > mkdir 2015120100
-      > cd 2015120100
-      > mkdir INPUT
-   4) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
+      > export fg_only=false
+      >export cold_start=false
+      ```
+   3) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
       to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
