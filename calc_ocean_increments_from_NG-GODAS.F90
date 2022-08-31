@@ -69,7 +69,7 @@ dd=analdatep1(7:8)
 hh=analdatep1(9:10)
 fname_fg1='ocn_'//yyyy//'_'//mm//'_'//dd//'_10.nc'
 fname_fg2='ocn_'//yyyy//'_'//mm//'_'//dd//'_13.nc'
-path_anl=trim(anlpath)//'/'//analdate//'/'
+path_anl=trim(anlpath)//'/'//yyyy//'/'//analdate//'/'
 fname_anl='ocn.ana.'//analdate//'.nc'
 
 fname_inc='nggodas_increment.nc'

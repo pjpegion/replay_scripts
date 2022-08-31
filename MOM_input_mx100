@@ -365,7 +365,7 @@ DIAG_COORDS = "z Z ZSTAR"
                                 ! is of the form "MODULE_SUFFIX,PARAMETER_SUFFIX,COORDINATE_NAME".
 !DIAG_COORD_DEF_Z="FILE:interpolate_zgrid_46L.nc,interfaces=zw"
 ! this is for ORAS5 replay
-DIAG_COORD_DEF_Z="FILE:interpolate_zgrid_ORAS5_75L.nc,interfaces=zw"
+DIAG_COORD_DEF_Z="FILE:interpolate_zgrid_75L.nc,interfaces=zw"
 DIAG_MISVAL = -1e34
 !AVAILABLE_DIAGS_FILE = "available_diags.002160" ! default = "available_diags.000000"
                                 ! A file into which to write a list of all available ocean diagnostics that can

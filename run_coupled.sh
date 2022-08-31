@@ -288,7 +288,11 @@ ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  
 ln -sf ${FIXDIR}/CICE_FIX/${ORES3}/* . 
 cd INPUT
 ln -sf ${FIXDIR}/MOM6_FIX/${ORES3}/* .
-ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc .
+if [ $NGGODAS == "true" ]; then
+   ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_NG-GODAS_75L.nc interpolate_zgrid_75L.nc
+else
+   ln -sf ${scriptsdir}/INPUT/interpolate_zgrid_ORAS5_75L.nc interpolate_zgrid_75L.nc
+fi
 if [ "$OCNRES" == 'mx100' ];then
    ln -sf ${scriptsdir}/INPUT/salt_restore.nc .
    ln -sf ${scriptsdir}/INPUT/runoff.daitren.clim.1deg.nc .
@@ -389,15 +393,25 @@ EOF
 #   cp /scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/coupled_cycling_1deg.copy/INPUT/fv3_increment6.nc .
 #   cd ..
 fi
-# only do IAU on ocean for the 12z cycle
-   if [ $houra -eq 12 ]; then
-      sh ${scriptsdir}/calc_ocean_increment.sh
-      if [ $? -ne 0 ]; then
-         echo "calc_ocean_increment failed..."
-         exit 1
-      else
-         echo "done calculating ocean increment... `date`"
-      fi
+   if [ $NGGODAS == "true" ]; then
+       sh ${scriptsdir}/calc_ocean_increment_nggodas.sh
+       if [ $? -ne 0 ]; then
+          echo "calc_ocean_increment failed..."
+          exit 1
+       else
+          echo "done calculating ocean increment... `date`"
+       fi
+   else
+       # only do IAU on ocean for the 12z cycle for ORAS5
+       if [ $houra -eq 12 ]; then
+          sh ${scriptsdir}/calc_ocean_increment.sh
+          if [ $? -ne 0 ]; then
+             echo "calc_ocean_increment failed..."
+             exit 1
+          else
+             echo "done calculating ocean increment... `date`"
+          fi
+       fi
    fi
 
 # setup model namelist

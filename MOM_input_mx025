@@ -374,7 +374,7 @@ DIAG_COORDS = "z Z ZSTAR"
                                 ! a coordinate definition used for diagnostics. Each string
                                 ! is of the form "MODULE_SUFFIX,PARAMETER_SUFFIX,COORDINATE_NAME".
 !DIAG_COORD_DEF_Z="FILE:interpolate_zgrid_40L.nc,interfaces=zw"
-DIAG_COORD_DEF_Z="FILE:interpolate_zgrid_ORAS5_75L.nc,interfaces=zw"
+DIAG_COORD_DEF_Z="FILE:interpolate_zgrid_75L.nc,interfaces=zw"
 DIAG_MISVAL = -1e34
 !DIAG_COORD_DEF_RHO2 = "FILE:diag_rho2.nc,interfaces=rho2" ! default = "WOA09"
                                 ! Determines how to specify the coordinate resolution. Valid options are:
