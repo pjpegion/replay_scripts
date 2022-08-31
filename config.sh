@@ -34,7 +34,6 @@ if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/${USER}/${exptname}"
-}
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    source $MODULESHOME/init/sh
    module purge
