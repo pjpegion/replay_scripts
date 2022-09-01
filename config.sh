@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8_godas
+export exptname=C${RES}_replay_p8
 export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -260,7 +260,7 @@ export nitermax=2
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
 export incdate="${scriptsdir}/incdate.sh"
-export DIAG_TABLE="${scriptsdir}/diag_table_cpl"
+export DIAG_TABLE="${scriptsdir}/diag_table_coupled"
 
 if [ "$coupled" == 'NO' ];then
    export fv3exec='fv3-nonhydro.exe'
