@@ -71,7 +71,7 @@ fname_fg2='ocn_'//yyyy//'_'//mm//'_'//dd//'_'//hh//'.nc'
 path_anl=trim(anlpath)//'/'//yyyy//'/'//analdate//'/ctrl/'
 fname_anl='ocn.ana.'//analdate//'.nc'
 
-fname_inc='nggodas_increment.nc'
+fname_inc='mom6_increment.nc'
 cct=1
 print*,'iau_forcing_factor=',forcing_factor
 print*,'opening',trim(path_fg)//trim(fname_fg1)

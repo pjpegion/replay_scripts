@@ -79,7 +79,7 @@ SAVE_INITIAL_CONDS = False      !   [Boolean] default = False
 ODA_INCUPD = DO_OCN_IAU         ! [Boolean] default = False
                                 ! If true, oda incremental updates will be applied
                                 ! everywhere in the domain.
-ODA_INCUPD_FILE = "oras5_increment.nc" ! The name of the file with the T,S,h increments.
+ODA_INCUPD_FILE = "mom6_increment.nc" ! The name of the file with the T,S,h increments.
 
 ODA_TEMPINC_VAR = "pt_inc"      ! default = "ptemp_inc"
                                 ! The name of the potential temperature inc. variable in

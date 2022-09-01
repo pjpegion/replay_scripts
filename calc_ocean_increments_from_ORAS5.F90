@@ -59,7 +59,7 @@ fname_fg1='ocn_'//yyyy//'_'//mm//'_'//dd//'_10.nc'
 fname_fg2='ocn_'//yyyy//'_'//mm//'_'//dd//'_13.nc'
 path_anl=trim(oras5path)//'/'//yyyy//mm//dd//'/'
 fname_anl='ORAS5.ic.nc'
-fname_inc='oras5_increment.nc'
+fname_inc='mom6_increment.nc'
 cct=1
 print*,'iau_forcing_factor=',forcing_factor
 print*,'opening',trim(path_fg)//trim(fname_fg1)
