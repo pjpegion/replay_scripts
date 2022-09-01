@@ -220,7 +220,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
   bk_top=0.95
 /
 EOF
-         cat calc_increment_ncio.nml
+     cat calc_increment_ncio.nml
 # usage:
 #   input files: filename_fg filename_anal (1st two command line args)
 #

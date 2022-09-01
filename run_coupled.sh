@@ -326,6 +326,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       echo "create ${increment_file} from ${fgfile} and ${analfile}"
       /bin/rm -f ${increment_file}
       export "PGM=${scriptsdir}/calc_increment.py ${fgfile} ${analfile} ${increment_file}"
+      cat > calc_increment_ncio.nml << EOF
 &setup
   no_mpinc=.true.
   no_delzinc=.false.
@@ -338,7 +339,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
   bk_top=0.95
 /
 EOF
-         cat calc_increment_ncio.nml
+     cat calc_increment_ncio.nml
 # usage:
 #   input files: filename_fg filename_anal (1st two command line args)
 #
