@@ -35,11 +35,11 @@ Setting up a new run:
       example for a warm start on Sept 1 2019:
       ```
       > cat analdate.txt
-      > export analdate=2019090100
-      > export analdate_end=2019100100
+      export analdate=2019090100
+      export analdate_end=2019100100
       > cat fg_only.sh
-      > export fg_only=false
-      >export cold_start=false
+      export fg_only=false
+      export cold_start=false
       ```
    3) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
       to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
