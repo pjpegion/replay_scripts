@@ -69,6 +69,7 @@ YYYY MM DD HH 0 0
  "ocean_model_z","vo","vo"      ,"ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
  "ocean_model_z","so","so"      ,"ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
  "ocean_model_z","temp","temp"  ,"ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
+ "ocean_model","vert_remap_h","ho"  ,"ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
 
 # forcing
  "ocean_model", "taux",      "taux",          "ocn%4yr%2mo%2dy%2hr","all",.true.,"none",2
