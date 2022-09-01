@@ -298,17 +298,10 @@ if [ "$OCNRES" == 'mx100' ];then
    ln -sf ${scriptsdir}/INPUT/runoff.daitren.clim.1deg.nc .
 fi
 
-# if analysis time is 12Z, then replay to ORAS-5
-if [ $houra -eq 12 ] && [ -z $longfcst ]; then
-   OCN_IAU=True
-else
-   OCN_IAU=False
-fi
 /bin/cp -f ${scriptsdir}/MOM_input_${OCNRES} MOM_input
 DT_OCN_FAST=`expr $dt_ocn \/ 2`  # split N-S in 2 procs
 sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
-sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input
 sed -i -e "s/DO_OCNSPPT/${DO_OCNSPPT}/g" MOM_input
 sed -i -e "s/DO_PERT_EPBL/${DO_PERT_EPBL}/g" MOM_input
 
@@ -369,15 +362,15 @@ EOF
          /bin/rm -f ${increment_file}
          # last two args:  no_mpinc no_delzinc
 	 if [ $RES_INC -lt $RES ]; then
-         export DONT_USE_DELZ=1
-         export DONT_USE_DPRES=1
-         export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
-         echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
+            export DONT_USE_DELZ=1
+            export DONT_USE_DPRES=1
+            export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
+            echo "create ${increment_file} from ${fgfile} and ${analfile}"
+            export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
          else
-         export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
-         echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
+            export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
+            echo "create ${increment_file} from ${fgfile} and ${analfile}"
+            export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
          fi
       fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
@@ -388,31 +381,33 @@ EOF
       export OMP_NUM_THREADS=$threads_save
    done # do next forecast
    cd ..
-#else
-#   cd INPUT
-#   cp /scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/coupled_cycling_1deg.copy/INPUT/fv3_increment6.nc .
-#   cd ..
 fi
-   if [ $NGGODAS == "true" ]; then
-       sh ${scriptsdir}/calc_ocean_increment_nggodas.sh
+if [ $NGGODAS == "true" ]; then
+    OCN_IAU=True
+    sh ${scriptsdir}/calc_ocean_increment_nggodas.sh
+    if [ $? -ne 0 ]; then
+       echo "calc_ocean_increment failed..."
+       exit 1
+    else
+       echo "done calculating ocean increment... `date`"
+    fi
+else
+    # only do IAU on ocean for the 12z cycle for ORAS5
+    if [ $houra -eq 12 ]; then
+       OCN_IAU=True
+       sh ${scriptsdir}/calc_ocean_increment.sh
        if [ $? -ne 0 ]; then
           echo "calc_ocean_increment failed..."
           exit 1
        else
           echo "done calculating ocean increment... `date`"
        fi
-   else
-       # only do IAU on ocean for the 12z cycle for ORAS5
-       if [ $houra -eq 12 ]; then
-          sh ${scriptsdir}/calc_ocean_increment.sh
-          if [ $? -ne 0 ]; then
-             echo "calc_ocean_increment failed..."
-             exit 1
-          else
-             echo "done calculating ocean increment... `date`"
-          fi
-       fi
-   fi
+    else
+       OCN_IAU=False
+    fi
+fi
+
+pushd INPUT; sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input; popd
 
 # setup model namelist
 if [ "$cold_start" == "true" ]; then
