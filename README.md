@@ -47,3 +47,9 @@ Setting up a new run:
 Slurm preamble templates (`<machine_name>_cpld_preamble_slurm` and `<machine_name>_hpss_preamble_slurm`)
 will need to be updated for the user's project. Similarly the hsidir env var in config.sh will also need 
 to be updated. On orion, hpss archiving is not done.
+
+
+To run uncoupled (ATM only):
+1) set `coupled=NO` in config.sh
+2) submit with `submit_job.sh` instead of `submit_coupled_job.sh` (uses `<machine>_preamble_slurm`
+   instead of `<machine>_cpld_preamble_slurm`).
