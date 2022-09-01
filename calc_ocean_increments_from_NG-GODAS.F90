@@ -83,7 +83,7 @@ call check(NF90_INQ_DIMID(ncid_fg1,'xh',dimid),cct)
 call check(NF90_INQUIRE_DIMENSION(ncid_fg1,dimid,len=nx),cct)
 call check(NF90_INQ_DIMID(ncid_fg1,'yh',dimid),cct)
 call check(NF90_INQUIRE_DIMENSION(ncid_fg1,dimid,len=ny),cct)
-call check(NF90_INQ_DIMID(ncid_fg1,'zl',dimid),cct)
+call check(NF90_INQ_DIMID(ncid_fg1,'z_l',dimid),cct)
 call check(NF90_INQUIRE_DIMENSION(ncid_fg1,dimid,len=nz),cct)
 print*,'fg1 size is',nx,ny,nz
 ! allocate arrays
