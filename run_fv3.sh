@@ -220,7 +220,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
   bk_top=0.95
 /
 EOF
-     cat calc_increment_ncio.nml
+      cat calc_increment_ncio.nml
 # usage:
 #   input files: filename_fg filename_anal (1st two command line args)
 #
@@ -237,8 +237,6 @@ EOF
       /bin/rm -f ${increment_file}
       # last two args:  no_mpinc no_delzinc
       if [ $RES_INC -lt $RES ]; then
-         export DONT_USE_DELZ=1
-         export DONT_USE_DPRES=1
          export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
          export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
