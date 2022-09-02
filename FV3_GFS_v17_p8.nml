@@ -10,7 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = .false.
-  ccpp_suite = "FV3_GFS_v17_coupled_p8"
+  ccpp_suite = "FV3_GFS_v17_p8"
 /
 
 &diag_manager_nml

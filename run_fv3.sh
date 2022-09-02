@@ -1,45 +1,16 @@
-#!/bin/sh
+#!/bin/sh 
 # model was compiled with these 
 echo "starting at `date`"
 source $MODULESHOME/init/sh
-
-if [ "$machine" == 'hera' ]; then
-   module purge
-   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   #module load esmf/8_1_0_beta_snapshot_27
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'orion' ]; then
-   module purge 
-   module load intel/2019.5 
-   module load impi/2019.6 
-   module load mkl/2019.5  
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
-   module load netcdfp/4.7.4
-   module load esmflocal/8.0.0.para
-   module load grib_util-intel-sandybridge # wgrib
-elif [ "$machine" == 'gaea' ]; then
-   module purge
-   module load PrgEnv-intel/6.0.3
-   module rm intel
-   module load intel/18.0.3.222
-   #module load cray-netcdf-hdf5parallel/4.6.1.3
-   #module load cray-hdf5-parallel/1.10.2.0
-   module load cray-netcdf
-   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   module load esmflocal/8_0_48b
-   module load nco/4.6.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-   export HDF5_DISABLE_VERSION_CHECK=1
+#skip_global_cycle=YES
+if [ "$cold_start" == "true" ]; then
+   skip_global_cycle=YES
+   FHROT=0
+else
+   FHROT=3
 fi
-module list
+
+export WGRIB=`which wgrib`
 
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
@@ -51,19 +22,13 @@ ulimit -s unlimited
 export OMP_STACKSIZE=2048M
 
 niter=${niter:-1}
-if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
-   nmem=`echo $charnanal | cut -f3 -d"m"`
-   nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
-else
-   nmem=0
-fi
-charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
-#export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
-#export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
-#export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
+#export ISEED_CA=$((analdate*1000 + nmem*10 + 3 + niter))
+export ISEED_CA=$((analdate+nmem))
+export ISEED_OCNSPPT=$((analdate*1000 + nmem*10 + 4 + niter))
+export ISEED_EPBL=$((analdate*1000 + nmem*10 + 5 + niter))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)
@@ -76,7 +41,28 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+if [ ! -z $longfcst ]; then
+   export skip_calc_increment=1
+   export skip_global_cycle=1
+   export cold_start="false"
+   export dont_copy_restart=1
+   export iau_delthrs=-1
+   # start date for forecast (previous analysis time)
+   export year=`echo $analdatem1 |cut -c 1-4`
+   export mon=`echo $analdatem1 |cut -c 5-6`
+   export day=`echo $analdatem1 |cut -c 7-8`
+   export hour=`echo $analdatem1 |cut -c 9-10`
+   # current date in restart (beginning of analysis window)
+   export year_start=`echo $analdatem3 |cut -c 1-4`
+   export mon_start=`echo $analdatem3 |cut -c 5-6`
+   export day_start=`echo $analdatem3 |cut -c 7-8`
+   export hour_start=`echo $analdatem3 |cut -c 9-10`
+   # end time of analysis window (time for next restart)
+   export yrnext=`echo $analdatep1m3 |cut -c 1-4`
+   export monnext=`echo $analdatep1m3 |cut -c 5-6`
+   export daynext=`echo $analdatep1m3 |cut -c 7-8`
+   export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+elif [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -118,7 +104,17 @@ else
       export hrnext=`echo $analdatep1 |cut -c 9-10`
    fi
 fi
+# end time of analysis window (time for next restart)
+export yrendnext=`echo $analdatep1p3 |cut -c 1-4`
+export monendnext=`echo $analdatep1p3 |cut -c 5-6`
+export dayendnext=`echo $analdatep1p3 |cut -c 7-8`
+export hrendnext=`echo $analdatep1p3 |cut -c 9-10`
 
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    echo "dt_atmos changed to $dt_atmos..."
+fi
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
@@ -126,22 +122,28 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/rm -f dyn* phy* *nemsio* PET*
+find -type l -delete
+/bin/rm -f dyn* phy* *nemsio* PET* history/* 
 export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $scriptsdir/nems.configure .
+
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 /bin/cp -f $scriptsdir/field_table_${SUITE} field_table
-/bin/cp -f $scriptsdir/data_table . 
+/bin/cp -f $scriptsdir/data_table data_table
+ln -sf ${scriptsdir}/fd_nems.yaml .
+
 /bin/rm -rf RESTART
 mkdir -p RESTART
+mkdir -p history
 mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
+find -type l -delete
+if [ "$cold_start" == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -150,35 +152,46 @@ fi
 
 # Grid and orography data
 n=1
+if [[ $RES -eq 96 ]]; then
+   fv3_input_data=FV3_input_data
+else
+   fv3_input_data=FV3_input_data${RES}
+fi
 while [ $n -le 6 ]; do
- ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
- ln -fs $FIXFV3/C${RES}/C${RES}_oro_data.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/FV3_fix_tiled/C${RES}/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+ln -fs $FIXDIR/${fv3_input_data}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+ln -fs $FIXDIR/MOM6_FIX/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
+# symlinks one level up from INPUT
 cd ..
-#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
-# new ozone and h2o physics for stratosphere
-ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
-# co2, ozone, surface emiss and aerosol data.
-ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
-ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXGLOBAL/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXGLOBAL/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXGLOBAL/co2dat_4a/global_co2historicaldata* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
+#ln -fs $FIXDIR/FV3_fix/*grb .
+ln -fs $FIXDIR/FV3_fix/*txt .
+ln -fs $FIXDIR/FV3_fix/*f77 .
+ln -fs $FIXDIR/FV3_fix/*dat .
+ln -fs $FIXDIR/FV3_input_data_RRTMGP/* .
+ln -fs $FIXDIR/FV3_input_data_gsd/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN 
+ln -fs $FIXDIR/FV3_input_data_gsd/freezeH2O.dat freezeH2O.dat   
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qg.dat qr_acr_qg.dat
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qs.dat qr_acr_qs.dat 
+ln -fs $FIXDIR/FV3_input_data/ugwp_C384_tau.nc ugwp_limb_tau.nc
+# for ugwpv1 and MERRA aerosol climo (IAER=1011)
+for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
+  ln -fs $FIXDIR/FV3_input_data_INCCN_aeroclim/MERRA2/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
 done
-ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
-for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
-done
-# for Thompson microphysics
-ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
-ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
 
 # create netcdf increment files.
-if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
+if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
 
    iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
@@ -190,18 +203,47 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       threads_save=$OMP_NUM_THREADS
       export OMP_NUM_THREADS=8
       export fgfile=${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}
-      if [ $ifsanal == "true" ]; then
-         export analfile="${replayanaldir}/IFSANALreplay_ics_${analdate_tmp}.nc"
+      /bin/rm -f calc_increment_ncio.nml
+      ff=`python -c "print($iau_forcing_factor_atm / 100.)"`
+      export DONT_USE_DPRES=1
+      export DONT_USE_DELZ=1
+      cat > calc_increment_ncio.nml << EOF
+&setup
+  no_mpinc=.true.
+  no_delzinc=.false.
+  forcing_factor=${ff},
+  taper_strat=.true.
+  taper_pbl=.false.
+  ak_bot=10000.,
+  ak_top=5000.,
+  bk_bot=1.0,
+  bk_top=0.95
+/
+EOF
+      cat calc_increment_ncio.nml
+# usage:
+#   input files: filename_fg filename_anal (1st two command line args)
+#
+#   output files: filename_inc (3rd command line arg)
+
+#   4th command line arg is logical for controlling whether microphysics
+#   increment should not be computed. (no_mpinc)
+#   5th command line arg is logical for controlling whether delz
+#   increment should not be computed (no_delzinc)
+#   6th command line arg is logical for controlling whether humidity
+#   and microphysics vars should be tapered to zero in stratosphere.
+#   The vertical profile of the taper is controlled by ak_top and ak_bot.
+      echo "create ${increment_file}"
+      /bin/rm -f ${increment_file}
+      # last two args:  no_mpinc no_delzinc
+      if [ $RES_INC -lt $RES ]; then
+         export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         /bin/rm -f ${increment_file}
-         export "PGM=${scriptsdir}/calc_increment.py ${fgfile} ${analfile} ${increment_file}"
+         export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
       else
-         echo "create ${increment_file}"
-         /bin/rm -f ${increment_file}
-         # last two args:  no_mpinc no_delzinc
          export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
          echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
       fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
@@ -210,12 +252,11 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       export OMP_NUM_THREADS=$threads_save
    done # do next forecast
-
    cd ..
 fi
 
 # setup model namelist
-if [ "$fg_only" == "true" ]; then
+if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
    reslatlondynamics=""
@@ -226,30 +267,13 @@ if [ "$fg_only" == "true" ]; then
    iau_inc_files=""
 else
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   if [ -s INPUT/atm_stoch.res.nc ]; then
+     echo "stoch restart available, setting stochini=T"
+     stochini=T # restart random patterns from existing file
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # set to large value so no random patterns will be output
-      # and random pattern will be reinitialized
-      FHSTOCH=240
-      # reduce model time step
-      #dt_atmos=`python -c "print ${dt_atmos}/2"`
+     echo "stoch restarts not available, setting stochini=F"
+     stochini=F
    fi
-   
    iaudelthrs=${iau_delthrs}
    FHCYC=${FHCYC}
    if [ "${iau_delthrs}" != "-1" ]; then
@@ -272,26 +296,21 @@ else
    fi
 fi
 
-#fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
-#fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
-#fnsnoa='        ' # no input file, use model snow
-
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.sstgrb
-#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
-#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.nst_sst.grb
-fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.engicegrb
-#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
-#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/emc_parallel/data/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ice_fraction.grb
-fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb
-fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb
-nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+echo "running $WGRIB ${fnsnoa} to see if there are any $snoid messages"
+$WGRIB ${fnsnoa}
+#nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+nrecs_snow=0
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
-   fnsnoa=' ' # no input file
+   fnsnoa='' # no input file
    export FSNOL=99999 # use model value
    echo "no snow depth in snow analysis file, use model"
 else
@@ -301,34 +320,34 @@ else
         `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
-      fnsnoa=' ' # no input file
+      fnsnoa='' # no input file
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=-2 # use analysis value
+      #export FSNOL=-2 # use analysis value
+      export FSNOL=99999 # for NOAH-MP
    fi
 fi
 
-ls -l 
-
-FHRESTART=${FHRESTART:-$ANALINC}
-if [ "${iau_delthrs}" != "-1" ]; then
-   FHMAX_FCST=`expr $FHMAX + $ANALINC`
-   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
-   if [ "${fg_only}" == "true" ]; then
-      FHSTOCH=${FHSTOCH:-$ANALINC}
-      FHRESTART=`expr $ANALINC \/ 2`
+FHRESTART=${FHRESTART:-"${RESTART_FREQ} -1"}
+OUTPUTFH=${OUTPUTFH:-"${FHOUT} -1"}
+if [ ! -z $longfcst ]; then
+   FHMAX_FCST=$FHMAX
+   FHRESTART=0
+elif [ "${iau_delthrs}" != "-1" ]; then
+   if [ "${cold_start}" == "true" ]; then
       FHMAX_FCST=$FHMAX
+   else
+      FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
 else
-   FHSTOCH=$FHRESTART
    FHMAX_FCST=$FHMAX
 fi
+sed -i -e "s/RESTART_FREQ/${RESTART_FREQ}/g" nems.configure
 
 if [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
-   export FIXfv3=$FIXFV3
    # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
    #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
    export CDATE=${analdate}
@@ -336,6 +355,25 @@ if [ -z $skip_global_cycle ]; then
    export CYCLESH=${scriptsdir}/global_cycle.sh
    export COMIN=${PWD}/INPUT
    export COMOUT=$COMIN
+   # thse should agree with names in input.nml
+   export FNGLAC="${FIXGLOBAL}/global_glacier.2x2.grb"
+   export FNMXIC="${FIXGLOBAL}/global_maxice.2x2.grb"
+   export FNTSFC="${FIXGLOBAL}/RTGSST.1982.2012.monthly.clim.grb"
+   export FNSNOC="${FIXGLOBAL}/global_snoclim.1.875.grb"
+   export FNZORC="igbp"
+   export FNALBC="${FIXTILED}/C${RES}.snowfree_albedo.tileX.nc"
+   export FNALBC2="${FIXTILED}/C${RES}.facsf.tileX.nc"
+   export FNAISC="${FIXGLOBAL}/CFSR.SEAICE.1982.2012.monthly.clim.grb"
+   export FNVEGC="${FIXTILED}/C${RES}.vegetation_greenness.tileX.nc"
+   export FNVETC="${FIXTILED}/C${RES}.vegetation_type.tileX.nc"
+   export FNSOTC="${FIXTILED}/C${RES}.soil_type.tileX.nc"
+   export FNSMCC="${FIXGLOBAL}/global_soilmgldas.statsgo.t766.1536.768.grb"
+   export FNMSKH="${FIXGLOBAL}/global_slmask.t1534.3072.1536.grb"
+   export FNTG3C="${FIXGLOBAL}/global_tg3clim.2.6x1.5.grb"
+   export FNVMNC="${FIXTILED}/C${RES}.vegetation_greenness.tileX.nc"
+   export FNVMXC="${FIXTILED}/C${RES}.vegetation_greenness.tileX.nc"
+   export FNSLPC="${FIXTILED}/C${RES}.slope_type.tileX.nc"
+   export FNABSC="${FIXTILED}/C${RES}.maximum_snow_albedo.tileX.nc"
    export FNTSFA="${fntsfa}"
    export FNSNOA="${fnsnoa}"
    export FNACNA="${fnacna}"
@@ -378,9 +416,17 @@ nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
 nst_anl=${nst_anl:-".true."}
 if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
    fntsfa='        ' # no input file, use GSI foundation temp
-   fnsnoa='        '
+   #fnsnoa='        '
    fnacna='        '
 fi
+
+WRITE_DOPOST=${WRITE_DOPOST:-".false."}
+if [ $WRITE_DOPOST == ".true." ]; then
+   /bin/cp -f ${scriptsdir}/postxconfig* .
+   /bin/cp -f ${scriptsdir}/params_grib2_tbl_new .
+   /bin/cp -f ${scriptsdir}/post_tag_gfs${LEVP} itag
+fi
+ls -l 
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -393,10 +439,13 @@ start_hour:              ${hour}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
+fhrot:                   ${FHROT}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
 output_1st_tstep_rst:    .false.
+output_history:          ${OUTPUT_HISTORY:-".true."}
+write_dopost:            ${WRITE_DOPOST:-".false."}
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
@@ -404,6 +453,7 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
+output_fh:               ${OUTPUTFH}
 quilting:                ${quilting}
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
@@ -418,43 +468,27 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_nemsioflip:        .true.
-write_fsyncflag:         .true.
+write_nsflip:            .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
-nfhout:                  ${FHOUT}
-nfhmax_hf:               -1
-nfhout_hf:               -1
-nsout:                   -1
 EOF
 cat model_configure
-
-# setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-else
-   /bin/rm -f INPUT/coupler.res # assume current time == start time
-fi
 
 # copy template namelist file, replace variables.
 if [ "$cold_start" == "true" ]; then
   warm_start=F
   externalic=T
-  na_init=0
+  na_init=1
   mountain=F
-  make_nh=F
 else
   warm_start=T
   externalic=F
   na_init=0
   mountain=T
-  make_nh=F
 fi
 /bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
+#sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
 sed -i -e "s/NPY/${npx}/g" input.nml
@@ -467,7 +501,47 @@ sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/NA_INIT/${na_init}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
-sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
+sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
+sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
+# gcycle related params
+sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
+sed -i -e "s/CRES/C${RES}/g" input.nml
+sed -i -e "s/ORES/${OCNRES}/g" input.nml
+sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
+sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
+sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
+sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
+   NSTFNAME="2,1,0,0"
+fi
+sed -i -e "s/NSTFNAME/${NSTFNAME}/g" input.nml
+
+sed -i -e "s/DO_sppt/${DO_SPPT}/g" input.nml
+sed -i -e "s/PERT_MP/${PERT_MP}/g" input.nml
+sed -i -e "s/PERT_CLDS/${PERT_CLDS}/g" input.nml
+sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
+sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
+
+sed -i -e "s/LONB/${LONB}/g" input.nml
+sed -i -e "s/LATB/${LATB}/g" input.nml
+sed -i -e "s/JCAP/${JCAP}/g" input.nml
+sed -i -e "s/SPPT/${SPPT}/g" input.nml
+sed -i -e "s/SHUM/${SHUM}/g" input.nml
+sed -i -e "s/SKEB/${SKEB}/g" input.nml
+sed -i -e "s/STOCHINI/${stochini}/g" input.nml
+sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
+sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
+sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
+sed -i -e "s/ISEED_ocnsppt/${ISEED_OCNSPPT}/g" input.nml
+sed -i -e "s/ISEED_epbl/${ISEED_EPBL}/g" input.nml
+sed -i -e "s/OCN_sppt/${OCNSPPT}/g" input.nml
+sed -i -e "s/OCNsppt_TAU/${OCNSPPT_TAU}/g" input.nml
+sed -i -e "s/OCNsppt_LSCALE/${OCNSPPT_LSCALE}/g" input.nml
+sed -i -e "s/EPBL/${EPBL}/g" input.nml
+sed -i -e "s/epbl_TAU/${EPBL_TAU}/g" input.nml
+sed -i -e "s/epbl_LSCALE/${EPBL_LSCALE}/g" input.nml
+
 cat input.nml
 ls -l INPUT
 
@@ -484,25 +558,55 @@ fi
 
 # rename netcdf files (if quilting = .true.).
 export DATOUT=${DATOUT:-$datapathp1}
+if [ -z $longfcst ]; then
+   datelabel=${analdatep1}
+else
+   datelabel=${analdatem1}
+fi
+
 if [ "$quilting" == ".true." ]; then
    ls -l dyn*.nc
    ls -l phy*.nc
-   #fh=$FHMIN
-   fh=0
-   while [ $fh -le $FHMAX ]; do
+   if [ -z $longfcst ]; then
+      fh1=$FHMIN
+      fh2=$FHMAX
+      fo=$FHOUT
+   else
+      fh1=$FHMIN_LONG
+      fh2=$FHMAX_LONG
+      fo=$FHOUT_LONG
+      /bin/mv -f dynf012.nc ${DATOUT}/sfg_${datelabel}_fhr12_${charnanal}
+      /bin/mv -f phyf012.nc ${DATOUT}/bfg_${datelabel}_fhr12_${charnanal}
+      ls -l
+      if [ $WRITE_DOPOST == ".true." ]; then
+         /bin/mv -f GFSPRS*F12 ${DATOUT}
+         /bin/mv -f GFSFLX*F12 ${DATOUT}
+      fi
+   fi
+   fh=$fh1
+   while [ $fh -le $fh2 ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $fh -gt 100 ]; then
+        charfhr2c="F"`printf %03i $fh`
+     else
+        charfhr2c="F"`printf %02i $fh`
+     fi
+     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${datelabel}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdffile missing..."
         exit 1
      fi
-     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${datelabel}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdf file missing..."
         exit 1
      fi
-     fh=$[$fh+$FHOUT]
+     if [ $WRITE_DOPOST == ".true." ]; then
+        /bin/mv -f GFSPRS*${charfhr2c} ${DATOUT}
+        /bin/mv -f GFSFLX*${charfhr2c} ${DATOUT}
+     fi
+     fh=$[$fh+$fo]
    done
 fi
 
@@ -523,43 +627,21 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         echo "restart file missing..."
         exit 1
       fi
-      done
+      if [ $file2 == "ca_data.tile1.nc" ]; then
+         touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+      fi
+   done
    cd ..
-fi
-
-# also move history files if copy_history_files is set.
-if [ ! -z $copy_history_files ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  #/bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
-  # copy with compression
-  #n=1
-  #while [ $n -le 6 ]; do
-  #   # lossless compression
-  #   ncks -4 -L 5 -O fv3_historyp.tile${n}.nc ${DATOUT}/${charnanal}/fv3_historyp.tile${n}.nc
-  #   # lossy compression
-  #   #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/${charnanal}/fv3_history.tile${n}.nc
-  #   /bin/rm -f fv3_historyp.tile${n}.nc
-  #   n=$((n+1))
-  #done
-fi
-
-# if random pattern restart file exists for end of IAU window, copy it.
-ls -l stoch_out*
-charfh="F"`printf %06i $FHSTOCH`
-if [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
+   ls -l ${datapathp1}/${charnanal}/INPUT
 fi
 
 ls -l ${DATOUT}
-ls -l ${datapathp1}/${charnanal}/INPUT
 
 # remove symlinks from INPUT directory
 cd INPUT
 find -type l -delete
 cd ..
-/bin/rm -rf RESTART # don't need RESTART dir anymore.
+/bin/rm -rf RESTART
 
 echo "all done at `date`"
 

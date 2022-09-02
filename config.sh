@@ -10,8 +10,8 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8
-export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
+export exptname=C${RES}_replay_p8_atm
+export coupled='NO' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
 
@@ -124,8 +124,6 @@ else
 fi
 export analfileprefix="C${RES}_era5anl"
 export analfileprefix_lores="C${RES_INC}_era5anl"
-
-export ifsanal="false"  # true if using IFS analysis from original files, false if using pre-processed UFS or IFS analysis
 
 export NOSAT="YES" # if yes, no radiances assimilated
 export NOCONV="NO"
@@ -260,12 +258,13 @@ export nitermax=2
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
 export incdate="${scriptsdir}/incdate.sh"
-export DIAG_TABLE="${scriptsdir}/diag_table_coupled"
 
 if [ "$coupled" == 'NO' ];then
-   export fv3exec='fv3-nonhydro.exe'
+   export fv3exec='fv3_atm.exe'
+   export DIAG_TABLE="${scriptsdir}/diag_table"
 else
    export fv3exec='ufs_coupled.exe'
+   export DIAG_TABLE="${scriptsdir}/diag_table_coupled"
 fi
 
 if [ "$machine" == 'hera' ]; then
@@ -322,15 +321,14 @@ else
   echo "LEVS must be 64 or 127"
   exit 1
 fi
+export NSTFNAME="2,0,0,0"
 
 # new namelist settings for coupled/not-coupled
 if [ "$coupled" == 'NO' ]; then
    export SUITE="FV3_GFS_v17_p8"
    export rungfs="run_fv3.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
-   #export NSTFNAME="0,0,0,0"
    export SUITE="FV3_GFS_v17_coupled_p8"
-   export NSTFNAME="2,0,0,0"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
    export SUITE="FV3_GFS_v16_coupled"

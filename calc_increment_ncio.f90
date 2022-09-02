@@ -290,12 +290,16 @@ PROGRAM calc_increment_ncio
   dimid_3d(2) = dimid_lat
   dimid_3d(3) = dimid_lev
 
+  ! if DONT_USE_DPRES env var set, infer the dpres
+  ! increment from the ps increment even if dpres exists.
   call getenv('DONT_USE_DPRES',charnin)
   if (charnin .eq. '') then
      has_dpres = has_var(dset_fg,'dpres')
   else
      has_dpres = .false.
   endif
+  ! if DONT_USE_DELZ env var set, infer the delz
+  ! increment from the ps,Tv increment even if delz exists.
   call getenv('DONT_USE_DELZ',charnin)
   if (charnin .eq. '') then
      has_delz  = has_var(dset_fg,'delz')

@@ -322,17 +322,11 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       threads_save=$OMP_NUM_THREADS
       export OMP_NUM_THREADS=8
       export fgfile=${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}
-      if [ $ifsanal == "true" ]; then
-         export analfile="${replayanaldir}/IFSANALreplay_ics_${analdate_tmp}.nc"
-         echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         /bin/rm -f ${increment_file}
-         export "PGM=${scriptsdir}/calc_increment.py ${fgfile} ${analfile} ${increment_file}"
-      else
-         /bin/rm -f calc_increment_ncio.nml
-	 ff=`python -c "print($iau_forcing_factor_atm / 100.)"`
-	 export DONT_USE_DPRES=1
-	 export DONT_USE_DELZ=1
-         cat > calc_increment_ncio.nml << EOF
+      /bin/rm -f calc_increment_ncio.nml
+      ff=`python -c "print($iau_forcing_factor_atm / 100.)"`
+      export DONT_USE_DPRES=1
+      export DONT_USE_DELZ=1
+      cat > calc_increment_ncio.nml << EOF
 &setup
   no_mpinc=.true.
   no_delzinc=.false.
@@ -345,7 +339,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
   bk_top=0.95
 /
 EOF
-         cat calc_increment_ncio.nml
+      cat calc_increment_ncio.nml
 # usage:
 #   input files: filename_fg filename_anal (1st two command line args)
 #
@@ -358,20 +352,17 @@ EOF
 #   6th command line arg is logical for controlling whether humidity
 #   and microphysics vars should be tapered to zero in stratosphere.
 #   The vertical profile of the taper is controlled by ak_top and ak_bot.
-         echo "create ${increment_file}"
-         /bin/rm -f ${increment_file}
-         # last two args:  no_mpinc no_delzinc
-	 if [ $RES_INC -lt $RES ]; then
-            export DONT_USE_DELZ=1
-            export DONT_USE_DPRES=1
-            export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
-            echo "create ${increment_file} from ${fgfile} and ${analfile}"
-            export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
-         else
-            export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
-            echo "create ${increment_file} from ${fgfile} and ${analfile}"
-            export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
-         fi
+      echo "create ${increment_file}"
+      /bin/rm -f ${increment_file}
+      # last two args:  no_mpinc no_delzinc
+      if [ $RES_INC -lt $RES ]; then
+         export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
+         echo "create ${increment_file} from ${fgfile} and ${analfile}"
+         export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
+      else
+         export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
+         echo "create ${increment_file} from ${fgfile} and ${analfile}"
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
       fi
       nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
@@ -464,7 +455,8 @@ fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snog
 fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb
 echo "running $WGRIB ${fnsnoa} to see if there are any $snoid messages"
 $WGRIB ${fnsnoa}
-nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+#nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+nrecs_snow=0
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
    fnsnoa='' # no input file
