@@ -1,4 +1,6 @@
+#machine=gaea
+#compiler=ftn
 machine=hera
-#mpif90 -o exec_${machine}/calc_ocean_increments_from_ORAS5 -I/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/intel-18.0.5.274/impi-2018.0.4/netcdf/4.7.4/include calc_ocean_increments_from_ORAS5.F90 -L/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/intel-18.0.5.274/impi-2018.0.4/netcdf/4.7.4/lib -lnetcdff -lnetcdf -L/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/intel-18.0.5.274/impi-2018.0.4/hdf5/1.10.6/lib -lhdf5_hl -lhdf5 -L/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/intel-18.0.5.274/zlib/1.2.11/lib -lz
-mpiifort  -O2 -o exec_${machine}/calc_ocean_increments_from_ORAS5 -I${NETCDF}/include calc_ocean_increments_from_ORAS5.F90 -L${NETCDF}/lib  -lnetcdff -lnetcdf  -L${HDF5_ROOT}/lib  -lhdf5_hl -lhdf5 -lz
-mpiifort  -O2 -o exec_${machine}/calc_ocean_increments_from_NG-GODAS -I${NETCDF}/include calc_ocean_increments_from_NG-GODAS.F90 -L${NETCDF}/lib  -lnetcdff -lnetcdf  -L${HDF5_ROOT}/lib  -lhdf5_hl -lhdf5 -lz
+compiler=mpiifort
+${compiler}  -O2 -o exec_${machine}/calc_ocean_increments_from_ORAS5 -I${NETCDF}/include calc_ocean_increments_from_ORAS5.F90 -L${NETCDF}/lib  -lnetcdff -lnetcdf  -L${HDF5_ROOT}/lib  -lhdf5_hl -lhdf5 -lz
+${compiler}  -O2 -o exec_${machine}/calc_ocean_increments_from_NG-GODAS -I${NETCDF}/include calc_ocean_increments_from_NG-GODAS.F90 -L${NETCDF}/lib  -lnetcdff -lnetcdf  -L${HDF5_ROOT}/lib  -lhdf5_hl -lhdf5 -lz

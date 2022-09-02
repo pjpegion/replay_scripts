@@ -10,8 +10,8 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8_atm
-export coupled='NO' # NO or ATM_OCN_ICE
+export exptname=C${RES}_replay_p8
+export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
 
@@ -253,7 +253,7 @@ fi
 
 export RUN=gdas # use gdas obs
 
-export nitermax=2
+export nitermax=1
 
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
@@ -288,7 +288,7 @@ elif [ "$machine" == 'gaea' ]; then
    # copied from /scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix on 8/31/2021
    #export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/p8fix
    export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   export gsipath=${basedir}/GSI-github-jswhit
+   export gsipath=${basedir}/GSI-github-emc
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.3.0/fix
    export execdir=${scriptsdir}/exec_${machine}
