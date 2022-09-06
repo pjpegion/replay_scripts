@@ -38,6 +38,8 @@ if [ "$machine" == 'hera' ]; then
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    source $MODULESHOME/init/sh
    module purge
+   module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   module load miniconda3
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.1.0
    module load hpc-intel/18.0.5.274
@@ -269,7 +271,7 @@ fi
 
 if [ "$machine" == 'hera' ]; then
    export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   export gsipath=${basedir}/gsi/GSI-github-jswhit-master
+   export gsipath=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
@@ -278,7 +280,7 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    export fv3gfspath=/work/noaa/global/glopara
-   export gsipath=${basedir}/GSI
+   export gsipath=/work/noaa/gsienkf/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
@@ -288,7 +290,7 @@ elif [ "$machine" == 'gaea' ]; then
    # copied from /scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix on 8/31/2021
    #export FIXDIR=/lustre/f2/dev/Jeffrey.S.Whitaker/p8fix
    export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   export gsipath=${basedir}/GSI-github-emc
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI-github-emc
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.3.0/fix
    export execdir=${scriptsdir}/exec_${machine}
