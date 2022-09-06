@@ -11,7 +11,7 @@
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
-export machine='orion'
+export machine='hera'
 
 # for control forecast
 if [ $NODES -eq 20 ]; then
