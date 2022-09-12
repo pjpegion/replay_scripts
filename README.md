@@ -43,6 +43,8 @@ Setting up a new run:
       ```
    3) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
       to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
+      If you get an error complaining about incorrect checksums, use the remove_checksums.py script to
+      remove checksums from the FV3 restarts.
 
 Slurm preamble templates (`<machine_name>_cpld_preamble_slurm` and `<machine_name>_hpss_preamble_slurm`)
 will need to be updated for the user's project. Similarly the hsidir env var in config.sh will also need 
