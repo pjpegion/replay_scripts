@@ -1,5 +1,7 @@
 # sh submit_job.sh <machine>
 # if using SLURM, set env var USE_SLURM
+#export coupled=ATM_OCN_ICE
+export coupled=NO
 machine=$1
 USE_SLURM=1
 if [ -z $USE_SLURM ]; then
@@ -12,6 +14,14 @@ if [ -z $USE_SLURM ]; then
        qsub job.sh
    fi
 else
-   cat ${machine}_preamble_slurm config.sh > job.sh
+   if [ "$coupled"  == 'ATM_OCN_ICE' ];then
+      if [ -z $longfcst ]; then
+      cat ${machine}_preamble_cpld_slurm config.sh > job.sh
+      else
+      cat ${machine}_preamble_cpldlong_slurm config.sh > job.sh
+      fi
+   else
+      cat ${machine}_preamble_slurm config.sh > job.sh
+   fi
    sbatch job.sh
 fi
