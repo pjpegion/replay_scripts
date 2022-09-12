@@ -52,3 +52,4 @@ to be updated. On orion, hpss archiving is not done.
 To run uncoupled (ATM only):
 1) set `coupled=NO` in config.sh
 2) model executable should be named `fv3_atm.exe`.
+3) edit submit_job.sh and set COUPLED=NO.
