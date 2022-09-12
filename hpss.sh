@@ -1,4 +1,4 @@
-# need envars:  machine, analdate, datapath2, hsidir
+# need envars:  machine, analdate, datapath, hsidir
 
 exitstat=0
 source $MODULESHOME/init/sh
@@ -13,12 +13,13 @@ else
 fi
 #env
 $hsi ls -l $hsidir
-$hsi mkdir ${hsidir}/
+$hsi mkdir -p ${hsidir}/
+datapath2=${datapath}/${analdate}
 cd ${datapath2}/control
 find -type l -delete # delete symlinks
 /bin/rm -f core
 cd ../..
-$hsi mkdir ${hsidir}
+$hsi mkdir -p ${hsidir}
 $htar -cvf ${hsidir}/${analdate}.tar ${analdate}
 exitstat=$?
 $hsi ls -l ${hsidir}/${analdate}.tar
