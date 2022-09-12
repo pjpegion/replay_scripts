@@ -1,7 +1,7 @@
 # sh submit_job.sh <machine>
 # if using SLURM, set env var USE_SLURM
-#export coupled=ATM_OCN_ICE
-export coupled=NO
+export coupled=ATM_OCN_ICE
+#export coupled=NO
 machine=$1
 USE_SLURM=1
 if [ -z $USE_SLURM ]; then
