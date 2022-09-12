@@ -2,7 +2,7 @@
 scripts to replay UFS to ERA-5 and ORAS5 analyses
 
 * `config.sh` is the main driver script.  It sets parameters (via env variables) and then
-  runs `main.sh`.  It can be submitted via `> sh submit_coupled_job.sh <machine_name>`  where
+  runs `main.sh`.  It can be submitted via `> sh submit_job.sh <machine_name>`  where
   `<machine_name>` must be hera, orion or gaea.  Executables for each platform live
   in `exec_<machine_name>` (except for the model executable `ufs_coupled.exe` which must be copied into
   the `exex_<machine_name>` directory by the user.  
@@ -52,5 +52,3 @@ to be updated. On orion, hpss archiving is not done.
 To run uncoupled (ATM only):
 1) set `coupled=NO` in config.sh
 2) model executable should be named `fv3_atm.exe`.
-3) submit with `submit_job.sh` instead of `submit_coupled_job.sh` (uses `<machine>_preamble_slurm`
-   instead of `<machine>_cpld_preamble_slurm`).
