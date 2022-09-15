@@ -54,3 +54,8 @@ To run uncoupled (ATM only):
 2) model executable should be named `fv3_atm.exe`.
 3) submit with `submit_job.sh` instead of `submit_coupled_job.sh` (uses `<machine>_preamble_slurm`
    instead of `<machine>_cpld_preamble_slurm`).
+
+To run the snow DA: 
+1) set do_snowDA='true' in config.sh 
+2) run git submodule update --init 
+3) cd land-DA_update, follow readme instructions to install 
