@@ -2,3 +2,6 @@
         path = land-DA_update
         url = https://github.com/noaa-psd/land-DA_update.git
         branch = develop
+[submodule "land-DA_update"]
+	path = land-DA_update
+	url = https://github.com/noaa-psd/land-DA_update.git
