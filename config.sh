@@ -30,6 +30,8 @@ export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 #export resubmit='false'
 #export do_cleanup='false'
 #export save_hpss="false"
+
+export do_snowDA='false'
  
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}

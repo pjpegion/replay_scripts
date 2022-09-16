@@ -110,6 +110,32 @@ if [ $fg_only == 'false' ]; then
     fi
 fi
 
+if [ $do_snowDA == 'true' ]; then
+  if [ $hr == '00' ]; then 
+     echo "$analdate calling land DA `date`"
+     charnanal='control'
+     export RSTRDIR=${datapath2}/${charnanal}/INPUT/
+     # stage restarts
+     export ym3=`echo $analdatem3 | cut -c1-4`
+     export mm3=`echo $analdatem3 | cut -c5-6`
+     export dm3=`echo $analdatem3 | cut -c7-8`
+     export hm3=`echo $analdatem3 | cut -c9-10`
+     n=1 
+     while [ $n -le 6 ]; do
+        ln -fs ${RSTRDIR}/sfc_data.tile${n}.nc  ${RSTRDIR}/${ym3}${mm3}${dm3}.${hm3}0000.sfc_data.tile${n}.nc
+      n=$((n+1))
+     done
+
+     ${scriptsdir}/land-DA_update/do_landDA.sh settings_snowDA > ${current_logdir}/landDA.out 2>&1
+     if [[ $? != 0 ]]; then
+        echo "$analdate land DA failed, exiting"
+        exit 1
+     else
+        echo "$analdate finished land DA `date`"
+     fi
+  fi
+fi 
+
 echo "$analdate run high-res control first guess `date`"
 sh ${scriptsdir}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out   2>&1
 control_done=`cat ${current_logdir}/run_fg_control.log`

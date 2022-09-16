@@ -55,3 +55,8 @@ To run uncoupled (ATM only):
 1) set `coupled=NO` in config.sh
 2) model executable should be named `fv3_atm.exe`.
 3) edit submit_job.sh and set COUPLED=NO.
+
+To run the snow DA: 
+1) set do_snowDA='true' in config.sh 
+2) run git submodule update --init --recursive
+3) cd land-DA_update, follow readme instructions to install 
