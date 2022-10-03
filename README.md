@@ -2,7 +2,7 @@
 scripts to replay UFS to ERA-5 and ORAS5 analyses
 
 * `config.sh` is the main driver script.  It sets parameters (via env variables) and then
-  runs `main.sh`.  It can be submitted via `> sh submit_coupled_job.sh <machine_name>`  where
+  runs `main.sh`.  It can be submitted via `> sh submit_job.sh <machine_name>`  where
   `<machine_name>` must be hera, orion or gaea.  Executables for each platform live
   in `exec_<machine_name>` (except for the model executable `ufs_coupled.exe` which must be copied into
   the `exex_<machine_name>` directory by the user.  
@@ -43,6 +43,8 @@ Setting up a new run:
       ```
    3) untar an archived replay tar file for 2019090100 into this directory, or see Phil and Jeff
       to set up a cold start (which will require setting fg_only=T and cold_start=T in fg_only.sh). 
+      If you get an error complaining about incorrect checksums, use the remove_checksums.py script to
+      remove checksums from the FV3 restarts.
 
 Slurm preamble templates (`<machine_name>_cpld_preamble_slurm` and `<machine_name>_hpss_preamble_slurm`)
 will need to be updated for the user's project. Similarly the hsidir env var in config.sh will also need 
@@ -52,10 +54,9 @@ to be updated. On orion, hpss archiving is not done.
 To run uncoupled (ATM only):
 1) set `coupled=NO` in config.sh
 2) model executable should be named `fv3_atm.exe`.
-3) submit with `submit_job.sh` instead of `submit_coupled_job.sh` (uses `<machine>_preamble_slurm`
-   instead of `<machine>_cpld_preamble_slurm`).
+3) edit submit_job.sh and set COUPLED=NO.
 
 To run the snow DA: 
 1) set do_snowDA='true' in config.sh 
-2) run git submodule update --init 
+2) run git submodule update --init --recursive
 3) cd land-DA_update, follow readme instructions to install 
