@@ -65,7 +65,7 @@ mkdir -p ${current_logdir}
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
-
+ 
 if [ $RES_INC -lt $RES ] && [ $cold_start == 'false' ] ; then
    charnanal='control'
    echo "$analdate reduce resolution of FV3 history files `date`"
@@ -109,9 +109,15 @@ if [ $fg_only == 'false' ]; then
        fi
     fi
 fi
-
+ 
 if [ $do_snowDA == 'true' ]; then
-  if [ $hr == '00' ]; then 
+
+    # if this is a warm start, skip the land DA   
+    lndp_done=`cat ${current_logdir}/landDA.log`
+    if [ $lndp_done == 'yes' ]; then
+      echo "$analdate  land DA already done this time step, skipping.  `date`"
+    else
+
      echo "$analdate calling land DA `date`"
      charnanal='control'
      export RSTRDIR=${datapath2}/${charnanal}/INPUT/
@@ -132,9 +138,10 @@ if [ $do_snowDA == 'true' ]; then
         exit 1
      else
         echo "$analdate finished land DA `date`"
+        echo "yes" > ${current_logdir}/landDA.log 2>&1
      fi
-  fi
-fi 
+   fi # land DA already done
+fi # do_snowDA
 
 echo "$analdate run high-res control first guess `date`"
 sh ${scriptsdir}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out   2>&1
