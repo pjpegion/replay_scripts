@@ -111,6 +111,7 @@ if [ $fg_only == 'false' ]; then
 fi
  
 if [ $do_snowDA == 'true' ]; then
+ if [ $hr == '00' ]; then # only calling land DA at 00 
 
     # if this is a warm start, skip the land DA   
     lndp_done=`cat ${current_logdir}/landDA.log`
@@ -141,6 +142,7 @@ if [ $do_snowDA == 'true' ]; then
         echo "yes" > ${current_logdir}/landDA.log 2>&1
      fi
    fi # land DA already done
+ fi # 00
 fi # do_snowDA
 
 echo "$analdate run high-res control first guess `date`"

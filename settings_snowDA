@@ -4,8 +4,8 @@
 # if calling from submit_cycle,vars in this section will already be set. Otherwise, need to be set here. 
 
 THISDATE=${analdatem3} # ANALDATE - OFFSET = valid time of restarts.
-WORKDIR=${datapath2}/tmpdir_land/
-OUTDIR=${datapath}/landDA  
+WORKDIR=${datapath2}/tmpdir_landDA/
+OUTDIR=${datapath2}/landDA  
 #RSTRDIR=  # set in main.sh
 RES=384 #FV3 resolution
 TSTUB=oro_C${RES}.${OCNRES}
