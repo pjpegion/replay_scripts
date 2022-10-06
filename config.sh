@@ -11,7 +11,7 @@ export OCNRES=mx025
 
 #export skip_calc_increment='true'
 export exptname=C${RES}_replay_p8
-export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
+export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
 
