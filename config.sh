@@ -16,6 +16,7 @@ export coupled='ATM_OCN_ICE' # NO or ATM_OCN_ICE
 export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
+export days_keep=1
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
 export replay_run_observer='true'
@@ -273,7 +274,7 @@ fi
 
 if [ "$machine" == 'hera' ]; then
    export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   export gsipath=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI
+   export gsipath=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}

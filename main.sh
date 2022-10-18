@@ -162,12 +162,31 @@ if [ $do_cleanup == 'true' ]; then
    sh ${scriptsdir}/clean.sh > ${current_logdir}/clean.out  2>&1
 fi # do_cleanup = true
 
+if [ $days_keep > 0 ]; then  # no checking here that the archiving worked.
+    FHDEL=`expr $days_keep \* -24`
+    DELDATE=`${incdate} $analdate $FHDEL`
+    DELPATH="${datapath}/${DELDATE}/"
+    hpss_done=`cat ${DELPATH}/logs/hpss.log`
+    ls -l ${DELPATH}/logs/hpss.log
+    if [ $hpss_done == 'yes' ]; then
+        echo "clean up: deleting $DELPATH"
+        rm -rf $DELPATH
+    else 
+        echo "did not delete ${DELPATH}, check archiving OK" 
+    fi
+fi
+
 cd $homedir
 if [ $save_hpss == 'true' ]; then
    cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
    echo "submitting job_hpss.sh ..."
    sbatch --export=ALL job_hpss.sh
    #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},MODULESHOME=${MODULESHOME} job_hpss.sh
+   if [ $? -eq 0 ]; then # exit status OK 
+        echo "yes" > ${current_logdir}/hpss.log  
+   else 
+        echo "no" > ${current_logdir}/hpss.log  
+   fi
 fi
 
 fi # skip to here if fg_only = true
