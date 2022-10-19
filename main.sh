@@ -162,7 +162,7 @@ if [ $do_cleanup == 'true' ]; then
    sh ${scriptsdir}/clean.sh > ${current_logdir}/clean.out  2>&1
 fi # do_cleanup = true
 
-if [ $days_keep > 0 ]; then  # no checking here that the archiving worked.
+if [ $save_hpss == 'true' ] && [ $days_keep > 0 ]; then 
     FHDEL=`expr $days_keep \* -24`
     DELDATE=`${incdate} $analdate $FHDEL`
     DELPATH="${datapath}/${DELDATE}/"
