@@ -113,7 +113,7 @@ fi
 if [ $do_snowDA == 'true' ]; then
  if [ $hr == '00' ]; then # only calling land DA at 00 
 
-    # if this is a warm start, skip the land DA   
+    # check if land DA has already been done.
     lndp_done=`cat ${current_logdir}/landDA.log`
     if [ $lndp_done == 'yes' ]; then
       echo "$analdate  land DA already done this time step, skipping.  `date`"
