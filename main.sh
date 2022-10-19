@@ -65,7 +65,7 @@ mkdir -p ${current_logdir}
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
-
+ 
 if [ $RES_INC -lt $RES ] && [ $cold_start == 'false' ] ; then
    charnanal='control'
    echo "$analdate reduce resolution of FV3 history files `date`"
@@ -109,9 +109,16 @@ if [ $fg_only == 'false' ]; then
        fi
     fi
 fi
-
+ 
 if [ $do_snowDA == 'true' ]; then
-  if [ $hr == '00' ]; then 
+ if [ $hr == '00' ]; then # only calling land DA at 00 
+
+    # check if land DA has already been done.
+    lndp_done=`cat ${current_logdir}/landDA.log`
+    if [ $lndp_done == 'yes' ]; then
+      echo "$analdate  land DA already done this time step, skipping.  `date`"
+    else
+
      echo "$analdate calling land DA `date`"
      charnanal='control'
      export RSTRDIR=${datapath2}/${charnanal}/INPUT/
@@ -132,9 +139,11 @@ if [ $do_snowDA == 'true' ]; then
         exit 1
      else
         echo "$analdate finished land DA `date`"
+        echo "yes" > ${current_logdir}/landDA.log 2>&1
      fi
-  fi
-fi 
+   fi # land DA already done
+ fi # 00
+fi # do_snowDA
 
 echo "$analdate run high-res control first guess `date`"
 sh ${scriptsdir}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out   2>&1
@@ -153,12 +162,31 @@ if [ $do_cleanup == 'true' ]; then
    sh ${scriptsdir}/clean.sh > ${current_logdir}/clean.out  2>&1
 fi # do_cleanup = true
 
+if [ $save_hpss == 'true' ] && [ $days_keep > 0 ]; then 
+    FHDEL=`expr $days_keep \* -24`
+    DELDATE=`${incdate} $analdate $FHDEL`
+    DELPATH="${datapath}/${DELDATE}/"
+    hpss_done=`cat ${DELPATH}/logs/hpss.log`
+    ls -l ${DELPATH}/logs/hpss.log
+    if [ $hpss_done == 'yes' ]; then
+        echo "clean up: deleting $DELPATH"
+        rm -rf $DELPATH
+    else 
+        echo "did not delete ${DELPATH}, check archiving OK" 
+    fi
+fi
+
 cd $homedir
 if [ $save_hpss == 'true' ]; then
    cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
    echo "submitting job_hpss.sh ..."
    sbatch --export=ALL job_hpss.sh
    #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},MODULESHOME=${MODULESHOME} job_hpss.sh
+   if [ $? -eq 0 ]; then # exit status OK 
+        echo "yes" > ${current_logdir}/hpss.log  
+   else 
+        echo "no" > ${current_logdir}/hpss.log  
+   fi
 fi
 
 fi # skip to here if fg_only = true

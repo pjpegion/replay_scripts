@@ -22,6 +22,8 @@ export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss="true"
+export days_keep=1  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
+                    # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 
 # override values from above for debugging.
