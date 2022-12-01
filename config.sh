@@ -18,11 +18,11 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-export replay_run_observer='true'
+export replay_run_observer='false'
 export cleanup_observer='true' 
 export resubmit='true'
-export save_hpss="true"
-export days_keep=1  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
+export save_hpss="false"
+export days_keep=0  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 
@@ -55,6 +55,19 @@ if [ "$machine" == 'hera' ]; then
    module load fms/2021.03-avx
    module load cdo
    module load wgrib
+elif [ "$machine" == 'aws' ]; then
+   export scriptsdir="/lustre/${USER}/scripts/${exptname}"
+   export basedir=/lustre/${USER}
+   export datadir=$basedir
+   export hsidir="null"
+   export obs_datapath=/lustre/Philip.Pegion/obs_dump
+   module load intel/2022.1.2
+   module load impi/2022.1.2
+   module load hdf5/1.10.6
+   module load netcdf/4.7.0
+   module load cdo/1.9.5
+   module load wgrib/1.8.1.0b
+   module load aws-utils/latest
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=/work/noaa/gsienkf/${USER}
@@ -115,6 +128,10 @@ if [ $machine == 'hera' ]; then
     export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
     export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
     export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+elif [ $machine == 'aws' ]; then
+    export replayanaldir=/lustre/Philip.Pegion/era5/C${RES}
+    export replayanaldir_lores=/contrib/Philip.Pegion/era5/C${RES_INC}
+    export ocnanaldir=/lustre/Philip.Pegion/ORAS5/${OCNRES}
 elif [ $machine == 'orion' ]; then
     export replayanaldir=/work/noaa/gsienkf/whitaker/era5/C${RES}
     export replayanaldir_lores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
@@ -196,7 +213,8 @@ export LEVS=127
 export FHMIN=0
 export FHMAX=9
 export FHOUT=3
-export RESTART_FREQ=3
+export FHOUT_OCN=6
+export RESTART_FREQ=6
 #export FHRESTART="0 3" # default is "$RESTART_FREQ,1"
 export FRAC_GRID=T
 export iaufhrs="6"
@@ -278,6 +296,14 @@ if [ "$machine" == 'hera' ]; then
    export gsipath=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
+   export execdir=${scriptsdir}/exec_${machine}
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+elif [ "$machine" == 'aws' ]; then
+   export FIXDIR=/lustre/Philip.Pegion/fix_files/input-data-20220414
+   export gsipath=/lustre/Philip.Pegion/fix_files/
+   export fixgsi=${gsipath}/fix_gsi
+   export fixcrtm=/lustre/Philip.Pegion/fix_files/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi

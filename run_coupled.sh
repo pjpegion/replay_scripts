@@ -41,6 +41,10 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
+analdatedm1=`$incdate $analdate -24`
+export yearm1=`echo $analdatedm1 |cut -c 1-4`
+export monm1=`echo $analdatedm1 |cut -c 5-6`
+export daym1=`echo $analdatedm1 |cut -c 7-8`
 if [ ! -z $longfcst ]; then
    export skip_calc_increment=1
    export skip_global_cycle=1
@@ -174,7 +178,7 @@ sed -i -e "s/ATMRES/${RES}/g" nems.configure
 
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
-sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+sed -i -e "s/FHOUT/${FHOUT_OCN}/g" diag_table
 /bin/cp -f $scriptsdir/field_table_${SUITE} field_table
 /bin/cp -f $scriptsdir/data_table_${OCNRES} data_table
 /bin/cp -f ${scriptsdir}/ice_in_${OCNRES} ice_in
@@ -254,13 +258,13 @@ else
    fv3_input_data=FV3_input_data${RES}
 fi
 while [ $n -le 6 ]; do
- ln -fs $FIXDIR/${fv3_input_data}/INPUT/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_grid.tile${n}.nc C${RES}_grid.tile${n}.nc
  ln -fs $FIXDIR/FV3_fix_tiled/C${RES}/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
  ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
  ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXDIR/${fv3_input_data}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/grid_spec.nc  C${RES}_mosaic.nc
 ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
 # symlinks one level up from INPUT
 cd ..
@@ -352,7 +356,13 @@ EOF
 #   6th command line arg is logical for controlling whether humidity
 #   and microphysics vars should be tapered to zero in stratosphere.
 #   The vertical profile of the taper is controlled by ak_top and ak_bot.
+   if [ "$machine" == 'aws' ];then
       echo "create ${increment_file}"
+# get era5 file from S3 bucket
+      echo "s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc"
+      aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc ${replayanaldir}
+      rm ${replayanaldir}/C${RES}_era5anl_${analdatem1}.nc
+   fi
       /bin/rm -f ${increment_file}
       # last two args:  no_mpinc no_delzinc
       if [ $RES_INC -lt $RES ]; then
@@ -386,6 +396,11 @@ else
     # only do IAU on ocean for the 12z cycle for ORAS5
     if [ $houra -eq 12 ]; then
        OCN_IAU=True
+       if [ "$machine" == 'aws' ];then
+          aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/oras5_ics/${OCNRES}/${yeara}/${mona}/ORAS5.${OCNRES}_${yeara}${mona}${daya}.ic.nc ${ocnanaldir}
+# remove yesterday's ORAS5 file
+          rm ${ocnanaldir}/ORAS5.${OCNRES}_${yearm1}${monm1}${daym1}.ic.nc
+       fi
        sh ${scriptsdir}/calc_ocean_increment.sh
        if [ $? -ne 0 ]; then
           echo "calc_ocean_increment failed..."
@@ -602,7 +617,7 @@ memuse_verbose:          F
 atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
-restart_interval:        ${FHRESTART}
+restart_interval:        3 999
 output_fh:               ${OUTPUTFH}
 quilting:                ${quilting}
 write_groups:            ${write_groups}
