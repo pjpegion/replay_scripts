@@ -125,9 +125,11 @@ export biascorrdir=${basedir}/biascor
 
 # directory with analysis netcdf files
 if [ $machine == 'hera' ]; then
-    export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
+    #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
+    export replayanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/reanalysis/era5/C${RES}
     export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
-    export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+    #export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+    export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/${OCNRES}
 elif [ $machine == 'aws' ]; then
     export replayanaldir=/lustre/Philip.Pegion/era5/C${RES}
     export replayanaldir_lores=/contrib/Philip.Pegion/era5/C${RES_INC}
@@ -213,7 +215,9 @@ export LEVS=127
 export FHMIN=0
 export FHMAX=9
 export FHOUT=3
-export FHOUT_OCN=6
+export FHOUT_OCN=3
+# set to 6 for AWS
+#export FHOUT_OCN=6
 export RESTART_FREQ=6
 #export FHRESTART="0 3" # default is "$RESTART_FREQ,1"
 export FRAC_GRID=T
