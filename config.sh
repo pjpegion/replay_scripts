@@ -62,7 +62,7 @@ elif [ "$machine" == 'aws' ]; then
    export hsidir="null"
    export obs_datapath=/lustre/Philip.Pegion/obs_dump
    module load intel/2022.1.2
-   module load impi/2022.1.2
+   module load impi/2020
    module load hdf5/1.10.6
    module load netcdf/4.7.0
    module load cdo/1.9.5
