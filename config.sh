@@ -304,10 +304,10 @@ if [ "$machine" == 'hera' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'aws' ]; then
-   export FIXDIR=/lustre/Philip.Pegion/fix_files/input-data-20220414
-   export gsipath=/lustre/Philip.Pegion/fix_files/
+   export FIXDIR=/lustre/$USER/fix_files/input-data-20220414
+   export gsipath=/lustre/$USER/fix_files/
    export fixgsi=${gsipath}/fix_gsi
-   export fixcrtm=/lustre/Philip.Pegion/fix_files/crtm_v2.3.0
+   export fixcrtm=/lustre/$USER/fix_files/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
