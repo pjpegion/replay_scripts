@@ -60,7 +60,7 @@ elif [ "$machine" == 'aws' ]; then
    export basedir=/lustre/${USER}
    export datadir=$basedir
    export hsidir="null"
-   export obs_datapath=/lustre/Philip.Pegion/obs_dump
+   export obs_datapath=/lustre/${USER}/obs_dump
    module load intel/2022.1.2
    module load impi/2020
    module load hdf5/1.10.6
@@ -125,15 +125,15 @@ export biascorrdir=${basedir}/biascor
 
 # directory with analysis netcdf files
 if [ $machine == 'hera' ]; then
-    #export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
-    export replayanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/reanalysis/era5/C${RES}
+    export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
+    #export replayanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/reanalysis/era5/C${RES}
     export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
-    #export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
-    export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/${OCNRES}
+    export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+    #export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/${OCNRES}
 elif [ $machine == 'aws' ]; then
-    export replayanaldir=/lustre/Philip.Pegion/era5/C${RES}
-    export replayanaldir_lores=/contrib/Philip.Pegion/era5/C${RES_INC}
-    export ocnanaldir=/lustre/Philip.Pegion/ORAS5/${OCNRES}
+    export replayanaldir=/lustre/${USER}/era5/C${RES}
+    export replayanaldir_lores=/contrib/${USER}/era5/C${RES_INC}
+    export ocnanaldir=/lustre/${USER}/ORAS5/${OCNRES}
 elif [ $machine == 'orion' ]; then
     export replayanaldir=/work/noaa/gsienkf/whitaker/era5/C${RES}
     export replayanaldir_lores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
