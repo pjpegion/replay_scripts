@@ -3,7 +3,7 @@ program  calc_oras5_incrment
 use netcdf
 
 implicit none
-integer                 :: ncid_fg1,ncid_fg2,ncid_anl,ncid_inc,varid,dimid
+integer                 :: ncid_fg,ncid_anl,ncid_inc,varid,dimid
 integer                 :: xt_dim_id,yt_dim_id,xt_var_id,yt_var_id
 integer                 :: xq_dim_id,yq_dim_id,xq_var_id,yq_var_id
 integer                 :: varid1,varid2,varid3,varid4,varid5,varid_lon,varid_lat
@@ -12,7 +12,7 @@ integer                 :: zl_dim_id,zl_var_id,ierr
 include 'netcdf.inc'
 
 integer     :: i,j,k,nx,ny,nz,nx2,ny2,nz2,cct,nargs,iforcing_factor
-character*80 :: fname_fg1,fname_fg2,fname_anl,fname_inc
+character*80 :: fname_fg,fname_anl,fname_inc
 character*240 :: path_fg,path_anl
 
 real(kind=8),allocatable,dimension(:,:) :: ssh_anl,ssh_inc,tmp2d
@@ -55,25 +55,22 @@ dd=analdate(7:8)
 
 ! open up MOM6 bg file to get grid info
 path_fg=trim(expt)//'/'
-fname_fg1='ocn_'//yyyy//'_'//mm//'_'//dd//'_10.nc'
-fname_fg2='ocn_'//yyyy//'_'//mm//'_'//dd//'_13.nc'
-path_anl=trim(oras5path)//'/'//yyyy//mm//dd//'/'
-fname_anl='ORAS5.ic.nc'
+fname_fg='ocn_'//yyyy//'_'//mm//'_'//dd//'_12.nc'
+path_anl=trim(oras5path)//'/'
+fname_anl='ORAS5.mx025_'//yyyy//mm//dd//'.ic.nc'
 fname_inc='mom6_increment.nc'
 cct=1
 print*,'iau_forcing_factor=',forcing_factor
-print*,'opening',trim(path_fg)//trim(fname_fg1)
-call check(NF90_OPEN(trim(path_fg)//trim(fname_fg1),NF90_NOWRITE,ncid_fg1),cct)
-print*,'opening',trim(path_fg)//trim(fname_fg2)
-call check(NF90_OPEN(trim(path_fg)//trim(fname_fg2),NF90_NOWRITE,ncid_fg2),cct)
+print*,'opening',trim(path_fg)//trim(fname_fg)
+call check(NF90_OPEN(trim(path_fg)//trim(fname_fg),NF90_NOWRITE,ncid_fg),cct)
 ! get dimensions
-call check(NF90_INQ_DIMID(ncid_fg1,'xh',dimid),cct)
-call check(NF90_INQUIRE_DIMENSION(ncid_fg1,dimid,len=nx),cct)
-call check(NF90_INQ_DIMID(ncid_fg1,'yh',dimid),cct)
-call check(NF90_INQUIRE_DIMENSION(ncid_fg1,dimid,len=ny),cct)
-call check(NF90_INQ_DIMID(ncid_fg1,'z_l',dimid),cct)
-call check(NF90_INQUIRE_DIMENSION(ncid_fg1,dimid,len=nz),cct)
-!print*,'fg1 size is',nx,ny,nz
+call check(NF90_INQ_DIMID(ncid_fg,'xh',dimid),cct)
+call check(NF90_INQUIRE_DIMENSION(ncid_fg,dimid,len=nx),cct)
+call check(NF90_INQ_DIMID(ncid_fg,'yh',dimid),cct)
+call check(NF90_INQUIRE_DIMENSION(ncid_fg,dimid,len=ny),cct)
+call check(NF90_INQ_DIMID(ncid_fg,'z_l',dimid),cct)
+call check(NF90_INQUIRE_DIMENSION(ncid_fg,dimid,len=nz),cct)
+!print*,'fg size is',nx,ny,nz
 ! allocate arrays
 allocate(lonh(nx))
 allocate(lonq(nx))
@@ -104,41 +101,21 @@ allocate(depth(nx,ny,nz))
 allocate(new_prof(nz))
 
 ! get F.G. fields
-call check(NF90_INQ_VARID(ncid_fg1,'SSH',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,ssh_fg(:,:)),cct)
-call check(NF90_INQ_VARID(ncid_fg2,'SSH',varid),cct)
-call check(NF90_GET_VAR(ncid_fg2,varid,tmp2d(:,:)),cct)
-ssh_fg(:,:)=(ssh_fg(:,:)+tmp2d(:,:))/2.0
-call check(NF90_INQ_VARID(ncid_fg1,'temp',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,pt_fg(:,:,:)),cct)
-call check(NF90_INQ_VARID(ncid_fg2,'temp',varid),cct)
-call check(NF90_GET_VAR(ncid_fg2,varid,tmp3d(:,:,:)),cct)
-pt_fg(:,:,:)=(pt_fg(:,:,:)+tmp3d(:,:,:))/2.0
-call check(NF90_INQ_VARID(ncid_fg1,'ho',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,h_fg(:,:,:)),cct)
-print*,'5' 
-call check(NF90_INQ_VARID(ncid_fg2,'ho',varid),cct)
-call check(NF90_GET_VAR(ncid_fg2,varid,tmp3d(:,:,:)),cct)
-h_fg(:,:,:)=(h_fg(:,:,:)+tmp3d(:,:,:))/2.0
-call check(NF90_INQ_VARID(ncid_fg1,'so',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,s_fg(:,:,:)),cct)
-call check(NF90_INQ_VARID(ncid_fg2,'so',varid),cct)
-call check(NF90_GET_VAR(ncid_fg2,varid,tmp3d(:,:,:)),cct)
-s_fg(:,:,:)=(s_fg(:,:,:)+tmp3d(:,:,:))/2.0
-call check(NF90_INQ_VARID(ncid_fg1,'uo',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,u_fg(:,:,:)),cct)
-call check(NF90_INQ_VARID(ncid_fg2,'uo',varid),cct)
-call check(NF90_GET_VAR(ncid_fg2,varid,tmp3d(:,:,:)),cct)
-u_fg(:,:,:)=(u_fg(:,:,:)+tmp3d(:,:,:))/2.0
-call check(NF90_INQ_VARID(ncid_fg1,'vo',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,v_fg(:,:,:)),cct)
-call check(NF90_INQ_VARID(ncid_fg2,'vo',varid),cct)
-call check(NF90_GET_VAR(ncid_fg2,varid,tmp3d(:,:,:)),cct)
-v_fg(:,:,:)=(v_fg(:,:,:)+tmp3d(:,:,:))/2.0
-call check(NF90_INQ_VARID(ncid_fg1,'z_l',varid),cct)
-call check(NF90_GET_VAR(ncid_fg1,varid,z_fg(:)),cct)
-call check(NF90_CLOSE(ncid_fg1),cct)
-print*,'6' 
+call check(NF90_INQ_VARID(ncid_fg,'SSH',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,ssh_fg(:,:)),cct)
+call check(NF90_INQ_VARID(ncid_fg,'temp',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,pt_fg(:,:,:)),cct)
+call check(NF90_INQ_VARID(ncid_fg,'ho',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,h_fg(:,:,:)),cct)
+call check(NF90_INQ_VARID(ncid_fg,'so',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,s_fg(:,:,:)),cct)
+call check(NF90_INQ_VARID(ncid_fg,'uo',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,u_fg(:,:,:)),cct)
+call check(NF90_INQ_VARID(ncid_fg,'vo',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,v_fg(:,:,:)),cct)
+call check(NF90_INQ_VARID(ncid_fg,'z_l',varid),cct)
+call check(NF90_GET_VAR(ncid_fg,varid,z_fg(:)),cct)
+call check(NF90_CLOSE(ncid_fg),cct)
 
 ! define incrment files
 !print*,'creating',trim(fname_inc)

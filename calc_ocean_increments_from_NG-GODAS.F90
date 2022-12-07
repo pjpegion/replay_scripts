@@ -3,7 +3,7 @@ program  calc_ng_godas_incrment
 use netcdf
 
 implicit none
-integer                 :: ncid_fg1,ncid_fg2,ncid_anl,ncid_inc,varid,dimid
+integer                 :: ncid_fg,ncid_anl,ncid_inc,varid,dimid
 integer                 :: xt_dim_id,yt_dim_id,xt_var_id,yt_var_id
 integer                 :: xq_dim_id,yq_dim_id,xq_var_id,yq_var_id
 integer                 :: varid1,varid2,varid3,varid4,varid5,varid_lon,varid_lat
@@ -12,7 +12,7 @@ integer                 :: zl_dim_id,zl_var_id,ierr
 include 'netcdf.inc'
 
 integer     :: i,j,k,nx,ny,nz,nx2,ny2,nz2,cct,nargs,iforcing_factor
-character*80 :: fname_fg1,fname_fg2,fname_anl,fname_inc
+character*80 :: fname_fg,fname_anl,fname_inc
 character*240 :: path_fg,path_anl
 
 real(kind=8),allocatable,dimension(:,:) :: ssh_inc,tmp2d
@@ -60,7 +60,7 @@ yyyy=analdatem2(1:4)
 mm=analdatem2(5:6)
 dd=analdatem2(7:8)
 hh=analdatem2(9:10)
-fname_fg1='ocn_'//yyyy//'_'//mm//'_'//dd//'_'//hh//'.nc'
+fname_fg='ocn_'//yyyy//'_'//mm//'_'//dd//'_'//hh//'.nc'
 
 ! ocean history file date 2 hours after nomimal analysis time (really 1.5 hours)
 yyyy=analdatep1(1:4)

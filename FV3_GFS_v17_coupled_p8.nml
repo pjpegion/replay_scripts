@@ -11,7 +11,6 @@
   blocksize = 32
   dycore_only = .false.
   ccpp_suite = "FV3_GFS_v17_coupled_p8"
-  ignore_rst_cksum=.true.
 /
 
 &diag_manager_nml
