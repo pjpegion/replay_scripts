@@ -6,9 +6,11 @@ source $MODULESHOME/init/sh
 if [ "$cold_start" == "true" ]; then
    skip_global_cycle=YES
    FHROT=0
+   WAVE_REST_SEC=10800
    RESTART_FREQ=3
 else
    FHROT=3
+   WAVE_REST_SEC=21600
 fi
 
 export WGRIB=`which wgrib`
@@ -143,7 +145,8 @@ find -type l -delete
 /bin/rm -f dyn* phy* *nemsio* PET* history/* MOM6_OUTPUT/* ocn_*nc
 export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table_coupled}
 /bin/cp -f $DIAG_TABLE diag_table
-/bin/cp -f $scriptsdir/nems.configure.ATM_OCN_ICE nems.configure
+/bin/cp -f $scriptsdir/nems.configure.ATM_OCN_ICE_WAV nems.configure
+/bin/cp -f $scriptsdir/ww3_shel.inp ww3_shel.inp
 if [ -s INPUT/ufs.cpld.cpl.r.${year_start}-${mon_start}-${day_start}-${secondofday}.nc ]; then
   mediator_read_restart=true
 else
@@ -152,12 +155,18 @@ fi
 sed -i -e "s/DT_ATMOS/${dt_atmos}/g" nems.configure
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" nems.configure
 sed -i -e "s/MEDIATOR_RST/${mediator_read_restart}/g" nems.configure
+sed -i -e "s/YYYY/${year}/g" ww3_shel.inp
+sed -i -e "s/MM/${mon}/g" ww3_shel.inp
+sed -i -e "s/DD/${day}/g" ww3_shel.inp
+sed -i -e "s/HH/${hour}/g" ww3_shel.inp
+sed -i -e "s/RESTART/${WAVE_REST_SEC}/g" ww3_shel.inp
 # figure out processor layout
 echo "processor layout"
 echo "nprocs_cpl="$nprocs_cpl
 echo "nprocs_atm="$nprocs_atm
 echo "nprocs_ocn="$nprocs_ocn
 echo "nprocs_ice="$nprocs_ice
+echo "nprocs_wav="$nprocs_wav
 CPL1=0
 CPL2=`expr $nprocs_cpl - 1`
 ATM1=0
@@ -166,6 +175,8 @@ OCN1=`expr $ATM2 + 1`
 OCN2=`expr $nprocs_ocn + $ATM2`
 ICE1=`expr $OCN2 + 1`
 ICE2=`expr $nprocs_ice + $OCN2`
+WAV1=`expr $ICE2 + 1`
+WAV2=`expr $nprocs_wav + $ICE2`
 sed -i -e "s/NPROCS_CPL1/${CPL1}/g" nems.configure
 sed -i -e "s/NPROCS_CPL2/${CPL2}/g" nems.configure
 sed -i -e "s/NPROCS_ATM1/${ATM1}/g" nems.configure
@@ -173,6 +184,8 @@ sed -i -e "s/NPROCS_ATM2/${ATM2}/g" nems.configure
 sed -i -e "s/NPROCS_OCN1/${OCN1}/g" nems.configure
 sed -i -e "s/NPROCS_OCN2/${OCN2}/g" nems.configure
 sed -i -e "s/NPROCS_ICE1/${ICE1}/g" nems.configure
+sed -i -e "s/NPROCS_WAV2/${WAV2}/g" nems.configure
+sed -i -e "s/NPROCS_WAV1/${WAV1}/g" nems.configure
 sed -i -e "s/NPROCS_ICE2/${ICE2}/g" nems.configure
 sed -i -e "s/OCNRES/${OCNRES}/g" nems.configure
 sed -i -e "s/ATMRES/${RES}/g" nems.configure
@@ -295,6 +308,9 @@ ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  
 ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
 # MOM6/CICE files  (MOM6 in INPUT, CICE one level up)
 ln -sf ${FIXDIR}/CICE_FIX/${ORES3}/* . 
+ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.points .
+ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.gwes_30m mod_def.ww3 
+ln -sf ${FIXDIR}/WW3_input_data_20220624/mesh.gwes_30m.nc .
 cd INPUT
 ln -sf ${FIXDIR}/MOM6_FIX/${ORES3}/* .
 if [ $NGGODAS == "true" ]; then
@@ -313,7 +329,7 @@ sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
 sed -i -e "s/DO_OCNSPPT/${DO_OCNSPPT}/g" MOM_input
 sed -i -e "s/DO_PERT_EPBL/${DO_PERT_EPBL}/g" MOM_input
-sed -i -e "s/CPLWAV/False/g" MOM_input
+sed -i -e "s/CPLWAV/True/g" MOM_input
 
 touch MOM_override
 cd ..
@@ -420,6 +436,7 @@ else
 fi
 
 pushd INPUT; sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input; popd
+
 # setup model namelist
 if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
@@ -460,6 +477,7 @@ else
       iau_inc_files=""
    fi
 fi
+
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
@@ -686,7 +704,7 @@ sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
-sed -i -e "s/DOWAV/.false./g" input.nml
+sed -i -e "s/DOWAV/.true./g" input.nml
 if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
    NSTFNAME="2,1,0,0"
 fi
@@ -873,9 +891,11 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    #fi
    /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv ufs.cpld.cpl.r.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
+   /bin/mv ../${yrnext}${monnext}${daynext}.${hrnext}0000.restart.ww3 ${datapathp1}/${charnanal}/restart.ww3
    if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
       /bin/mv -f iced.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
       /bin/mv -f ufs.cpld.cpl.r.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
+      /bin/mv ../${yeara}${mona}${daya}.${houra}0000.restart.ww3 ${datapathp1}/${charnanal}/restart.ww3
    fi
    cd ..
    ls -l ${datapathp1}/${charnanal}/INPUT

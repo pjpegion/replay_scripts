@@ -44,19 +44,20 @@ if [ "$machine" == 'hera' ]; then
    module purge
    module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load miniconda3
+   module load intel/2022.1.
+   module load impi/2022.1.2
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
+   module load hpc/1.2.0
+   module load hpc-intel/2022.1.2
+   module load hpc-impi/2022.1.2
    module load hdf5/1.10.6
    module load netcdf/4.7.4
-   module load pio/2.5.2
-   module load esmf/8.2.1b04
-   module load fms/2021.03-avx
+   module load pio/2.5.7
+   module load esmf/8.3.0b09
+   module load fms/2022.01
    module load cdo
    module load wgrib
 elif [ "$machine" == 'aws' ]; then
-   export scriptsdir="/lustre/${USER}/scripts/${exptname}"
    export basedir=/lustre/${USER}
    export datadir=$basedir
    export hsidir="null"
@@ -215,7 +216,7 @@ export LEVS=127
 export FHMIN=0
 export FHMAX=9
 export FHOUT=3
-export FHOUT_OCN=3
+export FHOUT_OCN=6
 # set to 6 for AWS
 #export FHOUT_OCN=6
 export RESTART_FREQ=6
@@ -304,8 +305,8 @@ if [ "$machine" == 'hera' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 elif [ "$machine" == 'aws' ]; then
-   export FIXDIR=/lustre/Philip.Pegion/fix_files/input-data-20220414
-   export gsipath=/lustre/Philip.Pegion/fix_files/
+   export FIXDIR=/lustre/${USER}/fix_files/input-data-20220414
+   export gsipath=/lustre/${USER}/fix_files/
    export fixgsi=${gsipath}/fix_gsi
    export fixcrtm=/lustre/Philip.Pegion/fix_files/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
@@ -367,11 +368,8 @@ elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
    export SUITE="FV3_GFS_v17_coupled_p8"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
-   export SUITE="FV3_GFS_v16_coupled"
+   export SUITE="FV3_GFS_v17_coupled_p8"
    export rungfs="run_coupled_wav.sh"
-   echo "${coupled} option not yet supported"
-   echo "please chose betwee NO ATM_OCN_ICE"
-   exit 1
 else
    echo "${coupled} option not supported"
    echo "please chose betwee NO ATM_OCN_ICE"
