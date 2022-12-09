@@ -1,11 +1,9 @@
 #!/bin/sh
-#SBATCH -q debug
-##SBATCH -q batch
-#SBATCH -t 00:30:00
-##SBATCH -t 01:00:00
-#SBATCH -A da-cpu
-##SBATCH -A isp-1         
-##SBATCH -A gsienkf
+##SBATCH -t 00:30:00
+##SBATCH -q debug
+#SBATCH -q batch
+#SBATCH -t 01:00:00
+#SBATCH -A gsienkf
 #SBATCH -N 30   
 #SBATCH -J ufs_era5_replay
 #SBATCH -e ufs_era5_replay.err
