@@ -4,7 +4,7 @@
 # if calling from land-offline_workflow,vars in this section will already be set. Otherwise, need to be set here. 
 
 THISDATE=${analdatem3} # ANALDATE - OFFSET = valid time of restarts.
-WORKDIR=${datapath2}/tmpdir_landDA/
+JEDIWORKDIR=${datapath2}/tmpdir_landDA/
 OUTDIR=${datapath2}/landDA  
 #RSTRDIR=  # for replay, this is set in main.sh
 RES=384 #FV3 resolution
@@ -42,6 +42,7 @@ SAVE_TILE="YES"
 # OPTIONAL: CHANGE JEDI DIRECTORIES
 # if using different JEDI VERSION, will likely need to edit your yamls.
 JEDI_EXECDIR="/scratch2/NCEPDEV/land/data/jedi/fv3-bundle-20220921/build/bin/"
+#JEDI_EXECDIR="/scratch2/BMC/gsienkf/whitaker/scripts/GDASApp/build/bin/"
 #IODA_BUILD_DIR= # JEDI IODA-converter source directory
 #IMShr= # is assimilating IMS at hour other than 18, specify here.
 #OBSDIR= # to override default OBSDIR

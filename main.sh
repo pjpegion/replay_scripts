@@ -110,7 +110,7 @@ if [ $fg_only == 'false' ]; then
     fi
 fi
  
-if [ $do_snowDA == 'true' ]; then
+if [ $do_snowDA == 'true' ] && [ $fg_only == 'false' ]; then
  if [ $hr == '00' ]; then # only calling land DA at 00 
 
     # check if land DA has already been done.
