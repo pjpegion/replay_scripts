@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8
+export exptname=C${RES}_replay_p8_wav
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -63,7 +63,7 @@ elif [ "$machine" == 'aws' ]; then
    export hsidir="null"
    export obs_datapath=/lustre/${USER}/obs_dump
    module load intel/2022.1.2
-   module load impi/2020
+   module load impi/2022.1.2
    module load hdf5/1.10.6
    module load netcdf/4.7.0
    module load cdo/1.9.5

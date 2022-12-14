@@ -2,6 +2,8 @@
 # model was compiled with these 
 echo "starting at `date`"
 source $MODULESHOME/init/sh
+export ESMF_RUNTIME_PROFILE=ON
+export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
 #skip_global_cycle=YES
 if [ "$cold_start" == "true" ]; then
    skip_global_cycle=YES
@@ -516,7 +518,8 @@ else
 fi
 
 FHRESTART=${FHRESTART:-"${RESTART_FREQ} -1"}
-OUTPUTFH=${OUTPUTFH:-"${FHOUT} -1"}
+#OUTPUTFH=${OUTPUTFH:-"${FHOUT} -1"}
+OUTPUTFH='3 6 9'
 if [ ! -z $longfcst ]; then
    FHMAX_FCST=$FHMAX
    FHRESTART=0
@@ -920,30 +923,40 @@ ls -l ${DATOUT}
 # remove symlinks from INPUT directory
 cd INPUT
 find -type l -delete
+rm MOM_input
 cd ..
-#/bin/rm -rf RESTART # don't need RESTART dir anymore.
-# save RESTARTS at end of predictor segment (end of next window)
-#cd RESTART
-#mkdir -p SAVE
-#mv fv*nc SAVE
-#mv ca*nc SAVE
-#mv phy*nc SAVE
-#mv sfc*nc SAVE
-#mv atm_stoch.res.nc SAVE
-#mv ocn_stoch.res.nc SAVE
-#mv MOM.res_1.nc SAVE
-#mv MOM.res_2.nc SAVE
-#mv MOM.res_3.nc SAVE
-#mv MOM.res.nc SAVE
-#mv iced.${yrendnext}-${monendnext}-${dayendnext}-${secondofendnextday}.nc  SAVE
-#mv ufs.cpld.cpl.r.${yrendnext}-${monendnext}-${dayendnext}-${secondofendnextday}.nc SAVE
-#/bin/rm -f *
-#mv SAVE/* .
-#/bin/rm -rf SAVE
-#cd ..
-#ls -l RESTART
+/bin/rm PET*
+/bin/rm log*
 /bin/rm -rf RESTART
+/bin/rm -rf history
+/bin/rm -rf MOM6_OUTPUT
+/bin/rm ice.restart_file
+/bin/rm  ${year}${mon}${day}.??????.out_pnt.ww3
+/bin/rm -f ${yearnext}${monnext}${daynext}.??????.out_pnt.ww3
+/bin/rm diag_table
+/bin/rm nems.configure
+/bin/rm postxconfig-NT.txt
+/bin/rm postxconfig-NT_FH00.txt
+/bin/rm ice_in
+/bin/rm rpointer.cpl
+/bin/rm field_table
+/bin/rm itag
+/bin/rm ww3_shel.inp
+/bin/rm params_grib2_tbl_new
+/bin/rm mediator.log
+/bin/rm input.nml
+/bin/rm data_table
+/bin/rm INPUT/calc_increment_ncio.nml
+/bin/rm ice_diag.d
+/bin/rm model_configure
+find -type l -delete
 
 echo "all done at `date`"
 
+# get ip address of front end and lauch archive job there
+set -x
+if [ $machine == 'aws' ] ; then
+   ipadd=`cat ${scriptsdir}/front_end_ip.txt`
+   ssh ${USER}@$ipadd "export scriptsdir=$scriptsdir; export datapath=${datapath}; export analdate=${analdate}; export exptname=${exptname}; cd $scriptsdir; ./archive_replay.sh >&archive_${analdate}.out&"
+fi
 exit 0
