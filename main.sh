@@ -133,7 +133,11 @@ if [ $do_snowDA == 'true' ] && [ $fg_only == 'false' ]; then
       n=$((n+1))
      done
 
-     ${scriptsdir}/land-DA_update/do_landDA.sh settings_snowDA > ${current_logdir}/landDA.out 2>&1
+     if [ ! -s settings_snowDA_${machine} ]; then
+        echo "no settings_snowDA file for ${machine}, can't run snow DA..."
+        exit 1
+     fi
+     ${scriptsdir}/land-DA_update/do_landDA.sh settings_snowDA_${machine} > ${current_logdir}/landDA.out 2>&1
      if [[ $? != 0 ]]; then
         echo "$analdate land DA failed, exiting"
         exit 1
