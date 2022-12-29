@@ -17,7 +17,8 @@ export cores=`expr $NODES \* $corespernode`
 
 export do_cleanup='false' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
-export cleanup_fg='true'
+#export cleanup_fg='true'
+export cleanup_fg='false'
 export replay_run_observer='false'
 export cleanup_observer='true' 
 export resubmit='true'
@@ -213,7 +214,7 @@ export LONA=$LONB
 export LATA=$LATB      
 export ANALINC=6
 export LEVS=127
-export FHMIN=0
+export FHMIN=3
 export FHMAX=9
 export FHOUT=3
 export FHOUT_OCN=6
@@ -312,6 +313,24 @@ elif [ "$machine" == 'aws' ]; then
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
+
+   source /apps/oneapi/setvars.sh
+   export IPATH_NO_BACKTRACE=1
+
+   export I_MPI_ROOT=/apps/oneapi/mpi/2021.3.0
+   export I_MPI_TMI_PROVIDER=psm
+   export I_MPI_HYDRA_BRANCH_COUNT=128
+   export I_MPI_HYDRA_PMI_CONNECT=alltoall
+   export I_MPI_PIN_RESPECT_CPUSET=off
+   export I_MPI_PMI_LIBRARY=/apps/slurm/default/lib/libpmi2.so
+   export IPATH_NO_BACKTRACE=1
+   export intel_root=/apps/oneapi/compiler/2021.3.0
+   export LD_LIBRARY_PATH=$I_MPI_ROOT/lib:$I_MPI_ROOT/lib/release:$I_MPI_ROOT/libfabric/lib:$MKL_ROOT/lib/intel64:$intel_root/linux/lib:$intel_root:linux/lib/x64:$intel_root/linux/lib/emu:$intel_root/linux/lib/oclfpga/host/linux64/lib:$intel_root/linux/lib/oclfpga/linux64/lib:$intel_root/linux/compiler/lib/intel64_lin:$LD_LIBRARY_PATH
+~
+
+
+
+
 elif [ "$machine" == 'orion' ]; then
    export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    export fv3gfspath=/work/noaa/global/glopara

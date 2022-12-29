@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
 ulimit -s unlimited
 [ -z "$nprocs" ] && echo "Need to set nprocs" && exit 1;
@@ -12,10 +12,13 @@ mpitaskspernode=`python -c "from __future__ import print_function; import math; 
 # -n: total number of mpi tasks
 # -N: number of nodes to run on
 # --ntasks-per-node:  mpi tasks on each node
-echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode  --exclusive --cpu-bind=cores --verbose -gres=craynetwork:0 $PGM"
+env
 if [ "$machine" == "aws" ];then
-   eval mpirun -np $nprocs $PGM
+   #eval mpirun -np $nprocs $PGM
+   echo "running srun --mpi=pmi2 --export=ALL -n $nprocs $PGM"
+   srun --mpi=pmi2 -l --export=ALL -n $nprocs $PGM
 else
+echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode  --exclusive --cpu-bind=cores --verbose -gres=craynetwork:0 $PGM"
    eval srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode --exclusive --cpu-bind=cores --verbose --gres=craynetwork:0 $PGM
 fi
 rc=$?
