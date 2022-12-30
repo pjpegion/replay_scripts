@@ -110,7 +110,7 @@ if [ $fg_only == 'false' ]; then
     fi
 fi
  
-if [ $do_snowDA == 'true' ]; then
+if [ $do_snowDA == 'true' ] && [ $fg_only == 'false' ]; then
  if [ $hr == '00' ]; then # only calling land DA at 00 
 
     # check if land DA has already been done.
@@ -133,7 +133,11 @@ if [ $do_snowDA == 'true' ]; then
       n=$((n+1))
      done
 
-     ${scriptsdir}/land-DA_update/do_landDA.sh settings_snowDA > ${current_logdir}/landDA.out 2>&1
+     if [ ! -s settings_snowDA_${machine} ]; then
+        echo "no settings_snowDA file for ${machine}, can't run snow DA..."
+        exit 1
+     fi
+     ${scriptsdir}/land-DA_update/do_landDA.sh settings_snowDA_${machine} > ${current_logdir}/landDA.out 2>&1
      if [[ $? != 0 ]]; then
         echo "$analdate land DA failed, exiting"
         exit 1
@@ -192,6 +196,9 @@ fi
 fi # skip to here if fg_only = true
 
 echo "$analdate all done `date`"
+if [ $resubmit == "false" ]; then
+  exit
+fi
 
 # next analdate: increment by $ANALINC
 export analdate=`${incdate} $analdate $ANALINC`

@@ -15,14 +15,13 @@ export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in s
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
 
-export do_cleanup='false' # if true, create tar files, delete *mem* files.
+export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
-#export cleanup_fg='true'
-export cleanup_fg='false'
-export replay_run_observer='false'
+export cleanup_fg='true'
+export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export save_hpss="false"
+export save_hpss='true'
 export days_keep=0  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
@@ -34,7 +33,7 @@ export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 #export do_cleanup='false'
 #export save_hpss="false"
 
-export do_snowDA='false'
+export do_snowDA='true'
  
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -218,8 +217,6 @@ export FHMIN=3
 export FHMAX=9
 export FHOUT=3
 export FHOUT_OCN=6
-# set to 6 for AWS
-#export FHOUT_OCN=6
 export RESTART_FREQ=6
 #export FHRESTART="0 3" # default is "$RESTART_FREQ,1"
 export FRAC_GRID=T
@@ -309,7 +306,7 @@ elif [ "$machine" == 'aws' ]; then
    export FIXDIR=/lustre/${USER}/fix_files/input-data-20220414
    export gsipath=/lustre/${USER}/fix_files/
    export fixgsi=${gsipath}/fix_gsi
-   export fixcrtm=/lustre/Philip.Pegion/fix_files/crtm_v2.3.0
+   export fixcrtm=/lustre/$USER/fix_files/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi

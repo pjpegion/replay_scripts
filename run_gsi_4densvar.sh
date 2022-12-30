@@ -635,6 +635,15 @@ done
 
 
 # Copy observational data to $tmpdir
+if [ $machine == 'aws' ]; then
+   hr=`echo $adate | cut -c9-10`
+   day=`echo $adate | cut -c7-8`
+   mon=`echo $adate | cut -c5-6`
+   year=`echo $adate | cut -c1-4`
+   mkdir -p $datobs
+   aws s3 cp  --no-sign-request s3://noaa-reanalyses-pds/observations/reanalysis/conv/prepbufr/${year}/${mon}/prepbufr/gdas.${year}${mon}${day}.t${hr}z.prepfur.nr ${datobs}/${prefix_obs}.prepbufr
+   aws s3 cp  --no-sign-request s3://noaa-reanalyses-pds/observations/reanalysis/conv/prepbufr.acft_profiles/${year}/${mon}/bufr/gdas.${year}${mon}${day}.t${hr}z.prepbufr.acft_profiles.nr ${datobs}/${prefix_obs}.prepbufr.acft_profiles
+fi
 if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
  echo "no prepbufr file!"
  exit 1
