@@ -215,7 +215,7 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == "true" ]; then
       echo "resubmit script for `date`"
       echo "machine = $machine"
-      if [ "$coupled"  == 'ATM_OCN_ICE' ];then
+      if [ "$coupled"  == 'ATM_OCN_ICE' ] || [ "$coupled"  == 'ATM_OCN_ICE_WAV' ];then
          cat ${machine}_preamble_cpld_slurm config.sh > job.sh
       else
          cat ${machine}_preamble_slurm config.sh > job.sh

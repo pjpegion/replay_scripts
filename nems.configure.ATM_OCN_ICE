@@ -4,6 +4,7 @@
 
 # -# ESMF #
 logKindFlag:            ESMF_LOGKIND_MULTI
+globalResourceControl:  true
 
 # EARTH #
 EARTH_component_list: MED ATM OCN ICE
@@ -14,11 +15,13 @@ EARTH_attributes::
 # MED #
 MED_model:                      cmeps
 MED_petlist_bounds:             NPROCS_CPL1 NPROCS_CPL2
+MED_omp_num_threads:            1
 ::
 
 # ATM #
 ATM_model:                      fv3
 ATM_petlist_bounds:             NPROCS_ATM1 NPROCS_ATM2
+ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0
   DumpFields = false
@@ -29,6 +32,7 @@ ATM_attributes::
 # OCN #
 OCN_model:                      mom6
 OCN_petlist_bounds:             NPROCS_OCN1 NPROCS_OCN2
+OCN_omp_num_threads:            1
 OCN_attributes::
   Verbosity = 0
   DumpFields = false
@@ -40,6 +44,7 @@ OCN_attributes::
 # ICE #
 ICE_model:                      cice6
 ICE_petlist_bounds:             NPROCS_ICE1 NPROCS_ICE2
+ICE_omp_num_threads:            1
 ICE_attributes::
   Verbosity = 0
   DumpFields = false
@@ -96,7 +101,7 @@ ALLCOMP_attributes::
       ScalarFieldIdxGridNX = 1
       ScalarFieldIdxGridNY = 2
       ScalarFieldName = cpl_scalars
-      start_type = startup
+      start_type = RUN_TYPE
       restart_dir = RESTART/
       case_name = ufs.cpld
       restart_n = RESTART_FREQ

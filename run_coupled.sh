@@ -6,6 +6,7 @@ source $MODULESHOME/init/sh
 if [ "$cold_start" == "true" ]; then
    skip_global_cycle=YES
    FHROT=0
+   RESTART_FREQ=3
 else
    FHROT=3
 fi
@@ -186,6 +187,7 @@ if [ "$cold_start" == "true" ]; then
   ice_date=${analdate}
   #istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
   run_type='initial'
+  NEMS_RUN_TYPE='startup'
   run_id='cpcice'
   if [ $OCNRES == 'mx100' ]; then
      ice_ic='cice5_model_1.00.ic.nc'
@@ -202,10 +204,13 @@ if [ "$cold_start" == "true" ]; then
 else
   #istep0=0
   run_type='continue'
+  NEMS_RUN_TYPE='continue'
   run_id='unknown'
   ice_ic='none'
   use_restart_time='.false.'
 fi
+sed -i -e "s/RESTART_FREQ/${RESTART_FREQ}/g" nems.configure
+sed -i -e "s/RUN_TYPE/${NEMS_RUN_TYPE}/g" nems.configure
 #determin x and y block sized
 if [ $OCNRES == 'mx100' ]; then
    BS_Y=160  # split N-S in 2 procs
@@ -308,6 +313,7 @@ sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
 sed -i -e "s/DO_OCNSPPT/${DO_OCNSPPT}/g" MOM_input
 sed -i -e "s/DO_PERT_EPBL/${DO_PERT_EPBL}/g" MOM_input
+sed -i -e "s/CPLWAV/False/g" MOM_input
 
 touch MOM_override
 cd ..
@@ -414,7 +420,6 @@ else
 fi
 
 pushd INPUT; sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input; popd
-
 # setup model namelist
 if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
@@ -455,7 +460,6 @@ else
       iau_inc_files=""
    fi
 fi
-
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
@@ -507,7 +511,6 @@ elif [ "${iau_delthrs}" != "-1" ]; then
 else
    FHMAX_FCST=$FHMAX
 fi
-sed -i -e "s/RESTART_FREQ/${RESTART_FREQ}/g" nems.configure
 
 if [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
@@ -683,6 +686,7 @@ sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+sed -i -e "s/DOWAV/.false./g" input.nml
 if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
    NSTFNAME="2,1,0,0"
 fi
