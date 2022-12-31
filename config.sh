@@ -44,7 +44,7 @@ if [ "$machine" == 'hera' ]; then
    module purge
    module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load miniconda3
-   module load intel/2022.1.
+   module load intel/2022.1.2
    module load impi/2022.1.2
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.2.0
@@ -54,7 +54,7 @@ if [ "$machine" == 'hera' ]; then
    module load netcdf/4.7.4
    module load pio/2.5.7
    module load esmf/8.3.0b09
-   module load fms/2022.01
+   module load fms/2022.04
    module load cdo
    module load wgrib
 elif [ "$machine" == 'aws' ]; then
