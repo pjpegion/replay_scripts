@@ -856,8 +856,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    for file in MOM.res.${datestring_ocn}*nc; do
       file2=MOM.res`echo $file | cut -c 28-32`
       echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$file2"
-      nccopy -d 1 -s $file ${datapathp1}/${charnanal}/INPUT/$file2 &
-      #/bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
+      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
    done
    if [ $perturbed_replay == "YES" ]; then
       ls ocn_stoch.res.${datestring_ocn}*nc
