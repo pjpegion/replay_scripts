@@ -14,10 +14,12 @@ else
    module load hpc-intel/2022.1.2
    module load hpc-impi/2022.1.2
    module load netcdf/4.7.4
+   module load nco/4.9.1
    htar=`which htar`
    hsi=`which hsi`
    nccopy=`which nccopy`
    ncdump=`which ncdump`
+   ncks=`which ncks`
 fi
 #env
 #$hsi ls -l $hsidir
@@ -34,20 +36,20 @@ HH=`echo $analdate | cut -c9-10`
 cd ${datapath2}/control
 find -type l -delete # delete symlinks
 /bin/rm -f core
-cd ${datapath}
 
 $hsi mkdir -p ${hsidir}
 
 # archive restarts only at 06Z (for 00Z 'analysis' time)
-if [ $HH == '06' ];then
+if [ $HH == '06' ]; then
    # re-write restarts compressed
-   pushd ${datapath2}/control/INPUT
+   cd ${datapath2}/control/INPUT
    for file in *nc; do
        compressed=`$ncdump -sh $file | grep Deflate`
        if [ ! -z "$compressed" ]; then
           echo "$file already compressed"
        else
-          $nccopy -d 1 -s $file ${file}.compressed
+          #$nccopy -4 -d 1 -s $file ${file}.compressed
+          $ncks -O -4 -L 1 $file ${file}.compressed
           if [ $? -eq 0 ]; then
              /bin/mv -f ${file}.compressed $file
           else
@@ -56,7 +58,7 @@ if [ $HH == '06' ];then
           fi
        fi
    done
-   popd
+   cd ${datapath}
    /bin/rm -f ${analdate}/control/*.out_grd.ww3 ${analdate}/control/*.restart.ww3
    $htar -cvf ${hsidir}/${analdate}.restart.tar ${analdate}/control ${analdate}/GFSPRS.GrbF03 ${analdate}/GFSFLX.GrbF03 
    exitstat=$?
@@ -65,15 +67,19 @@ if [ $HH == '06' ];then
       exit $exitstat
    fi
 fi
-/bin/rm -rf ${analdate}/control ${analdate}/GFS*06 ${analdate}/GFS*09 # remove restarts, keep fh=3 grib files
+cd $datapath
+/bin/rm -f ${analdate}/control/*.out_grd.ww3 ${analdate}/control/*.restart.ww3
+/bin/mv -f ${analdate}/control control.save
+/bin/rm -rf ${analdate}/GFS*06 ${analdate}/GFS*09 # remove restarts, keep fh=3 grib files
 # compress ocean history file(s)
-pushd ${datapath2}
+cd $datapath2
 for file in ocn_*nc; do
    compressed=`$ncdump -sh $file | grep Deflate`
    if [ ! -z "$compressed" ]; then
       echo "$file already compressed"
    else
-      $nccopy -d 1 -s $file ${file}.compressed
+      #$nccopy -4 -d 1 -s $file ${file}.compressed
+      $ncks -O -4 -L 1 $file ${file}.compressed
       if [ $? -eq 0 ]; then
          /bin/mv -f ${file}.compressed $file
       else
@@ -82,9 +88,10 @@ for file in ocn_*nc; do
       fi
    fi
 done
-popd
-htar -cvf ${analdate}.history.tar ${analdate}
+cd $datapath
+htar -cvf ${hsidir}/${analdate}.history.tar ${analdate}
 exitstat=$?
+/bin/mv -f control.save ${analdate}/control
 if [ $exitstat -ne 0 ]; then
    echo "creating history tar file failed"
    exit $exitstat
