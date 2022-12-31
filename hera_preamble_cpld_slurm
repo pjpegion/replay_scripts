@@ -1,10 +1,10 @@
 #!/bin/sh
-#SBATCH -q debug
-#SBATCH -t 00:30:00
-##SBATCH -q batch
-##SBATCH -t 01:30:00
+##SBATCH -q debug
+##SBATCH -t 00:30:00
+#SBATCH -q batch
+#SBATCH -t 01:30:00
 #SBATCH -A gsienkf
-#SBATCH -N 31   
+#SBATCH -N 16   
 #SBATCH -J ufs_era5_replay
 #SBATCH -e ufs_era5_replay.err
 #SBATCH -o ufs_era5_replay.out
@@ -15,7 +15,7 @@ export machine='hera'
 if [ $NODES -eq 16 ]; then
   export gsi_control_threads=2
   export control_threads=1
-  export control_proc=840  
+  export control_proc=640  
   export write_groups=1 # write groups for control forecast.
   export write_tasks=96
   export layout="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
