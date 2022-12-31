@@ -54,7 +54,7 @@ if [ $HH == '06' ]; then
              /bin/mv -f ${file}.compressed $file
           else
              echo "$file not compressed"
-             /bin/rm -f ${file}.compressed
+             /bin/rm -f ${file}.compressed*
           fi
        fi
    done
@@ -84,7 +84,7 @@ for file in ocn_*nc; do
          /bin/mv -f ${file}.compressed $file
       else
          echo "$file not compressed"
-         /bin/rm -f ${file}.compressed
+         /bin/rm -f ${file}.compressed*
       fi
    fi
 done
