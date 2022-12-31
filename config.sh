@@ -22,7 +22,7 @@ export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss='true'
-export days_keep=0  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
+export days_keep=1  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 
@@ -55,7 +55,8 @@ if [ "$machine" == 'hera' ]; then
    module load pio/2.5.7
    module load esmf/8.3.0b09
    module load fms/2022.04
-   module load cdo
+   module load cdo/1.9.5
+   module load nco/4.9.1
    module load wgrib
 elif [ "$machine" == 'aws' ]; then
    export basedir=/lustre/${USER}
