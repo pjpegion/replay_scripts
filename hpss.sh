@@ -59,7 +59,7 @@ cd $datapath
 cd $datapath2
 # compress history files
 if [ -f $nccompress ]; then
-   time $nccompress -d 1 -o -pa -m 50 *nc
+   time $nccompress -d 1 -o -pa -m 50 ocn*nc ice*nc mom6*nc
 else
    echo "nccompress not found, not compressing history files"
 fi
