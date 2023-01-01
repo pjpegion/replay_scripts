@@ -6,7 +6,6 @@ if [ $machine == "gaea" ]; then
    #module load hsi
    htar=/sw/rdtn/hpss/default/bin/htar
    hsi=/sw/rdtn/hpss/default/bin/hsi
-   module load netcdf
 else
    module load hpss
    htar=`which htar`
@@ -23,11 +22,14 @@ MM=`echo $analdate | cut -c5-6`
 DD=`echo $analdate | cut -c7-8`
 HH=`echo $analdate | cut -c9-10`
 
-# move increment file up 2 directories to save with diagnostics
+# move increment files up 2 directories to save with diagnostics
 /bin/mv -f ${datapath2}/control/INPUT/fv3_increment6.nc ${datapath2}
+if [ -f ${datapath2}/control/INPUT/mom6_increment.nc ]; then
+   /bin/mv -f ${datapath2}/control/INPUT/mom6_increment.nc ${datapath2}
+fi
 
 cd ${datapath2}/control
-find -type l -delete # delete symlinks and core files
+find -type l -delete # delete symlinks
 
 $hsi mkdir -p ${hsidir}
 
@@ -36,7 +38,7 @@ if [ $HH == '06' ]; then
    cd ${datapath2}/control/INPUT
    # compress restart files.
    if [ -f $nccompress ]; then
-      $nccompress -d 1 -o -pa -m 50 *.nc
+      time $nccompress -d 1 -o -pa -m 50 *.nc
    else
       echo "nccompress not found, not compressing restarts"
    fi
@@ -55,11 +57,11 @@ cd $datapath
 /bin/mv -f ${analdate}/control control.save # move directory out of the way
 /bin/rm -rf ${analdate}/GFS*06 ${analdate}/GFS*09 # remove restarts, keep fh=3 grib files
 cd $datapath2
-# compress ocean history files
+# compress history files
 if [ -f $nccompress ]; then
-   $nccompress -d 1 -o -pa -m 50 ocn_*nc
+   time $nccompress -d 1 -o -pa -m 50 *nc
 else
-   echo "nccompress not found, not compressing ocn_*nc"
+   echo "nccompress not found, not compressing history files"
 fi
 cd $datapath
 /bin/rm -f ${analdate}/core.*
