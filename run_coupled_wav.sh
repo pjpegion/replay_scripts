@@ -876,7 +876,6 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    cd ..
    ls -l ${datapathp1}/${charnanal}/INPUT
 fi
-wait
 
 # also move history files if copy_history_files is set.
 #if [ ! -z $copy_history_files ]; then
