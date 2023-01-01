@@ -36,9 +36,7 @@ if [ $HH == '06' ]; then
    cd ${datapath2}/control/INPUT
    # compress restart files.
    if [ -f $nccompress ]; then
-      find . -iname "*.nc" > list.txt
-      $nccompress -d 1 -pa -o --ff list.txt
-      rm list.txt
+      $nccompress -d 1 -o -pa -m 50 *.nc
    else
       echo "nccompress not found, not compressing restarts"
    fi
@@ -59,7 +57,7 @@ cd $datapath
 cd $datapath2
 # compress ocean history files
 if [ -f $nccompress ]; then
-   $nccompress -d 1 -o ocn_*nc
+   $nccompress -d 1 -o -pa -m 50 ocn_*nc
 else
    echo "nccompress not found, not compressing ocn_*nc"
 fi
