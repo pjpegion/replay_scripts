@@ -24,10 +24,10 @@ if [ $NODES -eq 16 ]; then
   export nprocs_ice=40
   export nprocs_ocn=80
   export nprocs_wav=40
-elif [ $NODES -eq 31 ]; then
+elif [ $NODES -eq 33 ]; then
   export gsi_control_threads=4
   export control_threads=1
-  export control_proc=1240
+  export control_proc=1320
   export write_groups=1 # write groups for control forecast.
   export write_tasks=96
   export layout="12,12" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
@@ -35,7 +35,7 @@ elif [ $NODES -eq 31 ]; then
   export nprocs_atm=960
   export nprocs_ice=80
   export nprocs_ocn=160 
-  export nprocs_wav=40
+  export nprocs_wav=120
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
