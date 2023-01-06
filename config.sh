@@ -22,7 +22,7 @@ export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss='true'
-export days_keep=0  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
+export days_keep=1  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 
@@ -44,7 +44,7 @@ if [ "$machine" == 'hera' ]; then
    module purge
    module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load miniconda3
-   module load intel/2022.1.
+   module load intel/2022.1.2
    module load impi/2022.1.2
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.2.0
@@ -54,8 +54,9 @@ if [ "$machine" == 'hera' ]; then
    module load netcdf/4.7.4
    module load pio/2.5.7
    module load esmf/8.3.0b09
-   module load fms/2022.01
-   module load cdo
+   module load fms/2022.04
+   module load cdo/1.9.5
+   module load nco/4.9.1
    module load wgrib
 elif [ "$machine" == 'aws' ]; then
    export basedir=/lustre/${USER}
