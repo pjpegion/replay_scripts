@@ -23,10 +23,10 @@
   max_files_w = 100,
 /
 
-&mpp_io_nml
-  shuffle=1,
-  deflate_level=1,
-/
+!&mpp_io_nml
+!  shuffle=1,
+!  deflate_level=1,
+!/
 
 &fms_nml
   clock_grain = "ROUTINE",
