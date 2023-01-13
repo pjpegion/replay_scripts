@@ -39,7 +39,7 @@
     hist_avg       = .true.
     history_dir    = './history/'
     history_file   = 'iceh'
-    write_ic       = .true.
+    write_ic       = .false.
     incond_dir     = './history/'
     incond_file    = 'iceh_ic'
     version_name   = 'CICE_6.0.2'

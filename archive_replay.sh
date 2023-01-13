@@ -1,6 +1,7 @@
 # need envars:  machine, analdate, datapath, hsidir
 echo "starting archiving at "`date`
 module load aws-utils/latest
+nccompress=/lustre/Philip.Pegion/bin/nccompress
 #module load intelpython/2022.1.2
 
 
@@ -12,13 +13,13 @@ HH=`echo $analdate | cut -c9-10`
 #save_rest=`cat ${datapath}/Mon_or_Thurs_${analdate}.txt`
 
 cd $datapath
+# move increment file up 2 directories to save with diagnostics
 /bin/mv ${analdate}/control/INPUT/fv3_increment6.nc ${analdate}
 if [ $HH -eq 12 ]; then
-   /bin/mv ${analdate}/control/INPUT/fv3_increment6.nc ${analdate}
+   /bin/mv ${analdate}/control/INPUT/mom_increment6.nc ${analdate}
 fi
 #if [ $save_rest == 'YES' ];then
 if [ $HH == '06' ];then
-   # move increment file up 2 directories to save with diagnostics
    tar -cvf ${analdate}.restart.tar ${analdate}/control ${analdate}/GFS*
    if [ $? -ne 0 ];then
       echo "creating restart tar file failed"

@@ -23,10 +23,10 @@
   max_files_w = 100,
 /
 
-!&mpp_io_nml
-!  shuffle=1,
-!  deflate_level=1,
-!/
+&mpp_io_nml
+  shuffle=1,
+  deflate_level=1,
+/
 
 &fms_nml
   clock_grain = "ROUTINE",
@@ -145,6 +145,7 @@
   hybedmf        = .false.
   satmedmf       = .true.
   isatmedmf      = 1
+  progsigma      = .true.
   bl_mynn_edmf   = 1
   bl_mynn_edmf_mom = 1
   bl_mynn_tkeadvect = .true.
@@ -217,8 +218,8 @@
   pert_clds      = PERT_CLDS
   pert_radtend   = .false.
   cplchm       = .false.
-  cplwav       = .false.
-  cplwav2atm   = .false.
+  cplwav       = .true.
+  cplwav2atm   = .true.
   cplflx       = .true.
   cplice       = .true.
   min_lakeice    = 0.15

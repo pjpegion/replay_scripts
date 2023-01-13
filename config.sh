@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8_wav
+export exptname=C${RES}_replay_p8_1_9
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -18,7 +18,7 @@ export cores=`expr $NODES \* $corespernode`
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export rungsi="run_gsi_4densvar.sh"
 export cleanup_fg='true'
-export replay_run_observer='true'
+export replay_run_observer='false'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss='true'
@@ -33,7 +33,7 @@ export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 #export do_cleanup='false'
 #export save_hpss="false"
 
-export do_snowDA='true'
+export do_snowDA='false'
  
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -63,10 +63,15 @@ elif [ "$machine" == 'aws' ]; then
    export datadir=$basedir
    export hsidir="null"
    export obs_datapath=/lustre/${USER}/obs_dump
+   if ( ! eval module help > /dev/null 2>&1 ) ; then
+        export MODULEPATH=/mnt/shared/manual_modules:/apps/lmod/lmod/modulefiles/Core:/apps/modules/modulefiles/Linux:/opt/cray/modulefiles:/opt/cray/craype/default/modulefiles:/apps/modules/modulefiles:/usr/share/Modules/modulefiles:/opt/intel/impi/2019.5.281/intel64/modulefiles
+        source /apps/lmod/lmod/init/sh
+   fi
    module load intel/2022.1.2
    module load impi/2022.1.2
    module load hdf5/1.10.6
    module load netcdf/4.7.0
+   module load netcdf-hdf5parallel/4.7.4
    module load cdo/1.9.5
    module load wgrib/1.8.1.0b
    module load aws-utils/latest
@@ -324,7 +329,6 @@ elif [ "$machine" == 'aws' ]; then
    export IPATH_NO_BACKTRACE=1
    export intel_root=/apps/oneapi/compiler/2021.3.0
    export LD_LIBRARY_PATH=$I_MPI_ROOT/lib:$I_MPI_ROOT/lib/release:$I_MPI_ROOT/libfabric/lib:$MKL_ROOT/lib/intel64:$intel_root/linux/lib:$intel_root:linux/lib/x64:$intel_root/linux/lib/emu:$intel_root/linux/lib/oclfpga/host/linux64/lib:$intel_root/linux/lib/oclfpga/linux64/lib:$intel_root/linux/compiler/lib/intel64_lin:$LD_LIBRARY_PATH
-~
 
 
 
