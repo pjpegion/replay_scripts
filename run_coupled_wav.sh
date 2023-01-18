@@ -2,8 +2,8 @@
 # model was compiled with these 
 echo "starting at `date`"
 source $MODULESHOME/init/sh
-export ESMF_RUNTIME_PROFILE=ON
-export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
+#export ESMF_RUNTIME_PROFILE=ON
+#export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
 #skip_global_cycle=YES
 if [ "$cold_start" == "true" ]; then
    skip_global_cycle=YES
@@ -384,7 +384,9 @@ EOF
       echo "create ${increment_file}"
 # get era5 file from S3 bucket
       echo "s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc"
-      aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc ${replayanaldir}
+      if [[ ! -f ${replayanaldir}/C${RES}_era5anl_${analdate}.nc ]]; then
+         aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc ${replayanaldir} --profile rdhpcs
+      fi
       rm ${replayanaldir}/C${RES}_era5anl_${analdatem1}.nc
    fi
       /bin/rm -f ${increment_file}
@@ -421,7 +423,9 @@ else
     if [ $houra -eq 12 ]; then
        OCN_IAU=True
        if [ "$machine" == 'aws' ];then
-          aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/oras5_ics/${OCNRES}/${yeara}/${mona}/ORAS5.${OCNRES}_${yeara}${mona}${daya}.ic.nc ${ocnanaldir}
+          if [[ ! -f ${ocnanaldir}/ORAS5.${OCNRES}_${yeara}${mona}${daya}.ic.nc ]]; then
+             aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/oras5_ics/${OCNRES}/${yeara}/${mona}/ORAS5.${OCNRES}_${yeara}${mona}${daya}.ic.nc ${ocnanaldir} --profile rdhpcs
+          fi
 # remove yesterday's ORAS5 file
           rm ${ocnanaldir}/ORAS5.${OCNRES}_${yearm1}${monm1}${daym1}.ic.nc
        fi
@@ -914,8 +918,8 @@ echo "all done at `date`"
 
 # get ip address of front end and launch archive job there
 set -x
-if [ $machine == 'aws' ] ; then
-   ipadd=`cat ${scriptsdir}/front_end_ip.txt`
-   ssh ${USER}@$ipadd "export scriptsdir=$scriptsdir; export datapath=${datapath}; export analdate=${analdate}; export exptname=${exptname}; cd $scriptsdir; ./archive_replay.sh >&archive_${analdate}.out&"
-fi
+#if [ $machine == 'aws' ] ; then
+#   ipadd=`cat ${scriptsdir}/front_end_ip.txt`
+#   ssh ${USER}@$ipadd "export scriptsdir=$scriptsdir; export datapath=${datapath}; export analdate=${analdate}; export exptname=${exptname}; cd $scriptsdir; ./archive_replay.sh >&archive_${analdate}.out&"
+#fi
 exit 0

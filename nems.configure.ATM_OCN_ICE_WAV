@@ -73,7 +73,9 @@ WAV_attributes::
 runSeq::
 @DT_OCN_SLOW
    MED med_phases_prep_ocn_avg
+   MED -> WAV :remapMethod=redist
    MED -> OCN :remapMethod=redist
+   WAV
    OCN
    @DT_ATMOS
      MED med_phases_prep_atm
@@ -82,19 +84,17 @@ runSeq::
      MED med_phases_prep_wav_avg
      MED -> ATM :remapMethod=redist
      MED -> ICE :remapMethod=redist
-     MED -> WAV :remapMethod=redist
      ATM
      ICE
-     WAV
      ATM -> MED :remapMethod=redist
      MED med_phases_post_atm
      ICE -> MED :remapMethod=redist
      MED med_phases_post_ice
-     WAV -> MED :remapMethod=redist
      MED med_phases_post_wav
      MED med_phases_prep_ocn_accum
    @
    OCN -> MED :remapMethod=redist
+   WAV -> MED :remapMethod=redist
    MED med_phases_post_ocn
    MED med_phases_restart_write
 @

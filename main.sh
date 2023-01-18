@@ -61,6 +61,22 @@ echo "analdate plus 1: $analdatep1"
 export current_logdir="${datapath2}/logs"
 echo "Current LogDir: ${current_logdir}"
 mkdir -p ${current_logdir}
+# if a current log file exits move it
+if [[ -f ${current_logdir}/run_fg_control ]];then
+   if [[ -f ${current_logdir}/run_fg_control.out.failed.3 ]];then
+      mv ${current_logdir}/run_fg_control.out.failed.1 ${current_logdir}/run_fg_control.out.failed.4
+   fi
+   if [[ -f ${current_logdir}/run_fg_control.out.failed.2 ]];then
+      mv ${current_logdir}/run_fg_control.out.failed.1 ${current_logdir}/run_fg_control.out.failed.3
+   fi
+   if [[ -f ${current_logdir}/run_fg_control.out.failed.1 ]];then
+      mv ${current_logdir}/run_fg_control.out.failed.1 ${current_logdir}/run_fg_control.out.failed.2
+   fi
+   if [[ -f ${current_logdir}/run_fg_control.out.failed ]];then
+      mv ${current_logdir}/run_fg_control.out.failed ${current_logdir}/run_fg_control.out.failed.1
+   fi
+   mv ${current_logdir}/run_fg_control.out ${current_logdir}/run_fg_control.out.failed
+fi
 
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
@@ -182,14 +198,19 @@ fi
 
 cd $homedir
 if [ $save_hpss == 'true' ]; then
-   cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
-   echo "submitting job_hpss.sh ..."
-   sbatch --export=ALL job_hpss.sh
-   #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},MODULESHOME=${MODULESHOME} job_hpss.sh
-   if [ $? -eq 0 ]; then # exit status OK 
-        echo "yes" > ${current_logdir}/hpss.log  
-   else 
-        echo "no" > ${current_logdir}/hpss.log  
+   if [ $machine == 'aws' ] ; then
+      ipadd=`cat ${scriptsdir}/front_end_ip.txt`
+      ssh -o StrictHostKeyChecking=no ${USER}@$ipadd "export machine=$machine; export scriptsdir=$scriptsdir; export datapath=${datapath}; export analdate=${analdate}; export exptname=${exptname}; cd $scriptsdir; sh ./hpss.sh >&archive_${analdate}.out&"
+   else
+      cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
+      echo "submitting job_hpss.sh ..."
+      sbatch --export=ALL job_hpss.sh
+      #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},MODULESHOME=${MODULESHOME} job_hpss.sh
+      if [ $? -eq 0 ]; then # exit status OK 
+           echo "yes" > ${current_logdir}/hpss.log  
+      else 
+           echo "no" > ${current_logdir}/hpss.log  
+      fi
    fi
 fi
 
