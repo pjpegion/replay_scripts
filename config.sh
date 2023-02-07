@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8_1_9
+export exptname=C${RES}_snowDA_tst
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -33,7 +33,7 @@ export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 #export do_cleanup='false'
 #export save_hpss="false"
 
-export do_snowDA='false'
+export do_snowDA='true'
  
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -317,7 +317,7 @@ elif [ "$machine" == 'aws' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
 
-   source /apps/oneapi/setvars.sh
+   #source /apps/oneapi/setvars.sh
    export IPATH_NO_BACKTRACE=1
 
    export I_MPI_ROOT=/apps/oneapi/mpi/2021.3.0
