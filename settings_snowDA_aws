@@ -12,7 +12,7 @@ TSTUB=oro_C${RES}.${OCNRES}
 TPATH=${FIXDIR}/FV3_fix_tiled/C${RES}/
 
 # directory where do_landDA.sh script is 
-LANDDADIR=${scriptsdir}/land-DA_update # if calling from submit_cycle.sh
+export LANDDADIR=${scriptsdir}/land-DA_update # if calling from submit_cycle.sh
 
 ############################
 # DA options
@@ -32,7 +32,7 @@ WINLEN=12
 # YAMLS. Options, either:
 # 1. "construct" to construct the YAML name, based on requested obs types and their availability 
 # 2. enter the desired YAML name (will not test for availability of obs)
-YAML_DA="letkfoi_replay_GFSv17.yaml"
+YAML_DA=construct
 YAML_HOFX=construct
 
 # OPTIONAL:delete workdirectory after DA update 
