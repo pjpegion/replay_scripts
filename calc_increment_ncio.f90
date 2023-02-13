@@ -36,9 +36,19 @@ PROGRAM calc_increment_ncio
 ! ifort -O3 -xHOST -I${NCIO_INC} -I${NETCDF}/include calc_increment_ncio.f90
 ! ${NCIO_LIB} ${W3NCO_LIB4} ${BACIO_LIB4} -L${NETCDF}/lib -lnetcdf -lnetcdff
 !
+!Currently Loaded Modules:
+!  1) hpc/1.1.0   2) intel/18.0.5.274   3) hpc-intel/18.0.5.274   4)
+!impi/2018.0.4   5) hpc-impi/2018.0.4   6) netcdf/4.7.4   7) w3emc/2.9.1   8)
+!ncio/1.1.2   9) hdf5/1.10.6  10) zlib/1.2.11  11) png/1.6.35
+!
+!
+![Philip.Pegion@hfe12 C96_replay_p8_atm_noqv]$ mpiifort -o
+!exec_hera/calc_increment_ncio.x -O3 -xHOST -I${NCIO_INC} -I${NETCDF}/include
+!calc_increment_ncio.f90 ${NCIO_LIB} ${W3EMC_LIB4} -L${NETCDF}/lib -lnetcdff
+!-lnetcdf -L${HDF5_LIBRARIES} -lhdf5_hl -lhdf5 -L${ZLIB_LIBRARIES} -lz
 !$$$
 
-  use module_fv3gfs_ncio, only: open_dataset, create_dataset, read_attribute, &
+  use module_ncio, only: open_dataset, create_dataset, read_attribute, &
                            Dataset, Dimension, close_dataset, &
                            read_vardata, write_attribute, write_vardata, &
                            has_var, has_attr, get_dim
@@ -52,10 +62,10 @@ PROGRAM calc_increment_ncio
   character*500 filename_anal,filename_inc,filename_fg
   character*3 charnin
   character(len=nf90_max_name) :: ncvarname
-  integer k,nvar,ndims,nlats,nlons,nlevs,iret,nlons2,nlats2,nlevs2
-  real, allocatable, dimension(:)     :: lats_tmp, lats, lons, ak, bk, ilevs, levs
+  integer i,j,k,nvar,ndims,nlats,nlons,nlevs,iret,nlons2,nlats2,nlevs2
+  real, allocatable, dimension(:)     :: lats_tmp, lats, lons, ak, bk, ilevs, levs,coslat1d
   real, allocatable, dimension(:,:)   :: values_2d_fg,values_2d_anal,values_2d_inc,&
-                                         ps_fg, ps_anal
+                                         ps_fg, ps_anal,latwts
   real, allocatable, dimension(:,:,:) :: values_3d_fg,values_3d_anal,values_3d_inc,&
                                          taper_vert,q_fg, q_anal, tmp_fg, tmp_anal, delzb, delza
   type(Dataset) :: dset_anal,dset_fg
@@ -64,11 +74,13 @@ PROGRAM calc_increment_ncio
   integer, dimension(1) :: dimid_1d
   integer varid_lon,varid_lat,varid_lev,varid_ilev,varid_hyai,varid_hybi,&
           dimid_lon,dimid_lat,dimid_lev,dimid_ilev,ncfileid,ncstatus
+  real*8  :: deg2rad,pi,inv_sumwt
   logical :: no_mpinc, no_delzinc, has_dpres, has_delz, taper_strat, taper_pbl, lexist
   real rd,rv,fv,grav,ak_bot,ak_top,bk_bot,bk_top,forcing_factor
   namelist /setup/ ak_top, ak_bot, bk_top, bk_bot, forcing_factor,&
                    taper_strat, taper_pbl, no_mpinc, no_delzinc
-
+  pi     = 4.D0*ATAN(1.0)
+  deg2rad = pi/180.0
   rd     = 2.8705e+2
   rv     = 4.6150e+2
   fv     = rv/rd-1.    ! used in virtual temperature equation 
@@ -150,6 +162,14 @@ PROGRAM calc_increment_ncio
   call read_attribute(dset_fg, 'ak', ak)
   call read_attribute(dset_fg, 'bk', bk)
   lats = lats_tmp(nlats:1:-1)
+  allocate(coslat1d(nlats))
+  allocate(latwts(nlons,nlats))
+  coslat1d= cos(deg2rad*lats)
+  DO i=1,nlons
+     latwts(i,:)=coslat1d
+  ENDDO
+  inv_sumwt=1.0/SUM(latwts)
+  deallocate(coslat1d)
   if (lats(1) .gt. lats(nlats)) then
     print *,'error: code assumes lats in ncio files are N to S'
     stop
@@ -389,6 +409,7 @@ PROGRAM calc_increment_ncio
            endif 
            values_3d_inc = forcing_factor*values_3d_inc
            call write_ncdata3d(values_3d_inc,ncvarname,nlons,nlats,nlevs,ncfileid,dimid_3d)
+           call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs)
         endif
      endif ! ndims == 4
   enddo  ! nvars
@@ -402,6 +423,7 @@ PROGRAM calc_increment_ncio
      enddo
      values_3d_inc = forcing_factor*values_3d_inc
      call write_ncdata3d(values_3d_inc,ncvarname,nlons,nlats,nlevs,ncfileid,dimid_3d)
+     call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs)
   endif
   ! infer delz increment from background, analysis ps & Tv
   if (.not. has_delz .and. .not. no_delzinc) then
@@ -429,6 +451,7 @@ PROGRAM calc_increment_ncio
      values_3d_inc(:,nlats:1:-1,:) = delza - delzb
      values_3d_inc = forcing_factor*values_3d_inc
      call write_ncdata3d(values_3d_inc,ncvarname,nlons,nlats,nlevs,ncfileid,dimid_3d)
+     call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs)
   endif
 
   ncstatus = nf90_close(ncfileid)
@@ -444,11 +467,18 @@ END PROGRAM calc_increment_ncio
 subroutine write_ncdata3d(incdata,ncvarname,&
                           nlons,nlats,nlevs,ncfileid,dimid_3d)
   use netcdf
+  implicit none
   integer, intent(in) :: nlons,nlats,nlevs,ncfileid,dimid_3d(3)
-  integer varid,ncstatus
+  integer varid,ncstatus,trop
   real, intent(in) ::  incdata(nlons,nlats,nlevs)
   character(len=nf90_max_name), intent(in) :: ncvarname
-
+  real :: inv_npts
+  if (nlevs > 100) then ! kluge for getting level for around 100 hPa
+     trop=52
+  else
+     trop=42
+  endif
+  inv_npts=1.0/((nlevs-trop+1)*nlevs*nlats)
   ncstatus = nf90_redef(ncfileid)
   if (ncstatus /= nf90_noerr) then
      print *,'redef error ',trim(nf90_strerror(ncstatus))
@@ -470,10 +500,44 @@ subroutine write_ncdata3d(incdata,ncvarname,&
      print *,'enddef error ',trim(nf90_strerror(ncstatus))
      stop
   endif
-  print *,'writing ',trim(ncvarname),' min/max =',minval(incdata),maxval(incdata)
   ncstatus = nf90_put_var(ncfileid,varid,incdata)
   if (ncstatus /= nf90_noerr) then
      print *, trim(nf90_strerror(ncstatus))
      stop
   endif
 end subroutine write_ncdata3d
+subroutine compute_stats(incdata,varname,latwts, inv_sumwt, nlons,nlats,nlevs)
+  use netcdf
+  implicit none
+  integer, intent(in) :: nlons,nlats,nlevs
+  integer :: trop,kct,k
+  real, intent(in) ::  incdata(nlons,nlats,nlevs)
+  real, intent(in) ::  latwts(nlons,nlats)
+  real*8, intent(in) :: inv_sumwt
+  real*8             :: mn,mse
+  character(len=nf90_max_name), intent(in) :: varname
+  if (trim(varname).EQ.'o3mr_inc') then
+     ! use the full profile
+     trop=1
+  else
+     if (nlevs > 100) then ! kluge for getting level for around 100 hPa
+        trop=52
+     else
+        trop=42
+     endif
+  endif
+! compute area weighted global mean and rms
+  mn=0.0
+  mse=0.0
+  kct=0
+  DO k=trop,nlevs
+    mn = mn + SUM(incdata(:,:,k)*latwts)*inv_sumwt
+    mse = mse + SUM((incdata(:,:,k)**2)*latwts)*inv_sumwt
+    kct=kct+1
+  ENDDO
+  mn=mn/kct
+  mse=sqrt(mse/kct)
+  print*, 'Global stastics below level', trop
+  write(*,'(A,A24,2e12.3)')  'Mean, RMS of ',adjustl(varname),real(mn,kind=4),real(mse,kind=4)
+end subroutine compute_stats
+
