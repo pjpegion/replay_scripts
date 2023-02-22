@@ -10,7 +10,7 @@ export OCNRES=mx025
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_replay_p8_1_9
+export exptname=C${RES}_replay_HR1
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -386,10 +386,10 @@ if [ "$coupled" == 'NO' ]; then
    export SUITE="FV3_GFS_v17_p8"
    export rungfs="run_fv3.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
-   export SUITE="FV3_GFS_v17_coupled_p8"
+   export SUITE="FV3_GFS_HR1"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
-   export SUITE="FV3_GFS_v17_coupled_p8"
+   export SUITE="FV3_GFS_HR1"
    export rungfs="run_coupled_wav.sh"
 else
    echo "${coupled} option not supported"
