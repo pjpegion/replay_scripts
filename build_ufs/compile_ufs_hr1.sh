@@ -7,7 +7,7 @@ module purge
 /bin/rm -rf ufs-weather-model
 git clone https://github.com/ufs-community/ufs-weather-model ufs-weather-model
 cd ufs-weather-model
-git checkout c22aaadfb8dafb5687e2f3bf6416e8f11e3f9a1d # hash will probably become HR1 tag
+git checkout GFSv17.HR1
 git submodule update --init --recursive
 
 # patch to turn off saving of IAU increments in MOM6 restart
