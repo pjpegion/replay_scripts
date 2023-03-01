@@ -1,4 +1,4 @@
 [submodule "land-DA_update"]
 	path = land-DA_update
 	url = https://github.com/NOAA-PSL/land-DA_update.git
-        branch = feature/ERA5replay
+        branch = feature/ERA5replay_AWS
