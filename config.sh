@@ -390,7 +390,7 @@ elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
    export SUITE="FV3_GFS_HR1"
-   export rungfs="run_coupled_wav.sh"
+   export rungfs="run_coupled.sh"
 else
    echo "${coupled} option not supported"
    echo "please chose betwee NO ATM_OCN_ICE"

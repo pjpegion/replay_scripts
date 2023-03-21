@@ -85,7 +85,7 @@
   res_latlon_dynamics = "",
   read_increment = .false.,
   gfs_phil = .false.,
-  agrid_vel_rst = .true.,
+  agrid_vel_rst = .false.,
   nggps_ic = .true.,
   mountain = MOUNTAIN,
   ncep_ic = .false.,
@@ -223,8 +223,8 @@
   cplflx       = .true.
   cplice       = .true.
   min_lakeice    = 0.15
-  min_seaice     = 0.15   
-  use_cice_alb   = .false.
+  min_seaice     = 1.0e-6 
+  use_cice_alb   = .true.
   gwd_opt      = 2
   ldiag_ugwp   = .false.
   do_ugwp      = .false.

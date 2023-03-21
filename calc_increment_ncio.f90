@@ -103,7 +103,7 @@ PROGRAM calc_increment_ncio
   call getarg(2,filename_anal)  ! analysis ncio file
   call getarg(3,filename_inc)   ! output increment file
   if (iargc()==4) then
-     call getarg(4,logfile)   ! output increment file
+     call getarg(4,logfile)   ! log file
      fid=34
   else
      ! just write stats to standard out

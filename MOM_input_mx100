@@ -220,6 +220,7 @@ PARALLEL_RESTARTFILES = True    !   [Boolean] default = False
                                 ! If true, each processor writes its own restart file, otherwise a single
                                 ! restart file is generated
 
+STORE_CORIOLIS_ACCEL = False
 ! === module MOM_tracer_flow_control ===
 USE_IDEAL_AGE_TRACER = False     !   [Boolean] default = False
                                 ! If true, use the ideal_age_example tracer package.
@@ -448,6 +449,9 @@ VISC_RES_FN_POWER = 2           !   [nondim] default = 100
                                 ! used, although even integers are more efficient to calculate.  Setting this
                                 ! greater than 100 results in a step-function being used. This function affects
                                 ! lateral viscosity, Kh, and not KhTh.
+INTERNAL_WAVE_SPEED_BETTER_EST = False !   [Boolean] default = True 
+                                ! If true, use a more robust estimate of the first mode wave speed as the
+                                ! starting point for iterations.
 
 ! === module MOM_set_visc ===
 CHANNEL_DRAG = True             !   [Boolean] default = False
@@ -479,7 +483,7 @@ KV_TBL_MIN = 0.0                !   [m2 s-1] default = 1.0E-04
                                 ! The minimum viscosities in the top boundary layer.
 
 ! === module MOM_thickness_diffuse ===
-USE_GM_WORK_BUG = True          !   [Boolean] default = False
+USE_GM_WORK_BUG = False         !   [Boolean] default = False
                                 ! If true, compute the top-layer work tendency on the u-grid with the incorrect
                                 ! sign, for legacy reproducibility.
 
@@ -546,6 +550,9 @@ USE_KH_BG_2D = True             !   [Boolean] default = False
 HMIX_FIXED = 0.5                !   [m]
                                 ! The prescribed depth over which the near-surface viscosity and diffusivity are
                                 ! elevated when the bulk mixed layer is not used.
+KVML = 1.0E-04                  !   [m2 s-1] default = 1.0E-04
+                                ! The kinematic viscosity in the mixed layer.  A typical value is ~1e-2 m2 s-1.
+                                ! KVML is not used if BULKMIXEDLAYER is true.  The default is set by KV.
 MAXVEL = 6.0                    !   [m s-1] default = 3.0E+08
                                 ! The maximum velocity allowed before the velocity components are truncated.
 
