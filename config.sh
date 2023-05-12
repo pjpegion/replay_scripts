@@ -5,12 +5,13 @@ echo "running on $machine using $NODES nodes"
 export RES=384  
 export RES_INC=384
 export OCNRES=mx025
+export WAVE_MESH=b
 # 1-deg
 #export RES=96   
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=C${RES}_snowDA_tst
+export exptname=GEFSv13_replay_streamSTREAM
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -22,7 +23,7 @@ export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export save_hpss='true'
-export days_keep=1  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
+export days_keep=3  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 
@@ -34,6 +35,7 @@ export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
 #export save_hpss="false"
 
 export do_snowDA='true'
+export update_seaice='true'
  
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -133,14 +135,15 @@ export biascorrdir=${basedir}/biascor
 # directory with analysis netcdf files
 if [ $machine == 'hera' ]; then
     export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
-    #export replayanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/reanalysis/era5/C${RES}
     export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
     export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+    export iceanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/ice_update_basedir
     #export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/${OCNRES}
 elif [ $machine == 'aws' ]; then
     export replayanaldir=/lustre/${USER}/era5/C${RES}
     export replayanaldir_lores=/contrib/${USER}/era5/C${RES_INC}
     export ocnanaldir=/lustre/${USER}/ORAS5/${OCNRES}
+    export iceanaldir=/lustre/${USER}/ice_update_basedir
 elif [ $machine == 'orion' ]; then
     export replayanaldir=/work/noaa/gsienkf/whitaker/era5/C${RES}
     export replayanaldir_lores=/work/noaa/gsienkf/whitaker/era5/C${RES_INC}
@@ -219,7 +222,7 @@ export LONA=$LONB
 export LATA=$LATB      
 export ANALINC=6
 export LEVS=127
-export FHMIN=3
+export FHMIN=0
 export FHMAX=9
 export FHOUT=3
 export FHOUT_OCN=6
@@ -237,7 +240,7 @@ export nmem=0
 #export nmem=2 # perturbed member (gets added to random seeds)
 if [ $perturbed_replay == "YES" ]; then
     nmemm1=$((nmem01))
-    export analfileprefix="C${RES}_era5anl_${nmemm1}"
+    #export analfileprefix="C${RES}_era5anl_${nmemm1}"
     export iau_forcing_factor_atm=100  
     export iau_forcing_factor_ocn=100  
     # these go in  nam_stochy block of atmospheric model input.nml
@@ -382,15 +385,17 @@ fi
 export NSTFNAME="2,0,0,0"
 
 # new namelist settings for coupled/not-coupled
+export running_wave="NO"
 if [ "$coupled" == 'NO' ]; then
    export SUITE="FV3_GFS_v17_p8"
    export rungfs="run_fv3.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE' ]; then
-   export SUITE="FV3_GFS_v17_coupled_p8"
+   export SUITE="FV3_GFS_HR1"
    export rungfs="run_coupled.sh"
 elif [ "$coupled" == 'ATM_OCN_ICE_WAV' ]; then
-   export SUITE="FV3_GFS_v17_coupled_p8"
-   export rungfs="run_coupled_wav.sh"
+   export SUITE="FV3_GFS_HR1"
+   export rungfs="run_coupled.sh"
+   export running_wave="YES"
 else
    echo "${coupled} option not supported"
    echo "please chose betwee NO ATM_OCN_ICE"

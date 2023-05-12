@@ -1,5 +1,7 @@
 #!/bin/sh
 # do hybrid analysis.
+echo "Time starting run_3dvaranal `date` "
+tstart=`date +%s`
 
 export iaufhrs="6"
 export iau_delthrs="-1" # iau_delthrs < 0 turns IAU off
@@ -44,8 +46,9 @@ export VERBOSE=YES
 export OMP_NUM_THREADS=$gsi_control_threads
 export OMP_STACKSIZE=2048M
 #cores=`python -c "print (${NODES} - 1) * ${corespernode}"`
-export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
+export nprocs=`expr $nprocs_gsi \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
+export mpitaskspernode=`expr $mpitaskspernode \/ 2`
 echo "running with $OMP_NUM_THREADS threads ..."
 
 export YYYYMMDD=`echo $analdatem1 | cut -c1-8`
@@ -74,7 +77,15 @@ if [ "$cold_start_bias" == "true" ]; then
     export HXONLY='YES'
     /bin/rm -rf $tmpdir
     mkdir -p $tmpdir
+    tend=`date +%s`
+    dt=`expr $tend - $tstart`
+    echo "gsi pre step took $dt seconds"
+    tstart1=`date +%s`
     sh ${scriptsdir}/${rungsi}
+    tend=`date +%s`
+    dt=`expr $tend - $tstart1`
+    tstart2=`date +%s`
+    echo "gsi run step took $dt seconds"
     /bin/rm -rf $tmpdir
     if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
        echo "gsi observer step failed"
@@ -131,3 +142,6 @@ else
     echo "yes" > ${current_logdir}/run_gsi_observer.log 2>&1
     /bin/rm -rf $tmpdir
 fi
+tend=`date +%s`
+dt=`expr $tend - $tstart2`
+echo "gsi post step took $dt seconds"

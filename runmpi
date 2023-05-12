@@ -12,7 +12,6 @@ mpitaskspernode=`python -c "from __future__ import print_function; import math; 
 # -n: total number of mpi tasks
 # -N: number of nodes to run on
 # --ntasks-per-node:  mpi tasks on each node
-env
 if [ "$machine" == "aws" ];then
    #eval mpirun -np $nprocs $PGM
    echo "running srun --mpi=pmi2 --export=ALL -n $nprocs $PGM"

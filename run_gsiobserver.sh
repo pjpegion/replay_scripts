@@ -1,5 +1,7 @@
 #!/bin/sh
 # do hybrid observer.
+echo "Time starting run_gsiobserver `date` "
+tstart=`date +%s`
 
 if [ -z $charnanal2 ]; then
   export charnanal2=$charnanal
@@ -61,8 +63,9 @@ export VERBOSE=YES
 export OMP_NUM_THREADS=$gsi_control_threads
 export OMP_STACKSIZE=2048M
 #cores=`python -c "print (${NODES} - 1) * ${corespernode}"`
-export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
+export nprocs=`expr $nprocs_gsi \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
+export mpitaskspernode=`expr $mpitaskspernode \/ 2`
 echo "running with $OMP_NUM_THREADS threads ..."
 
 if [ -z $biascorrdir ]; then # cycled bias correction files
@@ -99,8 +102,16 @@ export tmpdir=$datapath2/gsitmp_${charnanal2}
 /bin/rm -rf $tmpdir
 mkdir -p $tmpdir
 /bin/cp -f $datapath2/hybens_info $tmpdir
+tend=`date +%s`
+dt=`expr $tend - $tstart`
+echo "gsi pre step took $dt seconds"
+tstart1=`date +%s`
 sh ${scriptsdir}/${rungsi}
 status=$?
+tend=`date +%s`
+dt=`expr $tend - $tstart1`
+echo "gsi run step took $dt seconds"
+tstart2=`date +%s`
 
 if [ $status -ne 0 ]; then
   echo "gsi hybrid observer did not complete sucessfully"
@@ -133,3 +144,6 @@ else
         /bin/rm -rf $tmpdir
     fi
 fi
+tend=`date +%s`
+dt=`expr $tend - $tstart2`
+echo "gsi post step took $dt seconds"
