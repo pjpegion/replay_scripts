@@ -59,7 +59,7 @@ PROGRAM calc_increment_ncio
 ! Declare externals
   external :: write_ncdata3d
 
-  character*500 filename_anal,filename_inc,filename_fg
+  character*500 filename_anal,filename_inc,filename_fg,logfile
   character*3 charnin
   character(len=nf90_max_name) :: ncvarname
   integer i,j,k,nvar,ndims,nlats,nlons,nlevs,iret,nlons2,nlats2,nlevs2
@@ -77,6 +77,7 @@ PROGRAM calc_increment_ncio
   real*8  :: deg2rad,pi,inv_sumwt
   logical :: no_mpinc, no_delzinc, has_dpres, has_delz, taper_strat, taper_pbl, lexist
   real rd,rv,fv,grav,ak_bot,ak_top,bk_bot,bk_top,forcing_factor
+  integer :: fid
   namelist /setup/ ak_top, ak_bot, bk_top, bk_bot, forcing_factor,&
                    taper_strat, taper_pbl, no_mpinc, no_delzinc
   pi     = 4.D0*ATAN(1.0)
@@ -101,6 +102,13 @@ PROGRAM calc_increment_ncio
   call getarg(1,filename_fg)    ! first guess ncio file
   call getarg(2,filename_anal)  ! analysis ncio file
   call getarg(3,filename_inc)   ! output increment file
+  if (iargc()==4) then
+     call getarg(4,logfile)   ! output increment file
+     fid=34
+  else
+     ! just write stats to standard out
+     fid=-1
+  endif
 
 
   inquire(file='calc_increment_ncio.nml', exist=lexist)
@@ -121,6 +129,7 @@ PROGRAM calc_increment_ncio
   write(6,*)'no_mpinc',no_mpinc
   write(6,*)'no_delzinc',no_delzinc
   write(6,*)'taper_strat',taper_strat
+  if ( fid == 34) open (fid,file=trim(logfile))
   if (taper_strat) then
     write(6,*), 'ak_bot,ak_top',ak_bot,ak_top
   endif
@@ -409,7 +418,7 @@ PROGRAM calc_increment_ncio
            endif 
            values_3d_inc = forcing_factor*values_3d_inc
            call write_ncdata3d(values_3d_inc,ncvarname,nlons,nlats,nlevs,ncfileid,dimid_3d)
-           call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs)
+           call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs,fid)
         endif
      endif ! ndims == 4
   enddo  ! nvars
@@ -423,7 +432,7 @@ PROGRAM calc_increment_ncio
      enddo
      values_3d_inc = forcing_factor*values_3d_inc
      call write_ncdata3d(values_3d_inc,ncvarname,nlons,nlats,nlevs,ncfileid,dimid_3d)
-     call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs)
+     call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs,fid)
   endif
   ! infer delz increment from background, analysis ps & Tv
   if (.not. has_delz .and. .not. no_delzinc) then
@@ -451,7 +460,7 @@ PROGRAM calc_increment_ncio
      values_3d_inc(:,nlats:1:-1,:) = delza - delzb
      values_3d_inc = forcing_factor*values_3d_inc
      call write_ncdata3d(values_3d_inc,ncvarname,nlons,nlats,nlevs,ncfileid,dimid_3d)
-     call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs)
+     call compute_stats(values_3d_inc,ncvarname,latwts,inv_sumwt,nlons,nlats,nlevs,fid)
   endif
 
   ncstatus = nf90_close(ncfileid)
@@ -461,6 +470,7 @@ PROGRAM calc_increment_ncio
   endif
   call close_dataset(dset_fg)
   call close_dataset(dset_anal)
+  close(fid)
 
 END PROGRAM calc_increment_ncio
 
@@ -506,7 +516,7 @@ subroutine write_ncdata3d(incdata,ncvarname,&
      stop
   endif
 end subroutine write_ncdata3d
-subroutine compute_stats(incdata,varname,latwts, inv_sumwt, nlons,nlats,nlevs)
+subroutine compute_stats(incdata,varname,latwts, inv_sumwt, nlons,nlats,nlevs,fid)
   use netcdf
   implicit none
   integer, intent(in) :: nlons,nlats,nlevs
@@ -516,6 +526,7 @@ subroutine compute_stats(incdata,varname,latwts, inv_sumwt, nlons,nlats,nlevs)
   real*8, intent(in) :: inv_sumwt
   real*8             :: mn,mse
   character(len=nf90_max_name), intent(in) :: varname
+  integer,      intent(in) :: fid
   if (trim(varname).EQ.'o3mr_inc') then
      ! use the full profile
      trop=1
@@ -537,7 +548,11 @@ subroutine compute_stats(incdata,varname,latwts, inv_sumwt, nlons,nlats,nlevs)
   ENDDO
   mn=mn/kct
   mse=sqrt(mse/kct)
-  print*, 'Global stastics below level', trop
-  write(*,'(A,A24,2e12.3)')  'Mean, RMS of ',adjustl(varname),real(mn,kind=4),real(mse,kind=4)
+  if (fid == -1) then
+     print*, 'Global stastics below level', trop
+     write(*,'(A,A24,2e12.3)')  'Mean, RMS of ',adjustl(varname),real(mn,kind=4),real(mse,kind=4)
+  else
+   write(fid,'(2A,2(A,e12.3))')  'Mean and RMS of, ',trim(adjustl(varname)),',',real(mn,kind=4),',',real(mse,kind=4)
+  endif
 end subroutine compute_stats
 

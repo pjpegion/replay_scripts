@@ -1,4 +1,5 @@
 # main driver script
+tstart=`date +%s`
 # single resolution hybrid using jacobian in the EnKF
 
 # allow this script to submit other scripts on WCOSS
@@ -19,7 +20,6 @@ echo "DataPath: ${datapath}"
 ############################################################################
 # Main Program
 
-env
 echo "starting the cycle"
 
 # substringing to get yr, mon, day, hr info
@@ -62,7 +62,7 @@ export current_logdir="${datapath2}/logs"
 echo "Current LogDir: ${current_logdir}"
 mkdir -p ${current_logdir}
 # if a current log file exits move it
-if [[ -f ${current_logdir}/run_fg_control ]];then
+if [[ -f ${current_logdir}/run_fg_control.out ]];then
    if [[ -f ${current_logdir}/run_fg_control.out.failed.3 ]];then
       mv ${current_logdir}/run_fg_control.out.failed.1 ${current_logdir}/run_fg_control.out.failed.4
    fi
@@ -102,68 +102,65 @@ if [ $RES_INC -lt $RES ] && [ $cold_start == 'false' ] ; then
    done
    echo "$analdate done reducing resolution of FV3 history files `date`"
 fi
+# run these steps in parallel,  all logic checks are perfomed inside these wrapper scripts
 
-if [ $fg_only == 'false' ]; then
-    if [ $replay_run_observer == "true" ]; then
-       export charnanal='control'
-       export charnanal2='control'
-       export lobsdiag_forenkf='.false.'
-       export skipcat="false"
-       echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-       if [ -z $biascorrdir ]; then # 3DVar to cycle bias correction files
-          sh ${scriptsdir}/run_3dvaranal.sh > ${current_logdir}/run_gsi_observer.out  2>&1
-       else
-          sh ${scriptsdir}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out   2>&1
-       fi
-       # once observer has completed, check log files.
-       hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-       if [ $hybrid_done == 'yes' ]; then
-         echo "$analdate gsi observer completed successfully `date`"
-       else
-         echo "$analdate gsi observer did not complete successfully, exiting `date`"
-         exit 1
-       fi
-    fi
+sh ${scriptsdir}/gsi_step.sh > ${current_logdir}/gsi_step.out 2>&1 &
+pid1=$!
+echo "gsi_step=" $pid1
+sleep 2
+# run snow DA 
+${scriptsdir}/snow_da_step.sh > ${current_logdir}/snow_da_step.out 2>&1 &
+pid2=$!
+echo "snow_da_step=" $pid2
+sleep 2
+#  update sea-ice
+${scriptsdir}/update_ice_step.sh > ${current_logdir}/update_ice_step.out 2>&1 &
+pid3=$!
+echo "update_ice_step=" $pid3
+sleep 2
+#  calculate ocean imcrement
+${scriptsdir}/ocn_inc_step.sh > ${current_logdir}/ocn_inc_step.out 2>&1 &
+pid4=$!
+echo "ocn_inc_step=" $pid4
+sleep 2
+#  calculate atm_increment
+${scriptsdir}/atm_inc_step.sh > ${current_logdir}/atm_inc_step.out 2>&1 &
+pid5=$!
+echo "atm_inc_step=" $pid5
+sleep 2
+# wait for the 5 background processes
+wait $pid1
+ec1=$?
+wait $pid2
+ec2=$?
+wait $pid3
+ec3=$?
+wait $pid4
+ec4=$?
+wait $pid5
+ec5=$?
+
+if [ $ec1 == 0 ] && [ $ec2 == 0 ] && [ $ec3 == 0 ] && [ $ec4 == 0 ] && [ $ec5 == 0 ]; then
+   echo "all parallel steps finished"
+   sleep 5
+else 
+   if [ $ec1 != 0 ]; then
+       echo "GSI step failed"
+   fi
+   if [ $ec2 != 0 ]; then
+       echo "snow DA step failed"
+   fi
+   if [ $ec3 != 0 ]; then
+       echo "update ice step failed"
+   fi
+   if [ $ec4 != 0 ]; then
+       echo "ocn_inc step failed"
+   fi
+   if [ $ec5 != 0 ]; then
+       echo "atm_inc step failed"
+   fi
+   exit 1
 fi
- 
-if [ $do_snowDA == 'true' ] && [ $fg_only == 'false' ]; then
- if [ $hr == '00' ]; then # only calling land DA at 00 
-
-    # check if land DA has already been done.
-    lndp_done=`cat ${current_logdir}/landDA.log`
-    if [ $lndp_done == 'yes' ]; then
-      echo "$analdate  land DA already done this time step, skipping.  `date`"
-    else
-
-     echo "$analdate calling land DA `date`"
-     charnanal='control'
-     export RSTRDIR=${datapath2}/${charnanal}/INPUT/
-     # stage restarts
-     export ym3=`echo $analdatem3 | cut -c1-4`
-     export mm3=`echo $analdatem3 | cut -c5-6`
-     export dm3=`echo $analdatem3 | cut -c7-8`
-     export hm3=`echo $analdatem3 | cut -c9-10`
-     n=1 
-     while [ $n -le 6 ]; do
-        ln -fs ${RSTRDIR}/sfc_data.tile${n}.nc  ${RSTRDIR}/${ym3}${mm3}${dm3}.${hm3}0000.sfc_data.tile${n}.nc
-      n=$((n+1))
-     done
-
-     if [ ! -s settings_snowDA_${machine} ]; then
-        echo "no settings_snowDA file for ${machine}, can't run snow DA..."
-        exit 1
-     fi
-     ${scriptsdir}/land-DA_update/do_landDA.sh settings_snowDA_${machine} > ${current_logdir}/landDA.out 2>&1
-     if [[ $? != 0 ]]; then
-        echo "$analdate land DA failed, exiting"
-        exit 1
-     else
-        echo "$analdate finished land DA `date`"
-        echo "yes" > ${current_logdir}/landDA.log 2>&1
-     fi
-   fi # land DA already done
- fi # 00
-fi # do_snowDA
 
 echo "$analdate run high-res control first guess `date`"
 sh ${scriptsdir}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out   2>&1
@@ -200,7 +197,7 @@ cd $homedir
 if [ $save_hpss == 'true' ]; then
    if [ $machine == 'aws' ] ; then
       ipadd=`cat ${scriptsdir}/front_end_ip.txt`
-      ssh -o StrictHostKeyChecking=no ${USER}@$ipadd "export machine=$machine; export scriptsdir=$scriptsdir; export datapath=${datapath}; export analdate=${analdate}; export exptname=${exptname}; cd $scriptsdir; sh ./hpss.sh >&archive_${analdate}.out&"
+      ssh -o StrictHostKeyChecking=no ${USER}@$ipadd "export machine=$machine; export scriptsdir=$scriptsdir; export datapath=${datapath}; export analdate=${analdate}; export analdate_prod=$analdate_prod; export exptname=${exptname}; cd $scriptsdir; sh ./hpss.sh >&archive_${analdate}.out&"
    else
       cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
       echo "submitting job_hpss.sh ..."
@@ -226,6 +223,7 @@ export analdate=`${incdate} $analdate $ANALINC`
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
+echo "export analdate_prod=${analdate_prod}" >> $startupenv
 echo "export fg_only=false" > $datapath/fg_only.sh
 echo "export cold_start=false" >> $datapath/fg_only.sh
 
@@ -245,4 +243,7 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    fi
 fi
 
+tend=`date +%s`
+dt=`expr $tend - $tstart`
+echo "Entire cycle took $dt seconds"
 exit 0

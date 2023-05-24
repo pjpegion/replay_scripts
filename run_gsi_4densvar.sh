@@ -1,4 +1,5 @@
-echo "Time starting at `date` "
+echo "Time starting run_gsi_4densvar `date` "
+tstart=`date +%s`
 
 VERBOSE=${VERBOSE:-"YES"}
 if [[ "$VERBOSE" = "YES" ]]; then
@@ -641,8 +642,10 @@ if [ $machine == 'aws' ]; then
    mon=`echo $adate | cut -c5-6`
    year=`echo $adate | cut -c1-4`
    mkdir -p $datobs
+   echo "copying obs from s3 bucket `date`"
    aws s3 cp  --no-sign-request s3://noaa-reanalyses-pds/observations/reanalysis/conv/prepbufr/${year}/${mon}/prepbufr/gdas.${year}${mon}${day}.t${hr}z.prepfur.nr ${datobs}/${prefix_obs}.prepbufr
    aws s3 cp  --no-sign-request s3://noaa-reanalyses-pds/observations/reanalysis/conv/prepbufr.acft_profiles/${year}/${mon}/bufr/gdas.${year}${mon}${day}.t${hr}z.prepbufr.acft_profiles.nr ${datobs}/${prefix_obs}.prepbufr.acft_profiles
+   echo "done copying obs from s3 bucket `date`"
 fi
 if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
  echo "no prepbufr file!"
@@ -844,8 +847,16 @@ ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
 export FORT_BUFFERED=TRUE
+tend=`date +%s`
+dt=`expr $tend - $tstart`
+echo "gsi 4densvar prep step took $dt seconds"
+tstart1=`date +%s`
 sh ${scriptsdir}/runmpi
 rc=$?
+tend=`date +%s`
+dt=`expr $tend - $tstart1`
+echo "gsi 4densvar run step took $dt seconds"
+tstart2=`date +%s`
 if [[ $rc -ne 0 ]];then
   echo "GSI failed with exit code $rc"
   exit $rc
@@ -1037,4 +1048,7 @@ if [[ "$CLEAN" = "YES" ]];then
 fi
 
 # End of script
+tend=`date +%s`
+dt=`expr $tend - $tstart2`
+echo "gsi 4densvar post step took $dt seconds"
 exit 0

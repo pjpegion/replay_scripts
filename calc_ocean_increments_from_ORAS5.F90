@@ -7,7 +7,7 @@ integer                 :: ncid_fg,ncid_anl,ncid_inc,varid,dimid
 integer                 :: xt_dim_id,yt_dim_id,xt_var_id,yt_var_id
 integer                 :: xq_dim_id,yq_dim_id,xq_var_id,yq_var_id
 integer                 :: varid1,varid2,varid3,varid4,varid5,varid_lon,varid_lat
-integer                 :: zl_dim_id,zl_var_id,ierr
+integer                 :: zl_dim_id,zl_var_id,ierr,fid
 
 include 'netcdf.inc'
 
@@ -64,6 +64,9 @@ fname_fg='ocn_'//yyyy//'_'//mm//'_'//dd//'_12.nc'
 path_anl=trim(oras5path)//'/'
 fname_anl='ORAS5.mx025_'//yyyy//mm//dd//'.ic.nc'
 fname_inc='mom6_increment.nc'
+
+fid=33
+open (fid,file=trim(path_fg)//'logs/calc_ocn_inc.out')
 cct=1
 print*,'iau_forcing_factor=',forcing_factor
 print*,'opening',trim(path_fg)//'control/INPUT/ocean_hgrid.nc'
@@ -85,7 +88,6 @@ call check(NF90_INQ_DIMID(ncid_fg,'yh',dimid),cct)
 call check(NF90_INQUIRE_DIMENSION(ncid_fg,dimid,len=ny),cct)
 call check(NF90_INQ_DIMID(ncid_fg,'z_l',dimid),cct)
 call check(NF90_INQUIRE_DIMENSION(ncid_fg,dimid,len=nz),cct)
-!print*,'fg size is',nx,ny,nz
 ! allocate arrays
 
 ! create a mask to zero out increments over the black sea
@@ -269,10 +271,10 @@ u_inc(:,:,:)=forcing_factor*(u_anl(:,:,:) - u_fg(:,:,:))
 v_inc(:,:,:)=forcing_factor*(v_anl(:,:,:) - v_fg(:,:,:))
 
 !aggregate area to A-grid
-DO j=1,ny/2
+DO j=1,ny
    j1=(j-1)*2+1
    j2=j1+1
-   DO i=1,nx/2
+   DO i=1,nx
       i1=(i-1)*2+1
       i2=i1+1
       area(i,j,:)=areaS(i1,j1)+areaS(i1,j2)+areaS(i2,j1)+areaS(i2,j2)
@@ -281,11 +283,16 @@ ENDDO
 deallocate(areaS)
 
 ! mask out missing values
-WHERE(pt_fg .LT. -2.0 .OR. pt_fg .GT. 50)
+WHERE(pt_fg .LT. -3.0 .OR. pt_fg .GT. 50)
    pt_inc=0.0
    s_inc=0.0
    u_inc=0.0
    v_inc=0.0
+ENDWHERE
+WHERE(pt_fg .LT. -1.6 )
+!WHERE(pt_fg .LT. -0.5 )
+   pt_inc=0.0
+!   s_inc=0.0
 ENDWHERE
 ! mask out Black sea
 DO k=1,nz
@@ -310,22 +317,23 @@ ENDWHERE
 inv_sumwt=1.0/(SUM(area))
 inv_sumwt2d=1.0/(SUM(area(:,:,1)))
 varname='pt_inc'
-call compute_stats(pt_inc,varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(pt_inc,varname,area,inv_sumwt,nx,ny,nz,fid)
 varname='s_inc'
-call compute_stats(s_inc,varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(s_inc,varname,area,inv_sumwt,nx,ny,nz,fid)
 varname='u_inc'
-call compute_stats(u_inc,varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(u_inc,varname,area,inv_sumwt,nx,ny,nz,fid)
 varname='v_inc'
-call compute_stats(v_inc,varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(v_inc,varname,area,inv_sumwt,nx,ny,nz,fid)
 varname='SSH'
-call compute_stats2d(real(ssh_fg,kind=8),varname,area(:,:,1),inv_sumwt2d,nx,ny)
+call compute_stats2d(real(ssh_fg,kind=8),varname,area(:,:,1),inv_sumwt2d,nx,ny,fid)
 varname='Salinity'
-call compute_stats(real(s_fg,kind=8),varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(real(s_fg,kind=8),varname,area,inv_sumwt,nx,ny,nz,fid)
 varname='Temperature'
-call compute_stats(real(pt_fg,kind=8),varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(real(pt_fg,kind=8),varname,area,inv_sumwt,nx,ny,nz,fid)
 pt_fg=sqrt(u_fg**2+v_fg**2)
 varname='Speed of Currents'
-call compute_stats(real(pt_fg,kind=8),varname,area,inv_sumwt,nx,ny,nz)
+call compute_stats(real(pt_fg,kind=8),varname,area,inv_sumwt,nx,ny,nz,fid)
+close (fid)
 
 ! interpolate to first guess depth
 depth(:,:,1)=ssh_fg(:,:)-0.5*h_fg(:,:,1)
@@ -427,7 +435,7 @@ subroutine interp1( tData, sData, uData, VData, xLoc, yLoc,nx,ny,nz )
      end do
   end do
 end subroutine
-subroutine compute_stats(incdata,varname,area, inv_sumwt, nlons,nlats,nlevs)
+subroutine compute_stats(incdata,varname,area, inv_sumwt, nlons,nlats,nlevs,fid)
   use netcdf
   implicit none
   integer, intent(in) :: nlons,nlats,nlevs
@@ -436,14 +444,16 @@ subroutine compute_stats(incdata,varname,area, inv_sumwt, nlons,nlats,nlevs)
   real(kind=8), intent(in) :: inv_sumwt
   real(kind=8)             :: mn,mse
   character(len=nf90_max_name), intent(in) :: varname
+  integer,      intent(in) :: fid
 ! compute area weighted global mean and rms
   mn=0.0
   mse=0.0
   mn = SUM(incdata(:,:,:)*area(:,:,:))*inv_sumwt
   mse =sqrt(SUM((incdata(:,:,:)**2)*area(:,:,:))*inv_sumwt)
-  write(*,'(A,A24,2e12.3)')  'Mean, RMS of ',adjustl(varname),real(mn,kind=4),real(mse,kind=4)
+  write(fid,'(2A,2(A,e12.3))')  'Mean and RMS of, ',trim(adjustl(varname)),',',real(mn,kind=4),',',real(mse,kind=4)
+  print*,'Min/Max of ',trim(adjustl(varname)),minval(incdata),maxval(incdata)
 end subroutine compute_stats
-subroutine compute_stats2d(incdata,varname,area, inv_sumwt, nlons,nlats)
+subroutine compute_stats2d(incdata,varname,area, inv_sumwt, nlons,nlats,fid)
   use netcdf
   implicit none
   integer, intent(in) :: nlons,nlats
@@ -452,12 +462,13 @@ subroutine compute_stats2d(incdata,varname,area, inv_sumwt, nlons,nlats)
   real(kind=8), intent(in) :: inv_sumwt
   real(kind=8)             :: mn,mse
   character(len=nf90_max_name), intent(in) :: varname
+  integer,      intent(in) :: fid
 ! compute area weighted global mean and rms
   mn=0.0
   mse=0.0
   mn = SUM(incdata(:,:)*area(:,:))*inv_sumwt
   mse =sqrt(SUM((incdata(:,:)**2)*area(:,:))*inv_sumwt)
-  write(*,'(A,A24,2e12.3)')  'Mean, RMS of ',adjustl(varname),real(mn,kind=4),real(mse,kind=4)
+  write(fid,'(2A,2(A,e12.3))')  'Mean and RMS of, ',trim(adjustl(varname)),',',real(mn,kind=4),',',real(mse,kind=4)
   !print*,'MAX/MIN',minval(incdata),maxval(incdata)
   !print*,'MAX/MIN',minval(incdata*area),maxval(incdata*area)
 end subroutine compute_stats2d

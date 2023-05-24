@@ -1,14 +1,20 @@
-#!/bin/sh 
+#!/bin/sh  -x
 # model was compiled with these 
 echo "starting at `date`"
-source $MODULESHOME/init/sh
+tstart=`date +%s`
+#source $MODULESHOME/init/sh
+export ESMF_RUNTIME_PROFILE=ON
+export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
+OCN_IAU=False
 #skip_global_cycle=YES
 if [ "$cold_start" == "true" ]; then
    skip_global_cycle=YES
    FHROT=0
+   WAVE_REST_SEC=10800
    RESTART_FREQ=3
 else
    FHROT=3
+   WAVE_REST_SEC=21600
 fi
 
 export WGRIB=`which wgrib`
@@ -143,7 +149,7 @@ find -type l -delete
 /bin/rm -f dyn* phy* *nemsio* PET* history/* MOM6_OUTPUT/* ocn_*nc
 export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table_coupled}
 /bin/cp -f $DIAG_TABLE diag_table
-/bin/cp -f $scriptsdir/nems.configure.ATM_OCN_ICE nems.configure
+/bin/cp -f $scriptsdir/nems.configure.ATM_OCN_ICE_WAV nems.configure
 if [ -s INPUT/ufs.cpld.cpl.r.${year_start}-${mon_start}-${day_start}-${secondofday}.nc ]; then
   mediator_read_restart=true
 else
@@ -152,6 +158,20 @@ fi
 sed -i -e "s/DT_ATMOS/${dt_atmos}/g" nems.configure
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" nems.configure
 sed -i -e "s/MEDIATOR_RST/${mediator_read_restart}/g" nems.configure
+if [ $running_wave == "YES" ];then
+   /bin/cp -f $scriptsdir/ww3_shel.inp ww3_shel.inp
+   sed -i -e "s/YYYY/${year}/g" ww3_shel.inp
+   sed -i -e "s/MM/${mon}/g" ww3_shel.inp
+   sed -i -e "s/DD/${day}/g" ww3_shel.inp
+   sed -i -e "s/HH/${hour}/g" ww3_shel.inp
+   sed -i -e "s/RESTART/${WAVE_REST_SEC}/g" ww3_shel.inp
+   /bin/cp -f $scriptsdir/ww3_ounf.inp ww3_ounf.inp
+   sed -i -e "s/YYYY/${year}/g" ww3_ounf.inp
+   sed -i -e "s/MM/${mon}/g" ww3_ounf.inp
+   sed -i -e "s/DD/${day}/g" ww3_ounf.inp
+   sed -i -e "s/HH/${hour}/g" ww3_ounf.inp
+   sed -i -e "s/WAVE_MESH/${WAVE_MESH}/g" nems.configure
+fi
 # figure out processor layout
 echo "processor layout"
 echo "nprocs_cpl="$nprocs_cpl
@@ -160,20 +180,27 @@ echo "nprocs_ocn="$nprocs_ocn
 echo "nprocs_ice="$nprocs_ice
 CPL1=0
 CPL2=`expr $nprocs_cpl - 1`
-ATM1=0
-ATM2=`expr $nprocs_atm - 1`
-OCN1=`expr $ATM2 + 1`
-OCN2=`expr $nprocs_ocn + $ATM2`
-ICE1=`expr $OCN2 + 1`
-ICE2=`expr $nprocs_ice + $OCN2`
 sed -i -e "s/NPROCS_CPL1/${CPL1}/g" nems.configure
 sed -i -e "s/NPROCS_CPL2/${CPL2}/g" nems.configure
+ATM1=0
+ATM2=`expr $nprocs_atm - 1`
 sed -i -e "s/NPROCS_ATM1/${ATM1}/g" nems.configure
 sed -i -e "s/NPROCS_ATM2/${ATM2}/g" nems.configure
+OCN1=`expr $ATM2 + 1`
+OCN2=`expr $nprocs_ocn + $ATM2`
 sed -i -e "s/NPROCS_OCN1/${OCN1}/g" nems.configure
 sed -i -e "s/NPROCS_OCN2/${OCN2}/g" nems.configure
+ICE1=`expr $OCN2 + 1`
+ICE2=`expr $nprocs_ice + $OCN2`
 sed -i -e "s/NPROCS_ICE1/${ICE1}/g" nems.configure
 sed -i -e "s/NPROCS_ICE2/${ICE2}/g" nems.configure
+if [ $running_wave == "YES" ];then
+   echo "nprocs_wav="$nprocs_wav
+   WAV1=`expr $ICE2 + 1`
+   WAV2=`expr $nprocs_wav + $ICE2`
+   sed -i -e "s/NPROCS_WAV2/${WAV2}/g" nems.configure
+   sed -i -e "s/NPROCS_WAV1/${WAV1}/g" nems.configure
+fi
 sed -i -e "s/OCNRES/${OCNRES}/g" nems.configure
 sed -i -e "s/ATMRES/${RES}/g" nems.configure
 
@@ -185,7 +212,6 @@ sed -i -e "s/FHOUT/${FHOUT_OCN}/g" diag_table
 /bin/cp -f ${scriptsdir}/ice_in_${OCNRES} ice_in
 if [ "$cold_start" == "true" ]; then
   ice_date=${analdate}
-  #istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
   run_type='initial'
   NEMS_RUN_TYPE='startup'
   run_id='cpcice'
@@ -202,7 +228,6 @@ if [ "$cold_start" == "true" ]; then
   fi
   use_restart_time='.false.'
 else
-  #istep0=0
   run_type='continue'
   NEMS_RUN_TYPE='continue'
   run_id='unknown'
@@ -295,6 +320,12 @@ ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  
 ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
 # MOM6/CICE files  (MOM6 in INPUT, CICE one level up)
 ln -sf ${FIXDIR}/CICE_FIX/${ORES3}/* . 
+if [ $running_wave == "YES" ];then
+   ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.points .
+# need to udpate to new wave gid
+   ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.${WAVE_MESH}.ww3 mod_def.ww3
+   ln -sf ${FIXDIR}/WW3_input_data_20220624/mesh.${WAVE_MESH}.nc .
+fi
 cd INPUT
 ln -sf ${FIXDIR}/MOM6_FIX/${ORES3}/* .
 if [ $NGGODAS == "true" ]; then
@@ -313,113 +344,18 @@ sed -i -e "s/DT_OCN_FAST/${DT_OCN_FAST}/g" MOM_input
 sed -i -e "s/DT_OCN_SLOW/${dt_ocn}/g" MOM_input
 sed -i -e "s/DO_OCNSPPT/${DO_OCNSPPT}/g" MOM_input
 sed -i -e "s/DO_PERT_EPBL/${DO_PERT_EPBL}/g" MOM_input
-sed -i -e "s/CPLWAV/False/g" MOM_input
+sed -i -e "s/CPLWAV/True/g" MOM_input
+if [ -f ${datapath2}/${charnanal}/INPUT/mom6_increment.nc ];then
+   OCN_IAU=True
+else
+   OCN_IAU=False
+fi
+sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input
 
 touch MOM_override
-cd ..
 
+cd ${datapath2}/${charnanal}
 
-# create netcdf increment files.
-if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
-   cd INPUT
-
-   iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-# IAU - multiple increments.
-   for fh in $iaufhrs2; do
-      export increment_file="fv3_increment${fh}.nc"
-      fhtmp=`expr $fh \- $ANALINC`
-      analdate_tmp=`$incdate $analdate $fhtmp`
-      threads_save=$OMP_NUM_THREADS
-      export OMP_NUM_THREADS=8
-      export fgfile=${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}
-      /bin/rm -f calc_increment_ncio.nml
-      ff=`python -c "print($iau_forcing_factor_atm / 100.)"`
-      export DONT_USE_DPRES=1
-      export DONT_USE_DELZ=1
-      cat > calc_increment_ncio.nml << EOF
-&setup
-  no_mpinc=.true.
-  no_delzinc=.false.
-  forcing_factor=${ff},
-  taper_strat=.true.
-  taper_pbl=.false.
-  ak_bot=10000.,
-  ak_top=5000.,
-  bk_bot=1.0,
-  bk_top=0.95
-/
-EOF
-      cat calc_increment_ncio.nml
-# usage:
-#   input files: filename_fg filename_anal (1st two command line args)
-#
-#   output files: filename_inc (3rd command line arg)
-
-#   4th command line arg is logical for controlling whether microphysics
-#   increment should not be computed. (no_mpinc)
-#   5th command line arg is logical for controlling whether delz
-#   increment should not be computed (no_delzinc)
-#   6th command line arg is logical for controlling whether humidity
-#   and microphysics vars should be tapered to zero in stratosphere.
-#   The vertical profile of the taper is controlled by ak_top and ak_bot.
-   if [ "$machine" == 'aws' ];then
-      echo "create ${increment_file}"
-# get era5 file from S3 bucket
-      echo "s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc"
-      aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/era5/C${RES}/${yeara}/${mona}/C${RES}_era5anl_${analdate}.nc ${replayanaldir}
-      rm ${replayanaldir}/C${RES}_era5anl_${analdatem1}.nc
-   fi
-      /bin/rm -f ${increment_file}
-      # last two args:  no_mpinc no_delzinc
-      if [ $RES_INC -lt $RES ]; then
-         export analfile="${replayanaldir_lores}/${analfileprefix_lores}_${analdate_tmp}.nc"
-         echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x "${fgfile}.chgres" ${analfile} ${increment_file}"
-      else
-         export analfile="${replayanaldir}/${analfileprefix}_${analdate_tmp}.nc"
-         echo "create ${increment_file} from ${fgfile} and ${analfile}"
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
-      fi
-      nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
-      if [ $? -ne 0 -o ! -s ${increment_file} ]; then
-         echo "problem creating ${increment_file}, stopping .."
-         exit 1
-      fi
-      export OMP_NUM_THREADS=$threads_save
-   done # do next forecast
-   cd ..
-fi
-if [ $NGGODAS == "true" ]; then
-    OCN_IAU=True
-    sh ${scriptsdir}/calc_ocean_increment_nggodas.sh
-    if [ $? -ne 0 ]; then
-       echo "calc_ocean_increment failed..."
-       exit 1
-    else
-       echo "done calculating ocean increment... `date`"
-    fi
-else
-    # only do IAU on ocean for the 12z cycle for ORAS5
-    if [ $houra -eq 12 ]; then
-       OCN_IAU=True
-       if [ "$machine" == 'aws' ];then
-          aws s3 cp s3://noaa-bmc-none-ca-ufs-rnr/replay/inputs/oras5_ics/${OCNRES}/${yeara}/${mona}/ORAS5.${OCNRES}_${yeara}${mona}${daya}.ic.nc ${ocnanaldir}
-# remove yesterday's ORAS5 file
-          rm ${ocnanaldir}/ORAS5.${OCNRES}_${yearm1}${monm1}${daym1}.ic.nc
-       fi
-       sh ${scriptsdir}/calc_ocean_increment.sh
-       if [ $? -ne 0 ]; then
-          echo "calc_ocean_increment failed..."
-          exit 1
-       else
-          echo "done calculating ocean increment... `date`"
-       fi
-    else
-       OCN_IAU=False
-    fi
-fi
-
-pushd INPUT; sed -i -e "s/DO_OCN_IAU/${OCN_IAU}/g" MOM_input; popd
 # setup model namelist
 if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
@@ -460,6 +396,7 @@ else
       iau_inc_files=""
    fi
 fi
+
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
@@ -498,7 +435,8 @@ else
 fi
 
 FHRESTART=${FHRESTART:-"${RESTART_FREQ} -1"}
-OUTPUTFH=${OUTPUTFH:-"${FHOUT} -1"}
+#OUTPUTFH=${OUTPUTFH:-"${FHOUT} -1"}
+OUTPUTFH='0 3 6 9'
 if [ ! -z $longfcst ]; then
    FHMAX_FCST=$FHMAX
    FHRESTART=0
@@ -628,7 +566,7 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf_parallel' 'netcdf'
+output_file:             'netcdf' 'netcdf'
 nbits:                   14
 ideflate:                1
 ichunk2d:                ${LONB}
@@ -650,9 +588,6 @@ if [ "$cold_start" == "true" ]; then
   na_init=1
   mountain=F
   ocn_start=n
-# calculate istep0 for ice model initialization, which is timesteps from 1st of year
-  #ice_date=${year_start}010100
-  #istep0=`${scriptsdir}/get_icstep.py $ice_date $dt_atmos`
 else
   warm_start=T
   externalic=F
@@ -686,7 +621,7 @@ sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
-sed -i -e "s/DOWAV/.false./g" input.nml
+sed -i -e "s/DOWAV/.true./g" input.nml
 if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
    NSTFNAME="2,1,0,0"
 fi
@@ -728,9 +663,18 @@ if [ "$cold_start" != "true" ]; then
 fi
 
 # run model
+cd ${datapath2}/${charnanal}
 export PGM=$FCSTEXEC
 echo "start running model `date`"
+tend=`date +%s`
+dt=`expr $tend - $tstart`
+echo "pre run step took $dt seconds"
+tstart2=`date +%s`
 ${scriptsdir}/runmpi
+tend=`date +%s`
+dt=`expr $tend - $tstart2`
+echo "model run step took $dt seconds"
+tstart3=`date +%s`
 if [ $? -ne 0 ]; then
    echo "model failed..."
    exit 1
@@ -831,19 +775,6 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
          touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
       fi
    done
-   #if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
-   #   for file in ${datestringa}*nc; do
-   #      echo "copying $file to ${datapath2}/${charnanal}/INPUT"
-   #      /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
-   #      if [ $? -ne 0 ]; then
-   #        echo "restart file missing..."
-   #        exit 1
-   #      fi
-   #      if [ $file2 == "ca_data.tile1.nc" ]; then
-   #         touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
-   #      fi
-   #   done
-   #fi
    ls MOM.res.${datestring_ocn}*nc
    for file in MOM.res.${datestring_ocn}*nc; do
       file2=MOM.res`echo $file | cut -c 28-32`
@@ -851,79 +782,65 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
    done
    if [ $perturbed_replay == "YES" ]; then
-   ls ocn_stoch.res.${datestring_ocn}*nc
-   for file in ocn_stoch.res.${datestring_ocn}*nc; do
-      echo "copying $file to ${datapathp1}/${charnanal}/INPUT/$ocn_stoc.res.nc"
-      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/ocn_stoch.res.nc
-   done
+      ls ocn_stoch.res.${datestring_ocn}*nc
+      for file in ocn_stoch.res.${datestring_ocn}*nc; do
+         echo "copying $file to ${datapathp1}/${charnanal}/INPUT/ocn_stoc.res.nc"
+         /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/ocn_stoch.res.nc
+      done
    fi
-   #if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
-   #   ls MOM.res.${datestring_ocna}*nc
-   #   for file in MOM.res.${datestring_ocna}*nc; do
-   #      echo "copying $file to ${datapath2}/${charnanal}/INPUT"
-   #      /bin/mv -f $file ${datapath2}/${charnanal}/INPUT
-   #   done
-   #   if [ $perturbed_replay == "YES" ]; then
-   #   ls ocn_stoch.res.${datestring_ocna}*nc
-   #   for file in ocn_stoch.res.${datestring_ocna}*nc; do
-   #      echo "copying $file to ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc"
-   #      /bin/mv -f $file ${datapath2}/${charnanal}/INPUT/ocn_stoch.res.nc
-   #   done
-   #   fi
-   #fi
+   /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv iced.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
    /bin/mv ufs.cpld.cpl.r.${yrnext}-${monnext}-${daynext}-${secondofnextday}.nc ${datapathp1}/${charnanal}/INPUT
+   if [ $running_wave == "YES" ];then
+      /bin/mv ../${yrnext}${monnext}${daynext}.${hrnext}0000.restart.ww3 ${datapathp1}/${charnanal}/restart.ww3
+   fi
    if [ $RESTART_FREQ -eq 3 ] && [ "$cold_start" != "true" ]; then
       /bin/mv -f iced.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
       /bin/mv -f ufs.cpld.cpl.r.${yeara}-${mona}-${daya}-${secondofdaya}.nc ${datapath2}/${charnanal}/INPUT
+      if [ $running_wave == "YES" ];then
+         /bin/mv ../${yeara}${mona}${daya}.${houra}0000.restart.ww3 ${datapathp1}/${charnanal}/restart.ww3
+      fi
    fi
    cd ..
    ls -l ${datapathp1}/${charnanal}/INPUT
 fi
 
-# also move history files if copy_history_files is set.
-#if [ ! -z $copy_history_files ]; then
-  #/bin/mv -f fv3_historyp*.nc ${DATOUT}
-  # copy with compression
-  #n=1
-  #while [ $n -le 6 ]; do
-  #   # lossless compression
-  #   ncks -4 -L 5 -O fv3_historyp.tile${n}.nc ${DATOUT}/${charnanal}/fv3_historyp.tile${n}.nc
-  #   # lossy compression
-  #   #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/${charnanal}/fv3_history.tile${n}.nc
-  #   /bin/rm -f fv3_historyp.tile${n}.nc
-  #   n=$((n+1))
-  #done
-#fi
 ls -l ${DATOUT}
 
 # remove symlinks from INPUT directory
 cd INPUT
 find -type l -delete
+rm MOM_input
 cd ..
-#/bin/rm -rf RESTART # don't need RESTART dir anymore.
-# save RESTARTS at end of predictor segment (end of next window)
-#cd RESTART
-#mkdir -p SAVE
-#mv fv*nc SAVE
-#mv ca*nc SAVE
-#mv phy*nc SAVE
-#mv sfc*nc SAVE
-#mv atm_stoch.res.nc SAVE
-#mv ocn_stoch.res.nc SAVE
-#mv MOM.res_1.nc SAVE
-#mv MOM.res_2.nc SAVE
-#mv MOM.res_3.nc SAVE
-#mv MOM.res.nc SAVE
-#mv iced.${yrendnext}-${monendnext}-${dayendnext}-${secondofendnextday}.nc  SAVE
-#mv ufs.cpld.cpl.r.${yrendnext}-${monendnext}-${dayendnext}-${secondofendnextday}.nc SAVE
-#/bin/rm -f *
-#mv SAVE/* .
-#/bin/rm -rf SAVE
-#cd ..
-#ls -l RESTART
+/bin/rm PET*
+/bin/rm log*
 /bin/rm -rf RESTART
-
+/bin/rm -rf history
+/bin/rm -rf MOM6_OUTPUT
+/bin/rm ice.restart_file
+if [ $running_wave == "YES" ];then
+   $execdir/ww3_ounf
+   /bin/rm ww3_shel.inp
+   /bin/mv -f ww3*.nc ${DATOUT}
+fi
+/bin/rm diag_table
+/bin/rm nems.configure
+/bin/rm postxconfig-NT.txt
+/bin/rm postxconfig-NT_FH00.txt
+/bin/rm ice_in
+/bin/rm rpointer.cpl
+/bin/rm field_table
+/bin/rm itag
+/bin/rm params_grib2_tbl_new
+/bin/rm mediator.log
+/bin/rm input.nml
+/bin/rm data_table
+/bin/rm INPUT/calc_increment_ncio.nml
+/bin/rm ice_diag.d
+/bin/rm model_configure
+find -type l -delete
 echo "all done at `date`"
-
+tend=`date +%s`
+dt=`expr $tend - $tstart3`
+echo "post cleanup step took $dt seconds"
 exit 0

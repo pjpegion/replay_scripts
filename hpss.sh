@@ -1,5 +1,4 @@
 # need envars:  machine, analdate, datapath, hsidir
-
 exitstat=0
 source $MODULESHOME/init/sh
 if [ $machine == "gaea" ]; then
@@ -19,7 +18,6 @@ else
    nccompress=/home/Jeffrey.S.Whitaker/.local/bin/nccompress
 fi
 
-#env
 if [ $machine != "aws" ];then
    $hsi mkdir -p ${hsidir}/
 fi
@@ -31,6 +29,7 @@ HH=`echo $analdate | cut -c9-10`
 
 # move increment files up 2 directories to save with diagnostics
 /bin/mv -f ${datapath2}/control/INPUT/fv3_increment6.nc ${datapath2}
+# move wave history files up 2 directories to save with diagnostics
 if [ -f ${datapath2}/control/INPUT/mom6_increment.nc ]; then
    /bin/mv -f ${datapath2}/control/INPUT/mom6_increment.nc ${datapath2}
 fi
@@ -59,29 +58,44 @@ if [ $HH == '06' ]; then
       $htar -cvf ${hsidir}/${analdate}.restart.tar ${analdate}/control ${analdate}/GFSPRS.GrbF03 ${analdate}/GFSFLX.GrbF03 
       exitstat=$?
    else
-      for filename in `ls ${analdate}/control/restart.ww3 ${analdate}/control/INPUT/* `;do
-         aws s3 cp $filename s3://noaa-bmc-none-ca-ufs-rnr/replay/outputs/${exptname}/restarts/${YYYY}/${MM}/${DD}/${HH}/ --profile rdhpcs >&/dev/null
-         if [ $? -ne 0 ]; then
-           echo "s3 restart copy failed "$filename
-           exitstat=1
-         else
-           echo "s3 restart copy succceeded "$filename
-         fi
-      done
+      cd ${analdate}/control/
+      mv restart.ww3 INPUT
+      if [ $analdate -lt $analdate_prod ];then # put data in spin-up directory
+         aws s3 cp --recursive INPUT s3://noaa-ufs-gefsv13replay-pds/spinup/${YYYY}/${MM}/${analdate}/ --profile noaa-bdp >&/dev/null
+      else
+         aws s3 cp --recursive INPUT s3://noaa-ufs-gefsv13replay-pds/${YYYY}/${MM}/${analdate}/ --profile noaa-bdp >&/dev/null
+      fi
+      if [ $? -ne 0 ]; then
+        echo "s3 restart copy failed "$filename
+        exitstat=1
+      else
+        echo "s3 restart copy succceeded "$filename
+        #rm -rf INPUT
+      fi
    fi
    if [ $exitstat -ne 0 ]; then
       echo "creating restart tar file failed"
+      echo "no" > ${datapath}/${analdate}/logs/hpss.log
       exit $exitstat
+   fi
+else
+ # just delete restarts on aws
+   if [ $machine != "aws" ];then
+      cd ${analdate}/control/
+      if [ $HH == '00' ]; then  # save background and analysis sfc files
+         mv INPUT/*sfc_data_back.tile?.nc ..
+      fi
+      rm -rf restart.ww3 INPUT
    fi
 fi
 cd $datapath
-/bin/rm -f ${analdate}/control/*.out_grd.ww3 ${analdate}/control/*.restart.ww3
+/bin/rm -f ${analdate}/control/*.out_grd.ww3 ${analdate}/control/*.restart.ww3 ${analdate}/control/*.out_pnt.ww3
 /bin/mv -f ${analdate}/control control.save # move directory out of the way
 /bin/rm -rf ${analdate}/GFS*06 ${analdate}/GFS*09 # remove restarts, keep fh=3 grib files
 cd $datapath2
 # compress history files
 if [ -f $nccompress ]; then
-   time $nccompress -d 1 -o -pa -m 50 ocn*nc ice*nc mom6*nc
+   time $nccompress -d 1 -o -pa -m 50 ocn*nc
 else
    echo "nccompress not found, not compressing history files"
 fi
@@ -92,21 +106,24 @@ if [ $machine != "aws" ];then
    htar -cvf ${hsidir}/${analdate}.history.tar ${analdate}
    exitstat=$?
 else
-   for filename in `ls ${analdate}/*`;do
-     if [[ -f $filename ]]; then
-      aws s3 cp ${filename} s3://noaa-bmc-none-ca-ufs-rnr/replay/outputs/${exptname}/history/${YYYY}/${MM}/${DD}/${HH}/ --profile rdhpcs >&/dev/null
-      if [ $? -ne 0 ]; then
-        echo "s3 history copy failed "$filename
-        exitstat=1
-      else
-        echo "s3 history copy succceeded "$filename
-      fi
-     fi
-   done
+   if [ $analdate -lt $analdate_prod ];then # put data in spin-up directory
+       aws s3 cp --recursive $analdate s3://noaa-ufs-gefsv13replay-pds/spinup/${YYYY}/${MM}/${analdate}/ --profile noaa-bdp >&/dev/null
+   else
+       aws s3 cp --recursive $analdate s3://noaa-ufs-gefsv13replay-pds/${YYYY}/${MM}/${analdate}/ --profile noaa-bdp >&/dev/null
+   fi
+   if [ $? -ne 0 ]; then
+      echo "s3 history copy failed "$filename
+      exitstat=1
+   else
+      echo "s3 history copy succceeded "$filename
+   fi
 fi
 /bin/mv -f control.save ${analdate}/control # move directory back
 if [ $exitstat -ne 0 ]; then
    echo "creating history tar file failed"
+   echo "no" > ${datapath}/${analdate}/logs/hpss.log
    exit $exitstat
 fi
+echo "archiving was a success"
+echo "yes" > ${datapath}/${analdate}/logs/hpss.log
 exit 0

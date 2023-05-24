@@ -3,7 +3,7 @@
 #############################################
 
 # ESMF #
-logKindFlag:            ESMF_LOGKIND_MULTI
+logKindFlag:            ESMF_LOGKIND_MULTI_ON_ERROR
 globalResourceControl:  true
 
 # EARTH #
@@ -15,13 +15,13 @@ EARTH_attributes::
 # MED #
 MED_model:                      cmeps
 MED_petlist_bounds:             NPROCS_CPL1 NPROCS_CPL2
-MED_omp_num_threads:            1
+MED_omp_num_threads:            2
 ::
 
 # ATM #
 ATM_model:                      fv3
 ATM_petlist_bounds:             NPROCS_ATM1 NPROCS_ATM2
-ATM_omp_num_threads:            1
+ATM_omp_num_threads:            2
 ATM_attributes::
   Verbosity = 0
   DumpFields = false
@@ -59,13 +59,13 @@ ICE_attributes::
 # WAV #
 WAV_model:                      ww3
 WAV_petlist_bounds:             NPROCS_WAV1 NPROCS_WAV2
-WAV_omp_num_threads:            1
+WAV_omp_num_threads:            2
 WAV_attributes::
   Verbosity = 0
   OverwriteSlice = false
   diro = "."
   logfile = wav.log
-  mesh_wav = mesh.gwes_30m.nc
+  mesh_wav = mesh.WAVE_MESH.nc
   multigrid = false
 ::
 
