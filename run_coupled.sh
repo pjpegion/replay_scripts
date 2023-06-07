@@ -323,7 +323,9 @@ ln -sf ${FIXDIR}/CICE_FIX/${ORES3}/* .
 if [ $running_wave == "YES" ];then
    ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.points .
 # need to udpate to new wave gid
-   ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.${WAVE_MESH}.ww3 mod_def.ww3
+   #ln -sf ${FIXDIR}/WW3_input_data_20220624/mod_def.${WAVE_MESH}.ww3 mod_def.ww3
+   ln -sf ${FIXDIR}/WW3_input_data_20220624/gfswave.mod_def.${WAVE_MESH} mod_def.ww3
+   
    ln -sf ${FIXDIR}/WW3_input_data_20220624/mesh.${WAVE_MESH}.nc .
 fi
 cd INPUT

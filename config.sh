@@ -4,8 +4,8 @@ echo "running on $machine using $NODES nodes"
 # 1/4 deg
 export RES=384  
 export RES_INC=384
-export OCNRES=mx025
-export WAVE_MESH=b
+export OCNRES="mx025"
+export WAVE_MESH="glo_025"
 # 1-deg
 #export RES=96   
 #export OCNRES=mx100
