@@ -11,7 +11,7 @@ export WAVE_MESH="glo_025"
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=GEFSv13_replay_streamSTREAM
+export exptname=GEFSv13_replay_stream1
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -22,7 +22,7 @@ export cleanup_fg='true'
 export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export save_hpss='true'
+export save_hpss='false'
 export days_keep=3  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
@@ -134,11 +134,11 @@ export biascorrdir=${basedir}/biascor
 
 # directory with analysis netcdf files
 if [ $machine == 'hera' ]; then
-    export replayanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES}
+    export replayanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/reanalysis/era5/C${RES}
     export replayanaldir_lores=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5anl/C${RES_INC}
-    export ocnanaldir=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/oras5/${OCNRES}
+    #export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-ics/ICS/${OCNRES}/
     export iceanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/ice_update_basedir
-    #export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/${OCNRES}
+    export ocnanaldir=/scratch2/BMC/gsienkf/Philip.Pegion/UFS-coupled/ICS/${OCNRES}
 elif [ $machine == 'aws' ]; then
     export replayanaldir=/lustre/${USER}/era5/C${RES}
     export replayanaldir_lores=/contrib/${USER}/era5/C${RES_INC}
