@@ -43,7 +43,7 @@ PROGRAM calc_increment_ncio
 !
 !
 ![Philip.Pegion@hfe12 C96_replay_p8_atm_noqv]$ mpiifort -o
-!exec_hera/calc_increment_ncio.x -O3 -xHOST -I${NCIO_INC} -I${NETCDF}/include
+!exec_hera/calc_increment_ncio.x -O3 -I${NCIO_INC} -I${NETCDF}/include
 !calc_increment_ncio.f90 ${NCIO_LIB} ${W3EMC_LIB4} -L${NETCDF}/lib -lnetcdff
 !-lnetcdf -L${HDF5_LIBRARIES} -lhdf5_hl -lhdf5 -L${ZLIB_LIBRARIES} -lz
 !$$$
