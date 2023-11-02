@@ -11,7 +11,7 @@ export WAVE_MESH="glo_025"
 #export OCNRES=mx100
 
 #export skip_calc_increment='true'
-export exptname=GEFSv13_replay_stream1
+export exptname=GEFSv13_replay_streamSTREAM
 export coupled=${coupled:-'ATM_OCN_ICE'} # NO or ATM_OCN_ICE, should be set in submit_job.sh
 # The SUITE selection has been moved to the bottom of this script
 export cores=`expr $NODES \* $corespernode`
@@ -22,7 +22,7 @@ export cleanup_fg='true'
 export replay_run_observer='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export save_hpss='false'
+export save_hpss='true'
 export days_keep=3  # if save_hpss="true", delete local directory copy for the cycle (current_date - days_keep) 
                     # set to 0 to turn off deleting of past directories
 export NGGODAS="false" # use NG-GODAS (6-h) instead of ORAS5 (24-h)
@@ -61,6 +61,7 @@ if [ "$machine" == 'hera' ]; then
    module load nco/4.9.1
    module load wgrib
 elif [ "$machine" == 'aws' ]; then
+   export AWS_DEFAULT_REGION=us-east-2
    export basedir=/lustre/${USER}
    export datadir=$basedir
    export hsidir="null"
