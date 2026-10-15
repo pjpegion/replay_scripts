@@ -1,0 +1,1 @@
+/scratch3/NCEPDEV/global/role.glopara/fix//mom6/20250128/025/ocean_hgrid.nc

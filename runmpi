@@ -1,0 +1,37 @@
+#!/bin/sh -x
+export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
+export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
+export ESMF_RUNTIME_PROFILE=ON
+export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
+export PSM_RANKS_PER_CONTEXT=4
+export PSM_SHAREDCONTEXTS=1
+export MPI_TYPE_DEPTH=20
+
+ulimit -s unlimited
+[ -z "$nprocs" ] && echo "Need to set nprocs" && exit 1;
+[ -z "$PGM" ] && echo "Need to set PGM" && exit 1;
+# use srun
+echo "nprocs=" $nprocs
+totcores=`expr $nprocs \* $OMP_NUM_THREADS`
+echo "corespernode="${corespernode}
+echo "totcores=" $totcores
+totnodes=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${totcores})/${corespernode})))"`
+echo "totnodes=" $totnodes
+count=`python -c "from __future__ import print_function; import math; print(int(math.floor(float(${corespernode})/${mpitaskspernode})))"` 
+mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nprocs})/${totnodes})))"`
+# -c: cpus per mpi task (number of threads per mpi task)
+# -n: total number of mpi tasks
+# -N: number of nodes to run on
+# --ntasks-per-node:  mpi tasks on each node
+if [ "$machine" == "aws" ];then
+   #eval mpirun -np $nprocs $PGM
+   echo "running srun --mpi=pmi2 --export=ALL -n $nprocs $PGM"
+   srun --mpi=pmi2 -l --export=ALL -n $nprocs $PGM
+else
+echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode  --exclusive --cpu-bind=cores --verbose -gres=craynetwork:0 $PGM"
+   sleep 2
+   eval srun --label --distribution=block:block -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode --exclusive --cpu-bind=cores --verbose --gres=craynetwork:0 $PGM
+fi
+rc=$?
+echo "exiting runmpi..."
+exit $rc

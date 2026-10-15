@@ -1,0 +1,29 @@
+#!/bin/sh
+#SBATCH -q batch
+#SBATCH -t 08:00:00
+#SBATCH --ntasks-per-node=192
+#SBATCH -A ufs-artic
+#SBATCH -N 5   
+#SBATCH -J SFS_YYYYMM
+#SBATCH -e SFS_YYYYMM.err
+#SBATCH -o SFS_YYYYMM.out
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+export machine='ursa'
+echo $SLURM_NNODES $SLURM_CPUS_ON_NODE
+
+if [ $NODES -eq 5 ]; then
+  export gsi_control_threads=2
+  export control_threads=1
+  export control_proc=960  
+  export write_groups=1 # write groups for control forecast.
+  export write_tasks=96
+  export layout="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export nprocs_cpl=300
+  export nprocs_atm=480
+  export nprocs_ice=96
+  export nprocs_ocn=384
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
